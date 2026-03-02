@@ -1,0 +1,45 @@
+{
+  "name": "app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "import:woo-products": "node scripts/import-woo-products.mjs",
+    "import:woo-products:apply": "node scripts/import-woo-products.mjs --output content/products.json",
+    "medusa:import-products": "npm run import:mystic-products --prefix services/medusa",
+    "medusa:set-product-content": "npm run set:product-content --prefix services/medusa",
+    "medusa:setup-starter-pack": "npm run setup:starter-pack-offer --prefix services/medusa",
+    "medusa:setup-checkout": "npm run setup:checkout --prefix services/medusa",
+    "medusa:dev": "npm run dev --prefix services/medusa",
+    "strapi:dev": "npm run develop --prefix services/strapi",
+    "stack:deps:up": "docker compose up -d postgres redis",
+    "stack:deps:down": "docker compose down",
+    "stack:up": "docker compose --profile app up -d",
+    "stack:down": "docker compose --profile app down"
+  },
+  "dependencies": {
+    "@stripe/react-stripe-js": "^5.6.0",
+    "@stripe/stripe-js": "^8.8.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.34.3",
+    "lucide-react": "^0.575.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "resend": "^6.9.2",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,178 @@
+@import "../node_modules/tailwindcss/index.css";
+
+:root {
+  /* Dark premium palette — warm earthy dark, not cold black */
+  --bg: #0a0906;
+  --bg-mid: #110f0a;
+  --bg-soft: #1a1710;
+  --ink: #f0e6cc;
+  --ink-muted: rgba(240, 230, 204, 0.6);
+  --gold: #c9a96e;
+  --gold-light: #e2c07e;
+  --gold-dim: rgba(201, 169, 110, 0.10);
+  --moss: #6b8f55;
+  --moss-light: #8ab36f;
+  --line: rgba(201, 169, 110, 0.14);
+  --line-strong: rgba(201, 169, 110, 0.32);
+  --card: #131109;
+  --card-hover: #1c1a10;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-mid: var(--bg-mid);
+  --color-bg-soft: var(--bg-soft);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dim: var(--gold-dim);
+  --color-moss: var(--moss);
+  --color-moss-light: var(--moss-light);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-cormorant);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-manrope), sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── UTILITY CLASSES ────────────────────────────────── */
+
+.label-sm {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.container-shell {
+  width: min(1200px, 92vw);
+  margin-inline: auto;
+}
+
+.section-space {
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+/* ── GRAIN TEXTURE ──────────────────────────────────── */
+.grain::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ── GOLD SHIMMER LINE ──────────────────────────────── */
+.gold-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%, transparent 100%);
+}
+
+/* ── GLOW ───────────────────────────────────────────── */
+.glow-gold {
+  box-shadow: 0 0 60px rgba(201, 169, 110, 0.1), 0 0 120px rgba(201, 169, 110, 0.05);
+}
+
+/* ── KEN BURNS HERO ZOOM ────────────────────────────── */
+@keyframes kenBurns {
+  0%   { transform: scale(1.0) translateX(0px); }
+  50%  { transform: scale(1.06) translateX(-12px); }
+  100% { transform: scale(1.0) translateX(0px); }
+}
+
+.hero-zoom {
+  animation: kenBurns 20s ease-in-out infinite;
+}
+
+/* ── INFINITE MARQUEE ───────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 44s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── FLOAT ──────────────────────────────────────────── */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); opacity: 0.6; }
+  50%       { transform: translateY(-18px); opacity: 1; }
+}
+
+/* ── GOLD PULSE ─────────────────────────────────────── */
+@keyframes goldPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+
+.gold-pulse {
+  animation: goldPulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-zoom,
+  .marquee-track,
+  .gold-pulse {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ── SCROLLBAR ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(201,169,110,0.25); border-radius: 2px; }
+
+/* ── SELECTION ──────────────────────────────────────── */
+::selection {
+  background: rgba(201, 169, 110, 0.25);
+  color: var(--ink);
+}

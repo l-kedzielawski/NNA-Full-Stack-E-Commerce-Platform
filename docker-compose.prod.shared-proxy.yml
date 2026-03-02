@@ -1,0 +1,143 @@
+# Production Docker Compose (shared reverse proxy mode)
+# Usage: docker compose -f docker-compose.prod.shared-proxy.yml --env-file .env.production up -d
+#
+# This file is for VPS setups where one shared reverse proxy (Nginx/Caddy/Traefik)
+# fronts multiple apps on the same host. This stack does not run nginx/certbot.
+
+name: mystic-aroma-prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mystic-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: mystic
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d mystic"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: mystic-redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    networks:
+      - internal
+
+  medusa:
+    build:
+      context: ./services/medusa
+      dockerfile: Dockerfile
+    image: mystic-medusa:latest
+    container_name: mystic-medusa
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/mystic_medusa
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${MEDUSA_JWT_SECRET}
+      COOKIE_SECRET: ${MEDUSA_COOKIE_SECRET}
+      STORE_CORS: ${STORE_CORS}
+      ADMIN_CORS: ${ADMIN_CORS}
+      AUTH_CORS: ${AUTH_CORS}
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${MEDUSA_HOST_PORT:-9100}:9000"
+    networks:
+      - internal
+
+  strapi:
+    build:
+      context: ./services/strapi
+      dockerfile: Dockerfile
+    image: mystic-strapi:latest
+    container_name: mystic-strapi
+    restart: always
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mystic_strapi
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_SSL: "false"
+      APP_KEYS: ${STRAPI_APP_KEYS}
+      API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT}
+      ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET}
+      TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT}
+      JWT_SECRET: ${STRAPI_JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${STRAPI_HOST_PORT:-1437}:1337"
+    networks:
+      - internal
+
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_MEDUSA_URL: http://medusa:9000
+        NEXT_PUBLIC_MEDUSA_REGION_ID: ${NEXT_PUBLIC_MEDUSA_REGION_ID}
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID}
+    image: mystic-nextjs:latest
+    container_name: mystic-nextjs
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MEDUSA_URL: http://medusa:9000
+      MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_MEDUSA_URL: http://medusa:9000
+      NEXT_PUBLIC_MEDUSA_REGION_ID: ${NEXT_PUBLIC_MEDUSA_REGION_ID}
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      QUOTE_NOTIFY_EMAILS: ${QUOTE_NOTIFY_EMAILS}
+      QUOTE_LOCAL_BACKUP_ENABLED: ${QUOTE_LOCAL_BACKUP_ENABLED:-false}
+      PRODUCTS_SOURCE: ${PRODUCTS_SOURCE:-medusa}
+    depends_on:
+      - medusa
+    ports:
+      - "127.0.0.1:${NEXTJS_HOST_PORT:-3100}:3000"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

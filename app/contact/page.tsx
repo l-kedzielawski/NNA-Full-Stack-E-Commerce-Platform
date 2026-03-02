@@ -1,0 +1,388 @@
+import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
+import { ArrowRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Contact | The Mystic Aroma",
+  description:
+    "Get in touch with Natural Mystic Aroma — direct B2B supplier of Bourbon vanilla and spices from Madagascar. Personal contact, samples, and documentation.",
+};
+
+const contacts = [
+  {
+    icon: Mail,
+    type: "Business Development & Sales",
+    value: "l.kedzielawski@themysticaroma.com",
+    href: "mailto:l.kedzielawski@themysticaroma.com",
+    desc: "Sourcing, pricing, samples & B2B partnerships — Łukasz",
+  },
+  {
+    icon: Mail,
+    type: "Customer Care & Sales",
+    value: "k.kucharski@themysticaroma.com",
+    href: "mailto:k.kucharski@themysticaroma.com",
+    desc: "Orders, documentation & trade queries — Karol",
+  },
+  {
+    icon: MessageCircle,
+    type: "WhatsApp",
+    value: "+48 665 103 994",
+    href: "https://wa.me/48665103994",
+    desc: "Fast response for urgent trade inquiries",
+  },
+];
+
+const values = [
+  "Straight answers — no fluff",
+  "Direct access to Madagascar",
+  "A long-term partner, not a transaction",
+  "Predictable supply and transparent pricing",
+  "Full documentation done right",
+  "Flexible order volumes",
+];
+
+export default function ContactPage() {
+  return (
+    <main className="min-h-screen">
+
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden min-h-[55vh] flex items-end">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/hero.jpg"
+            alt="Madagascar vanilla fields"
+            fill
+            className="object-cover object-center opacity-25 hero-zoom"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/80 to-bg/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/50 to-transparent" />
+        </div>
+        <div className="relative z-10 container-shell py-24 pt-36">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-6 h-px bg-gold/60" />
+            <span className="label-sm text-gold/60">Get in Touch</span>
+          </div>
+          <h1
+            className="font-display text-ink leading-[0.9]"
+            style={{ fontSize: "clamp(3rem, 6vw, 6.5rem)" }}
+          >
+            Thank You for<br />
+            <span className="text-gold">Visiting Us.</span>
+          </h1>
+          <p className="mt-6 text-ink/55 text-base leading-relaxed max-w-lg">
+            Every conversation matters to us. Whether you&apos;re exploring our products,
+            ready to place an order, or looking for a long-term sourcing partner —
+            we respond personally, within one business day.
+          </p>
+          <p className="mt-3 text-ink/35 text-sm">
+            Mon–Fri · 08:00–18:00 CET · Real people, no auto-replies.
+          </p>
+        </div>
+      </section>
+
+      <div className="gold-line" />
+
+      {/* ── CONTACT CHANNELS ─────────────────────────────────── */}
+      <section className="container-shell pt-16 pb-0">
+        <div className="grid md:grid-cols-3 gap-5">
+          {contacts.map((c) => {
+            const Icon = c.icon;
+            return (
+              <a
+                key={c.type}
+                href={c.href}
+                target={c.href.startsWith("http") ? "_blank" : undefined}
+                rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="group bg-card border border-line rounded-2xl p-7 hover:border-gold/40 hover:bg-card-hover transition-all duration-300"
+              >
+                <div className="w-10 h-10 rounded-xl border border-line/60 bg-bg-soft flex items-center justify-center mb-5 group-hover:border-gold/30 group-hover:bg-gold-dim transition-all duration-300">
+                  <Icon size={16} className="text-gold/60 group-hover:text-gold transition-colors" />
+                </div>
+                <p className="label-sm text-gold/50 mb-2">{c.type}</p>
+                <p className="font-display text-xl text-ink group-hover:text-gold transition-colors mb-2">
+                  {c.value}
+                </p>
+                <p className="text-sm text-ink/40 leading-relaxed">{c.desc}</p>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── THE FOUNDERS ─────────────────────────────────────── */}
+      <section className="container-shell py-20">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-6 h-px bg-gold/60" />
+          <span className="label-sm text-gold/60">The Founders</span>
+        </div>
+        <h2
+          className="font-display text-ink mb-3"
+          style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}
+        >
+          Talk directly<br />
+          <span className="text-gold">to the people behind it.</span>
+        </h2>
+        <p className="text-ink/45 text-sm leading-relaxed max-w-xl mb-14">
+          No ticketing system. No account managers. You speak directly with the
+          founders who built this company — and who still manage every sourcing
+          relationship personally.
+        </p>
+
+        {/* ── ŁUKASZ — photo left, text right ── */}
+        <div className="rounded-2xl border border-line bg-card overflow-hidden mb-5 group hover:border-gold/30 transition-all duration-300">
+          <div className="grid md:grid-cols-2 min-h-[420px]">
+            {/* Photo */}
+            <div className="relative bg-bg-soft overflow-hidden min-h-[340px] sm:min-h-[420px] md:min-h-0">
+              <div className="relative h-full w-full px-[15px]">
+                <Image
+                  src="/lukasz.png"
+                  alt="Łukasz Kędzielawski"
+                  fill
+                  className="object-contain object-center transition-all duration-500 scale-100 md:scale-90"
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                />
+              </div>
+              {/* Right-side fade into card */}
+              <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-card to-transparent hidden md:block" />
+              <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-card/60 to-transparent md:hidden" />
+            </div>
+
+            {/* Text */}
+            <div className="flex flex-col justify-center p-10 md:pl-8 border-t md:border-t-0 md:border-l border-line/30">
+              <p className="label-sm text-gold/50 mb-3">Business Development &amp; Sales</p>
+              <h3
+                className="font-display text-ink mb-5 leading-tight"
+                style={{ fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)" }}
+              >
+                Łukasz Kędzielawski
+              </h3>
+              <p className="text-sm text-ink/50 leading-relaxed mb-8 max-w-sm">
+                Leads direct sourcing relationships in Madagascar and manages key B2B
+                accounts across Europe. Your first call for product questions, samples,
+                and pricing.
+              </p>
+              <div className="space-y-3">
+                <a
+                  href="mailto:l.kedzielawski@themysticaroma.com"
+                  className="flex items-center gap-3 text-sm text-ink/50 hover:text-gold transition-colors group/link"
+                >
+                  <Mail size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
+                  l.kedzielawski@themysticaroma.com
+                </a>
+                <a
+                  href="https://wa.me/48665103994"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-sm text-ink/50 hover:text-gold transition-colors group/link"
+                >
+                  <Phone size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
+                  +48 665 103 994
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── KAROL — text left, photo right ── */}
+        <div className="rounded-2xl border border-line bg-card overflow-hidden group hover:border-gold/30 transition-all duration-300">
+          <div className="grid md:grid-cols-2 min-h-[420px]">
+            {/* Text — comes first in DOM, second visually on desktop via order */}
+            <div className="flex flex-col justify-center p-10 md:pr-8 border-b md:border-b-0 md:border-r border-line/30 order-2 md:order-1">
+              <p className="label-sm text-gold/50 mb-3">Customer Care &amp; Sales</p>
+              <h3
+                className="font-display text-ink mb-5 leading-tight"
+                style={{ fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)" }}
+              >
+                Karol Kucharski
+              </h3>
+              <p className="text-sm text-ink/50 leading-relaxed mb-8 max-w-sm">
+                Oversees supply chain logistics, certification compliance, and order
+                fulfilment from Poland. Contact Karol for documentation, shipping, and
+                trade queries.
+              </p>
+              <div className="space-y-3">
+                <a
+                  href="mailto:k.kucharski@themysticaroma.com"
+                  className="flex items-center gap-3 text-sm text-ink/50 hover:text-gold transition-colors group/link"
+                >
+                  <Mail size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
+                  k.kucharski@themysticaroma.com
+                </a>
+                <a
+                  href="https://wa.me/48535383223"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-sm text-ink/50 hover:text-gold transition-colors group/link"
+                >
+                  <Phone size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
+                  +48 535 383 223
+                </a>
+              </div>
+            </div>
+
+            {/* Photo */}
+            <div className="relative bg-bg-soft overflow-hidden order-1 md:order-2 min-h-[340px] sm:min-h-[420px] md:min-h-0">
+              <div className="relative h-full w-full px-[15px]">
+                <Image
+                  src="/karol.png"
+                  alt="Karol Kucharski"
+                  fill
+                  className="object-contain object-center transition-all duration-500 scale-100 md:scale-90"
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                />
+              </div>
+              {/* Left-side fade into card */}
+              <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-card to-transparent hidden md:block" />
+              <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-card/60 to-transparent md:hidden" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHO WE WORK WITH ─────────────────────────────────── */}
+      <section className="border-y border-line/40 bg-card">
+        <div className="container-shell py-16">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-6 h-px bg-gold/60" />
+                <span className="label-sm text-gold/60">Who We Work With</span>
+              </div>
+              <h2
+                className="font-display text-ink mb-5"
+                style={{ fontSize: "clamp(1.75rem, 3vw, 3rem)" }}
+              >
+                Not every partner<br />
+                <span className="text-gold">is the right fit.</span>
+              </h2>
+              <p className="text-ink/50 text-sm leading-relaxed mb-4">
+                We don&apos;t just move products — we move standards. If you&apos;re
+                looking for the cheapest commodity spice, this isn&apos;t the place.
+              </p>
+              <p className="text-ink/50 text-sm leading-relaxed">
+                But if you care about verified origin, sustainable trade, and ingredients
+                that truly deliver — we should talk. We invest in proof, not promises.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {values.map((v) => (
+                <div key={v} className="flex items-center gap-3 text-sm text-ink/60">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold/60 shrink-0" />
+                  {v}
+                </div>
+              ))}
+              <div className="pt-4">
+                <Link
+                  href="/b2b"
+                  className="group inline-flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors"
+                >
+                  Learn about our B2B approach
+                  <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMPANY + QUOTE ──────────────────────────────────── */}
+      <section className="container-shell py-16">
+        <div className="grid md:grid-cols-2 gap-6">
+
+          {/* Company card */}
+          <div className="rounded-2xl border border-line/60 bg-card p-8 flex flex-col gap-6">
+            {/* Light logo */}
+            <div className="pb-2">
+              <p className="label-sm text-gold/50 mb-4">The Company</p>
+              <Image
+                src="/logo-light.png"
+                alt="Natural Mystic Aroma"
+                width={220}
+                height={108}
+                className="object-contain opacity-90"
+              />
+              <p className="text-ink/40 text-xs mt-3">Natural Mystic Aroma Sp. z o.o.</p>
+            </div>
+
+            {/* Address */}
+            <div className="flex items-start gap-3">
+              <MapPin size={14} className="text-gold/40 shrink-0 mt-0.5" />
+              <p className="text-sm text-ink/60 leading-relaxed">
+                ul. Pamiątkowa 2/56<br />
+                61-512 Poznań, Poland
+              </p>
+            </div>
+
+            {/* Emails */}
+            <div className="space-y-2.5">
+              <a
+                href="mailto:l.kedzielawski@themysticaroma.com"
+                className="flex items-center gap-3 text-sm text-ink/55 hover:text-gold transition-colors group/link"
+              >
+                <Mail size={13} className="text-gold/35 group-hover/link:text-gold transition-colors shrink-0" />
+                l.kedzielawski@themysticaroma.com
+              </a>
+              <a
+                href="mailto:k.kucharski@themysticaroma.com"
+                className="flex items-center gap-3 text-sm text-ink/55 hover:text-gold transition-colors group/link"
+              >
+                <Mail size={13} className="text-gold/35 group-hover/link:text-gold transition-colors shrink-0" />
+                k.kucharski@themysticaroma.com
+              </a>
+            </div>
+
+            {/* Legal */}
+            <div className="pt-4 border-t border-line/40">
+              <p className="label-sm text-ink/25 mb-1.5">Tax &amp; Registration</p>
+              <div className="space-y-0.5 text-xs text-ink/30">
+                <p>TAX ID (NIP): PL7831881805</p>
+                <p>KRS: 0001039186 · REGON: 525446867</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA card */}
+          <div className="rounded-2xl border border-gold/20 bg-gold-dim p-8 flex flex-col justify-between">
+            <div>
+              <p className="label-sm text-gold/60 mb-4">Ready to Source?</p>
+              <h3
+                className="font-display text-ink mb-4"
+                style={{ fontSize: "clamp(1.75rem, 2.5vw, 2.5rem)" }}
+              >
+                Start a B2B Inquiry
+              </h3>
+              <p className="text-sm text-ink/55 leading-relaxed mb-8">
+                Tell us your volume, format, and application. We come back within
+                24 hours with a real, tailored offer — not an auto-reply.
+                Samples available on request.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/quote"
+                className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gold text-bg font-bold text-sm shadow-[0_0_20px_rgba(201,169,110,0.25)] hover:bg-gold-light hover:shadow-[0_0_30px_rgba(201,169,110,0.4)] transition-all duration-300"
+              >
+                Start a B2B Inquiry
+                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <a
+                href="https://wa.me/48665103994"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-line text-sm font-semibold text-ink/60 hover:border-gold/40 hover:text-ink transition-all duration-300"
+              >
+                <MessageCircle size={14} />
+                WhatsApp Us
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  );
+}

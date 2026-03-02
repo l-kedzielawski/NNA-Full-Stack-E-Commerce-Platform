@@ -1,0 +1,186 @@
+# Production Docker Compose
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+#
+# All internal ports are NOT exposed to the host — Nginx is the only public entry point.
+# Set all variables listed in .env.production.example before first boot.
+
+name: mystic-aroma-prod
+
+services:
+  # ─── Infrastructure ───────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mystic-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: mystic          # master DB (init script creates mystic_medusa + mystic_strapi)
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d mystic"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: mystic-redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    networks:
+      - internal
+
+  # ─── Application services ─────────────────────────────────────────────────────
+
+  medusa:
+    build:
+      context: ./services/medusa
+      dockerfile: Dockerfile
+    image: mystic-medusa:latest
+    container_name: mystic-medusa
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/mystic_medusa
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${MEDUSA_JWT_SECRET}
+      COOKIE_SECRET: ${MEDUSA_COOKIE_SECRET}
+      STORE_CORS: ${STORE_CORS}
+      ADMIN_CORS: ${ADMIN_CORS}
+      AUTH_CORS: ${AUTH_CORS}
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+    # No ports: exposed only via Nginx on internal network
+
+  strapi:
+    build:
+      context: ./services/strapi
+      dockerfile: Dockerfile
+    image: mystic-strapi:latest
+    container_name: mystic-strapi
+    restart: always
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mystic_strapi
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_SSL: "false"
+      APP_KEYS: ${STRAPI_APP_KEYS}
+      API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT}
+      ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET}
+      TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT}
+      JWT_SECRET: ${STRAPI_JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* vars are baked into the JS bundle at build time.
+        # NEXT_PUBLIC_MEDUSA_URL is only used for server-side SSG product fetching
+        # (lib/products.ts). Browser cart calls go through /api/medusa proxy instead.
+        NEXT_PUBLIC_MEDUSA_URL: http://medusa:9000
+        NEXT_PUBLIC_MEDUSA_REGION_ID: ${NEXT_PUBLIC_MEDUSA_REGION_ID}
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID}
+    image: mystic-nextjs:latest
+    container_name: mystic-nextjs
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Server-only vars (used by /api/medusa proxy and quote route at runtime)
+      MEDUSA_URL: http://medusa:9000
+      MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+      # Public vars (baked at build time, repeated here for runtime SSR)
+      NEXT_PUBLIC_MEDUSA_URL: http://medusa:9000
+      NEXT_PUBLIC_MEDUSA_REGION_ID: ${NEXT_PUBLIC_MEDUSA_REGION_ID}
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      QUOTE_NOTIFY_EMAILS: ${QUOTE_NOTIFY_EMAILS}
+      QUOTE_LOCAL_BACKUP_ENABLED: ${QUOTE_LOCAL_BACKUP_ENABLED:-false}
+      PRODUCTS_SOURCE: ${PRODUCTS_SOURCE:-medusa}
+    depends_on:
+      - medusa
+    networks:
+      - internal
+
+  # ─── Reverse proxy ────────────────────────────────────────────────────────────
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: mystic-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - letsencrypt_certs:/etc/letsencrypt:ro
+      - letsencrypt_www:/var/www/certbot:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - nextjs
+      - medusa
+      - strapi
+    networks:
+      - internal
+
+  # ─── SSL certificate renewal ──────────────────────────────────────────────────
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: mystic-certbot
+    volumes:
+      - letsencrypt_certs:/etc/letsencrypt
+      - letsencrypt_www:/var/www/certbot
+    # Run manually for initial cert, then via cron for renewal:
+    #   docker compose -f docker-compose.prod.yml run --rm certbot certonly ...
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  letsencrypt_certs:
+  letsencrypt_www:
+  nginx_logs:

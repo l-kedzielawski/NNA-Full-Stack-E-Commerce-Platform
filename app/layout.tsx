@@ -1,0 +1,110 @@
+import type { Metadata } from "next";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
+import "./globals.css";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { StickyQuoteCta } from "@/components/sticky-quote-cta";
+import { GA4 } from "@/components/analytics/ga4";
+import { CookieConsentBanner } from "@/components/cookie-consent-banner";
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://www.themysticaroma.com"),
+  title: {
+    default: "The Mystic Aroma | Madagascar Vanilla & Cocoa",
+    template: "%s | The Mystic Aroma",
+  },
+  description:
+    "Premium Madagascar vanilla, cocoa, and specialty ingredients for demanding B2B buyers.",
+  openGraph: {
+    type: "website",
+    url: "https://www.themysticaroma.com",
+    siteName: "The Mystic Aroma",
+    title: "The Mystic Aroma | Madagascar Vanilla & Cocoa",
+    description:
+      "Premium Madagascar vanilla, cocoa, and specialty ingredients for demanding B2B buyers.",
+    images: [
+      {
+        url: "/hero.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Madagascar vanilla and spices",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Mystic Aroma | Madagascar Vanilla & Cocoa",
+    description:
+      "Premium Madagascar vanilla, cocoa, and specialty ingredients for demanding B2B buyers.",
+    images: ["/hero.jpg"],
+  },
+  icons: {
+    icon: "/avi-icon.png",
+    apple: "/avi-icon.png",
+    shortcut: "/avi-icon.png",
+  },
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Natural Mystic Aroma",
+  alternateName: "The Mystic Aroma",
+  url: "https://www.themysticaroma.com",
+  logo: "https://www.themysticaroma.com/logo-light.png",
+  email: "info@themysticaroma.com",
+  sameAs: [
+    "https://www.facebook.com/NaturalMysticAroma",
+    "https://www.instagram.com/thenaturalmysticaroma",
+    "https://www.linkedin.com/company/natural-mystic-aroma",
+    "https://www.youtube.com/@NaturalMysticAroma",
+    "https://www.tiktok.com/@the.mystic.aroma",
+  ],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "ul. Pamiątkowa 2/56",
+    postalCode: "61-512",
+    addressLocality: "Poznan",
+    addressCountry: "PL",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${cormorant.variable} ${manrope.variable} antialiased`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-gold focus:text-bg focus:rounded-full focus:font-semibold focus:text-sm"
+        >
+          Skip to content
+        </a>
+        <GA4 />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <SiteHeader />
+        <div id="main-content">{children}</div>
+        <StickyQuoteCta />
+        <CookieConsentBanner />
+        <SiteFooter />
+      </body>
+    </html>
+  );
+}

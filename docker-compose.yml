@@ -1,0 +1,86 @@
+name: mystic-aroma
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mystic-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mystic}
+      POSTGRES_USER: ${POSTGRES_USER:-mystic}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mystic}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mystic} -d ${POSTGRES_DB:-mystic}"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  redis:
+    image: redis:7-alpine
+    container_name: mystic-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  medusa:
+    image: node:20-alpine
+    container_name: mystic-medusa
+    profiles: ["app"]
+    working_dir: /srv/medusa
+    command: sh -lc "npm install && npm run dev"
+    volumes:
+      - ./services/medusa:/srv/medusa
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-mystic}:${POSTGRES_PASSWORD:-mystic}@postgres:5432/mystic_medusa
+      REDIS_URL: redis://redis:6379
+      STORE_CORS: ${STORE_CORS:-http://localhost:3000,http://localhost:3001}
+      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:7000}
+      AUTH_CORS: ${AUTH_CORS:-http://localhost:3000,http://localhost:3001}
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-http://localhost:9000}
+    ports:
+      - "9000:9000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  strapi:
+    image: node:20-alpine
+    container_name: mystic-strapi
+    profiles: ["app"]
+    working_dir: /srv/strapi
+    command: sh -lc "npm install && npm run develop"
+    volumes:
+      - ./services/strapi:/srv/strapi
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mystic_strapi
+      DATABASE_USERNAME: ${POSTGRES_USER:-mystic}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-mystic}
+      DATABASE_SSL: "false"
+      HOST: 0.0.0.0
+      PORT: 1337
+    ports:
+      - "1337:1337"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
