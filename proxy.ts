@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { defaultLocale, isSupportedLocale } from "@/lib/i18n";
+import {
+  defaultLocale,
+  detectLocaleFromAcceptLanguage,
+  isLegacyLocale,
+  isSupportedLocale,
+  localeCookieName,
+  stripLocaleFromPathname,
+  withLocalePrefix,
+  type SiteLocale,
+} from "@/lib/i18n";
+
+const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
 
 function isSkippablePath(pathname: string): boolean {
   return (
@@ -22,20 +33,61 @@ export function proxy(request: NextRequest) {
   const segments = pathname.split("/").filter(Boolean);
   const firstSegment = segments[0] ?? "";
 
+  const preferredLocale = resolvePreferredLocale(request);
+
   if (isSupportedLocale(firstSegment)) {
-    const rewrittenPath = pathname.replace(new RegExp(`^/${firstSegment}`), "") || "/";
+    const rewrittenPath = stripLocaleFromPathname(pathname);
     const rewrittenUrl = request.nextUrl.clone();
     rewrittenUrl.pathname = rewrittenPath;
     rewrittenUrl.search = search;
 
-    return NextResponse.rewrite(rewrittenUrl);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-site-locale", firstSegment);
+
+    const response = NextResponse.rewrite(rewrittenUrl, {
+      request: {
+        headers: requestHeaders,
+      },
+    });
+
+    response.cookies.set(localeCookieName, firstSegment, {
+      path: "/",
+      maxAge: ONE_YEAR_IN_SECONDS,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+    });
+
+    return response;
+  }
+
+  if (isLegacyLocale(firstSegment)) {
+    const withoutLegacy = pathname.replace(/^\/(de|it)(?=\/|$)/, "") || "/";
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = withLocalePrefix(withoutLegacy, preferredLocale);
+    redirectUrl.search = search;
+    return NextResponse.redirect(redirectUrl);
   }
 
   const redirectUrl = request.nextUrl.clone();
-  redirectUrl.pathname = pathname === "/" ? `/${defaultLocale}` : `/${defaultLocale}${pathname}`;
+  redirectUrl.pathname = withLocalePrefix(pathname, preferredLocale);
   redirectUrl.search = search;
 
   return NextResponse.redirect(redirectUrl);
+}
+
+function resolvePreferredLocale(request: NextRequest): SiteLocale {
+  const localeFromCookie = request.cookies.get(localeCookieName)?.value;
+
+  if (localeFromCookie && isSupportedLocale(localeFromCookie)) {
+    return localeFromCookie;
+  }
+
+  const localeFromHeader = detectLocaleFromAcceptLanguage(request.headers.get("accept-language"));
+  if (isSupportedLocale(localeFromHeader)) {
+    return localeFromHeader;
+  }
+
+  return defaultLocale;
 }
 
 export const config = {

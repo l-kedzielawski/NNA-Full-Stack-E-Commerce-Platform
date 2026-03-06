@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
+import { headers } from "next/headers";
 import { CookieSettingsButton } from "@/components/cookie-settings-button";
+import { defaultLocale, isSupportedLocale, type SiteLocale, withLocalePrefix } from "@/lib/i18n";
 
 const socials = [
   {
@@ -50,39 +52,93 @@ const socials = [
   },
 ];
 
-const navProducts = [
-  { label: "All Products", href: "/products" },
-  { label: "Vanilla Pods", href: "/products?category=Vanilla+Pods" },
-  { label: "Vanilla Powder & Seeds", href: "/products?category=Vanilla+Powder+%26+Seeds" },
-  { label: "Vanilla Extracts", href: "/products?category=Vanilla+Extracts" },
-  { label: "Cocoa", href: "/products?category=Cocoa" },
-  { label: "Spices & Other", href: "/products?category=Spices+%26+Other" },
-  { label: "Samples & Gift Sets", href: "/products?category=Samples+%26+Gift+Sets" },
-];
+const navByLocale: Record<SiteLocale, {
+  products: { label: string; href: string }[];
+  company: { label: string; href: string }[];
+  legal: { label: string; href: string }[];
+  headings: { products: string; company: string; legal: string };
+  tagline: string;
+  subTagline: string;
+  thanks: string;
+  cookieSettings: string;
+}> = {
+  en: {
+    products: [
+      { label: "All Products", href: "/products" },
+      { label: "Vanilla Pods", href: "/products?category=Vanilla+Pods" },
+      { label: "Vanilla Powder & Seeds", href: "/products?category=Vanilla+Powder+%26+Seeds" },
+      { label: "Vanilla Extracts", href: "/products?category=Vanilla+Extracts" },
+      { label: "Cocoa", href: "/products?category=Cocoa" },
+      { label: "Spices & Other", href: "/products?category=Spices+%26+Other" },
+      { label: "Samples & Gift Sets", href: "/products?category=Samples+%26+Gift+Sets" },
+    ],
+    company: [
+      { label: "About Us", href: "/about" },
+      { label: "Certifications", href: "/certifications" },
+      { label: "B2B & Wholesale", href: "/b2b" },
+      { label: "Contact", href: "/contact" },
+      { label: "Shipping & Payments", href: "/shipping" },
+    ],
+    legal: [
+      { label: "Legal Notice", href: "/legal" },
+      { label: "Terms & Conditions", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Cookie Policy", href: "/cookie-policy" },
+      { label: "Returns & Complaints", href: "/returns" },
+    ],
+    headings: { products: "Products", company: "Company", legal: "Legal" },
+    tagline: "Premium Bourbon Vanilla, Cocoa & Exotic Spices",
+    subTagline: "Direct from Madagascar",
+    thanks:
+      "Each of our products has been carefully chosen and brought to you with intention and care. May the subtlety and depth of the aroma bring elegance, authenticity, and a touch of the extraordinary to your life. Thank you for visiting us. We hope you will join us on this journey.",
+    cookieSettings: "Cookie settings",
+  },
+  pl: {
+    products: [
+      { label: "Wszystkie produkty", href: "/products" },
+      { label: "Laski wanilii", href: "/products?category=Vanilla+Pods" },
+      { label: "Wanilia mielona i ziarenka", href: "/products?category=Vanilla+Powder+%26+Seeds" },
+      { label: "Ekstrakty waniliowe", href: "/products?category=Vanilla+Extracts" },
+      { label: "Kakao", href: "/products?category=Cocoa" },
+      { label: "Przyprawy i inne", href: "/products?category=Spices+%26+Other" },
+      { label: "Próbki i zestawy prezentowe", href: "/products?category=Samples+%26+Gift+Sets" },
+    ],
+    company: [
+      { label: "O nas", href: "/about" },
+      { label: "Certyfikaty", href: "/certifications" },
+      { label: "B2B i hurt", href: "/b2b" },
+      { label: "Kontakt", href: "/contact" },
+      { label: "Dostawa i płatności", href: "/shipping" },
+    ],
+    legal: [
+      { label: "Informacje prawne", href: "/legal" },
+      { label: "Regulamin", href: "/terms" },
+      { label: "Polityka prywatności", href: "/privacy" },
+      { label: "Polityka cookies", href: "/cookie-policy" },
+      { label: "Zwroty i reklamacje", href: "/returns" },
+    ],
+    headings: { products: "Produkty", company: "Firma", legal: "Prawo" },
+    tagline: "Premium Bourbon Vanilla, kakao i egzotyczne przyprawy",
+    subTagline: "Bezpośrednio z Madagaskaru",
+    thanks:
+      "Każdy produkt, który wysyłamy, przeszedł przez nasze ręce — od plantacji na Madagaskarze po magazyn w Poznaniu. Dziękujemy za zaufanie. Budujemy to razem.",
+    cookieSettings: "Ustawienia cookies",
+  },
+};
 
-const navCompany = [
-  { label: "About Us", href: "/about" },
-  { label: "Certifications", href: "/certifications" },
-  { label: "B2B & Wholesale", href: "/b2b" },
-  { label: "Contact", href: "/contact" },
-  { label: "Shipping & Payments", href: "/shipping" },
-];
+function withLocalizedHref(href: string, locale: SiteLocale): string {
+  const [pathname, query = ""] = href.split("?");
+  const localized = withLocalePrefix(pathname || "/", locale);
+  return query ? `${localized}?${query}` : localized;
+}
 
-const navLegal = [
-  { label: "Legal Notice", href: "/legal" },
-  { label: "Terms & Conditions", href: "/terms" },
-  { label: "Privacy Policy", href: "/privacy" },
-  { label: "Cookie Policy", href: "/cookie-policy" },
-  { label: "Returns & Complaints", href: "/returns" },
-];
-
-function NavCol({ heading, items }: { heading: string; items: { label: string; href: string }[] }) {
+function NavCol({ heading, items, locale }: { heading: string; items: { label: string; href: string }[]; locale: SiteLocale }) {
   return (
     <div>
       <p className="text-[0.6rem] font-semibold tracking-[0.2em] text-gold/50 uppercase mb-5">{heading}</p>
       <nav className="flex flex-col gap-3">
         {items.map((item) => (
-          <Link key={item.label} href={item.href} className="text-xs text-ink/50 hover:text-gold transition-colors">
+          <Link key={item.label} href={withLocalizedHref(item.href, locale)} className="text-xs text-ink/50 hover:text-gold transition-colors">
             {item.label}
           </Link>
         ))}
@@ -91,7 +147,12 @@ function NavCol({ heading, items }: { heading: string; items: { label: string; h
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const requestHeaders = await headers();
+  const localeFromHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeFromHeader) ? localeFromHeader : defaultLocale;
+  const t = navByLocale[locale];
+
   return (
     <footer className="bg-bg-mid border-t border-line">
       <div className="gold-line opacity-60" />
@@ -103,14 +164,14 @@ export function SiteFooter() {
           {/* Brand column */}
           <div className="lg:w-72 lg:shrink-0 lg:pr-12 lg:border-r lg:border-line/25 flex flex-col justify-between gap-8">
             <div className="flex flex-col gap-5">
-              <Link href="/">
+              <Link href={withLocalePrefix("/", locale)}>
                 <div className="relative h-11 w-[100px]">
                   <Image src="/logo-light.png" alt="Natural Mystic Aroma" fill className="object-contain object-left" />
                 </div>
               </Link>
               <div>
-                <p className="text-[0.6rem] tracking-[0.18em] text-ink/60 uppercase">Premium Bourbon Vanilla, Cocoa & Exotic Spices</p>
-                <p className="text-[0.6rem] tracking-[0.18em] text-ink/40 uppercase mt-1">Direct from Madagascar</p>
+                <p className="text-[0.6rem] tracking-[0.18em] text-ink/60 uppercase">{t.tagline}</p>
+                <p className="text-[0.6rem] tracking-[0.18em] text-ink/40 uppercase mt-1">{t.subTagline}</p>
               </div>
               <div className="flex flex-col gap-1.5">
                 <a href="mailto:l.kedzielawski@themysticaroma.com" className="text-[0.7rem] text-ink/45 hover:text-gold transition-colors">l.kedzielawski@themysticaroma.com</a>
@@ -136,9 +197,9 @@ export function SiteFooter() {
 
           {/* Nav columns */}
           <div className="flex-1 lg:pl-12 grid grid-cols-2 md:grid-cols-3 gap-8">
-            <NavCol heading="Products" items={navProducts} />
-            <NavCol heading="Company" items={navCompany} />
-            <NavCol heading="Legal" items={navLegal} />
+            <NavCol heading={t.headings.products} items={t.products} locale={locale} />
+            <NavCol heading={t.headings.company} items={t.company} locale={locale} />
+            <NavCol heading={t.headings.legal} items={t.legal} locale={locale} />
           </div>
 
         </div>
@@ -148,10 +209,7 @@ export function SiteFooter() {
       <div className="border-b border-line/25">
         <div className="container-shell pt-3 pb-6 px-8 md:px-12 lg:px-28">
           <p className="font-display italic text-ink/60 text-center leading-relaxed" style={{ fontSize: "clamp(0.95rem, 1.6vw, 1.25rem)" }}>
-            Each of our products has been carefully chosen and brought to you with intention and care.
-            May the subtlety and depth of the aroma bring elegance, authenticity, and a touch of the extraordinary to your life.
-            <br />
-            Thank you for visiting us. We hope you will join us on this journey.
+            {t.thanks}
           </p>
         </div>
       </div>
@@ -162,7 +220,7 @@ export function SiteFooter() {
           <p className="text-[0.65rem] text-ink/50">
             © {new Date().getFullYear()} Natural Mystic Aroma Sp. z o.o. &nbsp;·&nbsp; ul. Pamiątkowa 2/56, 61-512 Poznań, Poland &nbsp;·&nbsp; NIP: PL7831881805 &nbsp;·&nbsp; KRS: 0001039186
           </p>
-          <CookieSettingsButton />
+          <CookieSettingsButton label={t.cookieSettings} />
         </div>
       </div>
 

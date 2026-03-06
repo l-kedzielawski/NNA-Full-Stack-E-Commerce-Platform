@@ -15,6 +15,8 @@ function sanitize(value: unknown, maxLength = 5000): string {
 }
 
 function normalizeLead(lead: Record<string, unknown>) {
+  const paymentAmount = Number(lead.payment_amount);
+
   return {
     id: String(lead.id || ""),
     name: String(lead.name || ""),
@@ -33,6 +35,14 @@ function normalizeLead(lead: Record<string, unknown>) {
     assignee: String(lead.assignee || ""),
     notes: String(lead.notes || ""),
     source: String(lead.source || ""),
+    payment_link_url: String(lead.payment_link_url || ""),
+    payment_link_session_id: String(lead.payment_link_session_id || ""),
+    payment_link_expires_at: lead.payment_link_expires_at,
+    payment_status: String(lead.payment_status || ""),
+    payment_amount: Number.isFinite(paymentAmount) ? paymentAmount : null,
+    payment_currency: String(lead.payment_currency || ""),
+    payment_created_at: lead.payment_created_at,
+    payment_paid_at: lead.payment_paid_at,
     created_at: lead.created_at,
     updated_at: lead.updated_at,
   };

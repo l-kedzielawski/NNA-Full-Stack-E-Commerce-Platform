@@ -62,6 +62,9 @@ services:
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       STRIPE_CAPTURE: ${STRIPE_CAPTURE}
+      GA4_PROPERTY_ID: ${GA4_PROPERTY_ID}
+      GA4_CLIENT_EMAIL: ${GA4_CLIENT_EMAIL}
+      GA4_PRIVATE_KEY: ${GA4_PRIVATE_KEY}
     depends_on:
       postgres:
         condition: service_healthy

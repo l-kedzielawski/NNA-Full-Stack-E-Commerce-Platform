@@ -5,14 +5,25 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatPrice(price: number | null): string {
-  if (price === null || Number.isNaN(price)) {
-    return "Bulk quote";
+function getNumberLocale(currencyCode: string, locale?: string): string {
+  if (locale) {
+    return locale;
   }
 
-  return new Intl.NumberFormat("en-GB", {
+  return currencyCode.toUpperCase() === "PLN" ? "pl-PL" : "en-GB";
+}
+
+export function formatPrice(price: number | null, options?: { currencyCode?: string; locale?: string }): string {
+  if (price === null || Number.isNaN(price)) {
+    return options?.locale?.startsWith("pl") ? "Wycena B2B" : "Bulk quote";
+  }
+
+  const currencyCode = (options?.currencyCode || "EUR").toUpperCase();
+  const numberLocale = getNumberLocale(currencyCode, options?.locale);
+
+  return new Intl.NumberFormat(numberLocale, {
     style: "currency",
-    currency: "EUR",
+    currency: currencyCode,
     maximumFractionDigits: 2,
   }).format(price);
 }

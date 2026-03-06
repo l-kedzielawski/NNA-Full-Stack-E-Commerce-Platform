@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { defaultLocale, getLocaleFromPathname } from "@/lib/i18n";
 
 type ProductGalleryProps = {
   title: string;
@@ -12,6 +14,8 @@ type ProductGalleryProps = {
 export function ProductGallery({ title, images }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) || defaultLocale;
   const activeImage = images[activeIndex] ?? images[0];
 
   if (!activeImage) {
@@ -33,7 +37,7 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
           type="button"
           onClick={() => setIsOpen(true)}
           className="group relative block w-full overflow-hidden rounded-2xl border border-line/40 bg-bg-soft text-left"
-          aria-label="Open product image"
+          aria-label={locale === "pl" ? "Otworz zdjecie produktu" : "Open product image"}
         >
           <div className="relative aspect-[4/3]">
             <Image
@@ -48,7 +52,7 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
           </div>
           <div className="pointer-events-none absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-bg/70 px-3 py-1.5 text-[0.65rem] font-bold tracking-[0.16em] text-gold/85 uppercase backdrop-blur-sm">
             <ZoomIn size={12} />
-            Enlarge
+            {locale === "pl" ? "Powieksz" : "Enlarge"}
           </div>
         </button>
 
@@ -64,7 +68,7 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
                     ? "border-gold shadow-[0_0_0_1px_rgba(201,169,110,0.5)]"
                     : "border-line hover:border-gold/35"
                 }`}
-                aria-label={`Show image ${idx + 1}`}
+                aria-label={`${locale === "pl" ? "Pokaz zdjecie" : "Show image"} ${idx + 1}`}
               >
                 <Image
                   src={image}
@@ -84,6 +88,7 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
           images={images}
           activeIndex={activeIndex}
           title={title}
+          locale={locale}
           onClose={() => setIsOpen(false)}
           onPrev={showPrev}
           onNext={showNext}
@@ -97,6 +102,7 @@ type LightboxOverlayProps = {
   images: string[];
   activeIndex: number;
   title: string;
+  locale: "en" | "pl";
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -106,6 +112,7 @@ function LightboxOverlay({
   images,
   activeIndex,
   title,
+  locale,
   onClose,
   onPrev,
   onNext,
@@ -146,13 +153,13 @@ function LightboxOverlay({
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Product image viewer"
+      aria-label={locale === "pl" ? "Podglad zdjec produktu" : "Product image viewer"}
     >
       <button
         type="button"
         onClick={onClose}
         className="absolute right-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white/80 hover:text-white"
-        aria-label="Close image viewer"
+        aria-label={locale === "pl" ? "Zamknij podglad" : "Close image viewer"}
       >
         <X size={18} />
       </button>
@@ -163,7 +170,7 @@ function LightboxOverlay({
             type="button"
             onClick={onPrev}
             className="absolute left-4 md:left-8 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white/80 hover:text-white"
-            aria-label="Previous image"
+            aria-label={locale === "pl" ? "Poprzednie zdjecie" : "Previous image"}
           >
             <ChevronLeft size={20} />
           </button>
@@ -171,7 +178,7 @@ function LightboxOverlay({
             type="button"
             onClick={onNext}
             className="absolute right-4 md:right-8 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white/80 hover:text-white"
-            aria-label="Next image"
+            aria-label={locale === "pl" ? "Nastepne zdjecie" : "Next image"}
           >
             <ChevronRight size={20} />
           </button>

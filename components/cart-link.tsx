@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { getCart, getStoredCartId } from "@/lib/medusa-cart";
+import { defaultLocale, getLocaleFromPathname, withLocalePrefix } from "@/lib/i18n";
 
 function countItems(quantityList: number[]) {
   return quantityList.reduce((sum, value) => sum + value, 0);
@@ -11,6 +13,8 @@ function countItems(quantityList: number[]) {
 
 export function CartLink() {
   const [count, setCount] = useState(0);
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) || defaultLocale;
 
   useEffect(() => {
     let cancelled = false;
@@ -45,9 +49,9 @@ export function CartLink() {
 
   return (
     <Link
-      href="/cart"
+      href={withLocalePrefix("/cart", locale)}
       className="relative ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink/70 hover:border-gold/40 hover:text-ink transition-all"
-      aria-label="Open cart"
+      aria-label={locale === "pl" ? "Otworz koszyk" : "Open cart"}
     >
       <ShoppingBag size={17} />
       {count > 0 && (

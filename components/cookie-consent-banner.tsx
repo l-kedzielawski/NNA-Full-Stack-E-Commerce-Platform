@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   COOKIE_CONSENT_UPDATED_EVENT,
   COOKIE_PREFERENCES_OPEN_EVENT,
@@ -10,6 +11,7 @@ import {
   saveCookieConsent,
   type CookieConsent,
 } from "@/lib/cookie-consent";
+import { defaultLocale, getLocaleFromPathname, withLocalePrefix } from "@/lib/i18n";
 
 type PreferenceState = {
   preferences: boolean;
@@ -68,6 +70,52 @@ export function CookieConsentBanner() {
   const [showBanner, setShowBanner] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [preferences, setPreferences] = useState<PreferenceState>(defaultPreferences);
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) || defaultLocale;
+
+  const t = {
+    preferences: locale === "pl" ? "Preferencje cookies" : "Cookie Preferences",
+    control: locale === "pl" ? "Zarzadzaj wykorzystaniem cookies" : "Control How Cookies Are Used",
+    description:
+      locale === "pl"
+        ? "Opcjonalne cookies wykorzystujemy tylko za Twoja zgoda. Ustawienia mozesz zmienic w dowolnym momencie w stopce."
+        : "We only use optional cookies with your consent. You can change your preferences at any time from the footer.",
+    strictlyNecessary: locale === "pl" ? "Niezbedne" : "Strictly Necessary",
+    strictlyNecessaryDesc:
+      locale === "pl"
+        ? "Niezbedne dla bezpieczenstwa, checkoutu i podstawowego dzialania strony. Te cookies sa zawsze aktywne."
+        : "Required for security, checkout flow, and core website functionality. These cookies are always active.",
+    pref: locale === "pl" ? "Preferencje" : "Preferences",
+    prefDesc:
+      locale === "pl"
+        ? "Zapamietuja ustawienia, takie jak Twoje wybory dotyczace cookies i preferencje interfejsu."
+        : "Remembers settings such as your cookie choices and interface preferences.",
+    analytics: locale === "pl" ? "Analityka" : "Analytics",
+    analyticsDesc:
+      locale === "pl"
+        ? "Pomaga nam analizowac ruch i rozwijac tresci na podstawie zagregowanych danych pomiarowych."
+        : "Helps us understand traffic and improve content using aggregated measurement data.",
+    marketing: locale === "pl" ? "Marketing" : "Marketing",
+    marketingDesc:
+      locale === "pl"
+        ? "Wykorzystywane do personalizacji reklam i atrybucji kampanii miedzy platformami. Domyslnie wylaczone."
+        : "Used for ad personalization and cross-platform campaign attribution. Currently disabled unless enabled by you.",
+    back: locale === "pl" ? "Wroc" : "Back",
+    reject: locale === "pl" ? "Odrzuc opcjonalne" : "Reject Optional",
+    save: locale === "pl" ? "Zapisz ustawienia" : "Save Preferences",
+    privacyChoices: locale === "pl" ? "Twoje ustawienia prywatnosci" : "Your Privacy Choices",
+    bannerText:
+      locale === "pl"
+        ? "Wykorzystujemy niezbedne cookies do dzialania strony. Opcjonalne cookies uruchamiamy wylacznie za Twoja zgoda. Przeczytaj "
+        : "We use essential cookies for site operation. Optional cookies are used only with your consent. Read our ",
+    privacy: locale === "pl" ? "Polityke prywatnosci" : "Privacy Policy",
+    cookiePolicy: locale === "pl" ? "Polityke cookies" : "Cookie Policy",
+    customize: locale === "pl" ? "Dostosuj" : "Customize",
+    acceptAll: locale === "pl" ? "Akceptuj wszystkie" : "Accept All",
+  };
+
+  const privacyHref = withLocalePrefix("/privacy", locale);
+  const cookiePolicyHref = withLocalePrefix("/cookie-policy", locale);
 
   useEffect(() => {
     const existing = getStoredCookieConsent();
@@ -148,19 +196,19 @@ export function CookieConsentBanner() {
         <div className="fixed inset-0 z-[110] bg-black/65 backdrop-blur-sm p-4 md:p-6">
           <div className="mx-auto mt-12 w-full max-w-2xl rounded-2xl border border-line-strong bg-bg-mid shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
             <div className="px-6 py-5 border-b border-line/60">
-              <p className="label-sm text-gold mb-2">Cookie Preferences</p>
-              <h2 className="font-display text-3xl text-ink">Control How Cookies Are Used</h2>
+              <p className="label-sm text-gold mb-2">{t.preferences}</p>
+              <h2 className="font-display text-3xl text-ink">{t.control}</h2>
               <p className="text-sm text-ink/60 mt-2 leading-relaxed">
-                We only use optional cookies with your consent. You can change your preferences at any time from the footer.
+                {t.description}
               </p>
             </div>
 
             <div className="px-6 py-5 space-y-4">
               <div className="rounded-xl border border-line/60 bg-bg-soft/60 p-4 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-ink">Strictly Necessary</p>
+                  <p className="text-sm font-semibold text-ink">{t.strictlyNecessary}</p>
                   <p className="text-xs text-ink/55 mt-1 leading-relaxed">
-                    Required for security, checkout flow, and core website functionality. These cookies are always active.
+                    {t.strictlyNecessaryDesc}
                   </p>
                 </div>
                 <Toggle id="consent-necessary" checked disabled />
@@ -168,9 +216,9 @@ export function CookieConsentBanner() {
 
               <div className="rounded-xl border border-line/60 bg-bg-soft/60 p-4 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-ink">Preferences</p>
+                  <p className="text-sm font-semibold text-ink">{t.pref}</p>
                   <p className="text-xs text-ink/55 mt-1 leading-relaxed">
-                    Remembers settings such as your cookie choices and interface preferences.
+                    {t.prefDesc}
                   </p>
                 </div>
                 <Toggle
@@ -182,9 +230,9 @@ export function CookieConsentBanner() {
 
               <div className="rounded-xl border border-line/60 bg-bg-soft/60 p-4 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-ink">Analytics</p>
+                  <p className="text-sm font-semibold text-ink">{t.analytics}</p>
                   <p className="text-xs text-ink/55 mt-1 leading-relaxed">
-                    Helps us understand traffic and improve content using aggregated measurement data.
+                    {t.analyticsDesc}
                   </p>
                 </div>
                 <Toggle
@@ -196,9 +244,9 @@ export function CookieConsentBanner() {
 
               <div className="rounded-xl border border-line/60 bg-bg-soft/60 p-4 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-ink">Marketing</p>
+                  <p className="text-sm font-semibold text-ink">{t.marketing}</p>
                   <p className="text-xs text-ink/55 mt-1 leading-relaxed">
-                    Used for ad personalization and cross-platform campaign attribution. Currently disabled unless enabled by you.
+                    {t.marketingDesc}
                   </p>
                 </div>
                 <Toggle
@@ -215,7 +263,7 @@ export function CookieConsentBanner() {
                 className="text-xs text-ink/55 hover:text-gold transition-colors"
                 onClick={() => setShowPreferences(false)}
               >
-                Back
+                {t.back}
               </button>
               <div className="flex flex-wrap gap-2 sm:justify-end">
                 <button
@@ -223,14 +271,14 @@ export function CookieConsentBanner() {
                   onClick={rejectOptional}
                   className="px-3 py-2 text-xs font-semibold tracking-[0.14em] uppercase border border-line-strong text-ink/70 hover:text-gold hover:border-gold/40 transition-colors"
                 >
-                  Reject Optional
+                  {t.reject}
                 </button>
                 <button
                   type="button"
                   onClick={saveSelected}
                   className="px-3 py-2 text-xs font-semibold tracking-[0.14em] uppercase bg-gold text-bg hover:bg-gold-light transition-colors"
                 >
-                  Save Preferences
+                  {t.save}
                 </button>
               </div>
             </div>
@@ -241,15 +289,15 @@ export function CookieConsentBanner() {
       <div className="fixed bottom-0 inset-x-0 z-[100] border-t border-line-strong bg-bg-mid/95 backdrop-blur-md shadow-[0_-12px_30px_rgba(0,0,0,0.35)]">
         <div className="container-shell py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <p className="text-xs text-gold tracking-[0.16em] uppercase font-semibold">Your Privacy Choices</p>
+            <p className="text-xs text-gold tracking-[0.16em] uppercase font-semibold">{t.privacyChoices}</p>
             <p className="text-xs md:text-sm text-ink/70 mt-1 leading-relaxed max-w-3xl">
-              We use essential cookies for site operation. Optional cookies are used only with your consent. Read our{" "}
-              <Link href="/privacy" className="underline decoration-gold/45 underline-offset-4 hover:text-gold transition-colors">
-                Privacy Policy
+              {t.bannerText}
+              <Link href={privacyHref} className="underline decoration-gold/45 underline-offset-4 hover:text-gold transition-colors">
+                {t.privacy}
               </Link>{" "}
-              and{" "}
-              <Link href="/cookie-policy" className="underline decoration-gold/45 underline-offset-4 hover:text-gold transition-colors">
-                Cookie Policy
+              {locale === "pl" ? "oraz" : "and"}{" "}
+              <Link href={cookiePolicyHref} className="underline decoration-gold/45 underline-offset-4 hover:text-gold transition-colors">
+                {t.cookiePolicy}
               </Link>
               .
             </p>
@@ -260,21 +308,21 @@ export function CookieConsentBanner() {
               onClick={rejectOptional}
               className="px-3 py-2 text-[0.65rem] font-semibold tracking-[0.14em] uppercase border border-line-strong text-ink/75 hover:text-gold hover:border-gold/50 transition-colors"
             >
-              Reject Optional
+              {t.reject}
             </button>
             <button
               type="button"
               onClick={() => setShowPreferences(true)}
               className="px-3 py-2 text-[0.65rem] font-semibold tracking-[0.14em] uppercase border border-line-strong text-ink/75 hover:text-gold hover:border-gold/50 transition-colors"
             >
-              Customize
+              {t.customize}
             </button>
             <button
               type="button"
               onClick={acceptAll}
               className="px-3 py-2 text-[0.65rem] font-semibold tracking-[0.14em] uppercase bg-gold text-bg hover:bg-gold-light transition-colors"
             >
-              Accept All
+              {t.acceptAll}
             </button>
           </div>
         </div>

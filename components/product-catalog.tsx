@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { type Product } from "@/lib/products";
+import { defaultLocale, getLocaleFromPathname, type SiteLocale } from "@/lib/i18n";
 
 type ProductShopProps = {
   products: Product[];
@@ -12,6 +13,16 @@ type ProductShopProps = {
 };
 
 const allProductsLabel = "All Products";
+
+const categoryLabelsPl: Record<string, string> = {
+  [allProductsLabel]: "Wszystkie produkty",
+  "Vanilla Pods": "Laski wanilii",
+  "Vanilla Powder & Seeds": "Wanilia mielona i ziarenka",
+  "Vanilla Extracts": "Ekstrakty waniliowe",
+  Cocoa: "Kakao",
+  "Spices & Other": "Przyprawy i inne",
+  "Samples & Gift Sets": "Probki i zestawy prezentowe",
+};
 
 const categoryAliases: Record<string, string> = {
   All: allProductsLabel,
@@ -24,10 +35,19 @@ function normalizeCategoryValue(value: string): string {
   return categoryAliases[value] ?? value;
 }
 
+function categoryLabelForLocale(category: string, locale: SiteLocale): string {
+  if (locale !== "pl") {
+    return category;
+  }
+
+  return categoryLabelsPl[category] || category;
+}
+
 export function ProductShop({ products, categories }: ProductShopProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname || "/") || defaultLocale;
 
   const urlCategory = normalizeCategoryValue(searchParams.get("category") ?? allProductsLabel);
   const activeCategory = categories.includes(urlCategory) ? urlCategory : allProductsLabel;
@@ -62,17 +82,27 @@ export function ProductShop({ products, categories }: ProductShopProps) {
       <div className="rounded-2xl border border-line bg-card p-5 md:p-6">
         <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
           <label className="relative">
-            <span className="sr-only">Search products</span>
+            <span className="sr-only">{locale === "pl" ? "Szukaj produktow" : "Search products"}</span>
             <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gold/40 pointer-events-none" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by name, flavor, or SKU..."
+              placeholder={
+                locale === "pl"
+                  ? "Szukaj po nazwie, profilu aromatu lub SKU..."
+                  : "Search by name, flavor, or SKU..."
+              }
               className="h-12 w-full rounded-xl border border-line bg-bg-soft pl-10 pr-4 text-sm text-ink placeholder:text-ink/35 outline-none transition focus:border-gold/40 focus:bg-bg"
             />
           </label>
           <p className="text-xs font-bold tracking-[0.15em] text-gold/50 uppercase whitespace-nowrap">
-            {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
+            {filteredProducts.length} {locale === "pl"
+              ? filteredProducts.length === 1
+                ? "produkt"
+                : filteredProducts.length >= 2 && filteredProducts.length <= 4
+                  ? "produkty"
+                  : "produktów"
+              : `product${filteredProducts.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 
@@ -88,7 +118,7 @@ export function ProductShop({ products, categories }: ProductShopProps) {
                   : "border-line bg-transparent text-ink/50 hover:border-gold/40 hover:text-gold/80"
               }`}
             >
-              {category}
+              {categoryLabelForLocale(category, locale)}
             </button>
           ))}
         </div>
@@ -102,9 +132,13 @@ export function ProductShop({ products, categories }: ProductShopProps) {
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-line bg-card p-12 text-center">
-          <p className="font-display text-3xl text-gold/60 mb-2">No matches found</p>
+          <p className="font-display text-3xl text-gold/60 mb-2">
+            {locale === "pl" ? "Brak wynikow" : "No matches found"}
+          </p>
           <p className="text-sm text-ink/50">
-            Clear your search or switch category to see more items.
+            {locale === "pl"
+              ? "Wyczysc wyszukiwanie lub zmien kategorie, aby zobaczyc wiecej produktow."
+              : "Clear your search or switch category to see more items."}
           </p>
         </div>
       )}

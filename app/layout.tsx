@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickyQuoteCta } from "@/components/sticky-quote-cta";
 import { GA4 } from "@/components/analytics/ga4";
+import { BaselineTraffic } from "@/components/analytics/baseline-traffic";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
+import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -80,21 +83,26 @@ const organizationSchema = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${cormorant.variable} ${manrope.variable} antialiased`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-gold focus:text-bg focus:rounded-full focus:font-semibold focus:text-sm"
         >
-          Skip to content
+          {locale === "pl" ? "Przejdz do tresci" : "Skip to content"}
         </a>
         <GA4 />
+        <BaselineTraffic />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

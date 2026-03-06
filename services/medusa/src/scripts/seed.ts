@@ -98,6 +98,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
         {
           currency_code: "usd",
         },
+        {
+          currency_code: "pln",
+        },
       ],
     },
   });

@@ -59,6 +59,9 @@ const categoryNormalize: Record<string, string> = {
 };
 
 const regionCountries = ["pl", "de", "it", "fr", "es", "nl", "be", "at", "cz", "sk"];
+const PLN_PER_EUR = 4.4;
+
+const convertEurToPln = (amountInEur: number): number => Math.round(amountInEur * PLN_PER_EUR);
 
 function decodeBasicEntities(input: string): string {
   return Object.entries(htmlEntityDecodes).reduce(
@@ -392,6 +395,10 @@ export default async function importMysticProducts({ container }: ExecArgs) {
                     {
                       amount: parsedPrice,
                       currency_code: "eur",
+                    },
+                    {
+                      amount: convertEurToPln(parsedPrice),
+                      currency_code: "pln",
                     },
                   ],
           },

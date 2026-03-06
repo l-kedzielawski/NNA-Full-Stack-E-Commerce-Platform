@@ -4,6 +4,7 @@ export type Product = {
   id: number;
   slug: string;
   title: string;
+  sortOrder?: number;
   description: string;
   fullDescription: string;
   seoDescription: string;
@@ -14,13 +15,18 @@ export type Product = {
   imageUrls: string[];
   stockStatus: "instock" | "outofstock" | "onbackorder";
   price: number | null;
+  currencyCode: string | null;
   rawPrice: string;
 };
+
+type ProductMetadata = Record<string, unknown>;
 
 type RawProductEntry = {
   id: number;
   slug: string;
   title: string;
+  sortOrder?: number | string;
+  sort_order?: number | string;
   content_text: string;
   seo_description: string;
   product: {
@@ -52,11 +58,13 @@ type MedusaStoreProduct = {
     calculated_price?: {
       calculated_amount?: number;
       original_amount?: number;
+      currency_code?: string;
     };
   }>;
 };
 
 type ProductsSource = "file" | "medusa";
+type PreferredCurrencyCode = "eur" | "pln";
 
 type CategoryFallbackMap = {
   bySku: Map<string, string[]>;
@@ -107,6 +115,212 @@ const categoryNormalize: Record<string, string> = {
   "Other": "Spices & Other",
   "Spices & Other": "Spices & Other",
 };
+
+const localeSensitiveMetadataKeys = [
+  "custom_overview",
+  "overview",
+  "custom_faq_items",
+  "faq_items",
+  "custom_spec_rows",
+  "spec_rows",
+  "custom_detail_sections",
+  "detail_sections",
+  "custom_storage",
+  "storage",
+  "custom_shelf_life",
+  "shelf_life",
+  "custom_packaging",
+  "packaging",
+  "custom_type_label",
+  "type_label",
+] as const;
+
+function normalizeLocaleForPricing(locale?: string): string {
+  return (locale || "").trim().toLowerCase();
+}
+
+function resolvePreferredCurrencyForLocale(locale?: string): PreferredCurrencyCode {
+  const normalizedLocale = normalizeLocaleForPricing(locale);
+  return normalizedLocale.startsWith("pl") ? "pln" : "eur";
+}
+
+function getConfiguredRegionIdForCurrency(currencyCode: PreferredCurrencyCode): string {
+  if (currencyCode === "pln") {
+    return (
+      process.env.MEDUSA_REGION_ID_PLN ||
+      process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_PLN ||
+      ""
+    ).trim();
+  }
+
+  return (
+    process.env.MEDUSA_REGION_ID_EUR ||
+    process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_EUR ||
+    process.env.MEDUSA_REGION_ID ||
+    process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ||
+    ""
+  ).trim();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeLocaleCode(locale?: string): string {
+  return (locale || "").trim().toLowerCase();
+}
+
+function getLocaleMetadataEntry(metadata: ProductMetadata | undefined, locale?: string): ProductMetadata | null {
+  if (!metadata) {
+    return null;
+  }
+
+  const normalizedLocale = normalizeLocaleCode(locale);
+  if (!normalizedLocale) {
+    return null;
+  }
+
+  const i18n = metadata.i18n;
+  if (!isRecord(i18n)) {
+    return null;
+  }
+
+  const direct = i18n[normalizedLocale];
+  if (isRecord(direct)) {
+    return direct;
+  }
+
+  const language = normalizedLocale.split("-")[0];
+  if (language && language !== normalizedLocale) {
+    const languageOnly = i18n[language];
+    if (isRecord(languageOnly)) {
+      return languageOnly;
+    }
+  }
+
+  return null;
+}
+
+function getFlatLocalizedMetadataValue(
+  metadata: ProductMetadata | undefined,
+  key: string,
+  locale?: string,
+): unknown {
+  if (!metadata) {
+    return undefined;
+  }
+
+  const normalizedLocale = normalizeLocaleCode(locale);
+  if (!normalizedLocale) {
+    return undefined;
+  }
+
+  const language = normalizedLocale.split("-")[0];
+  const localizedKey = `${key}_${normalizedLocale}`;
+  if (localizedKey in metadata) {
+    return metadata[localizedKey];
+  }
+
+  if (language && language !== normalizedLocale) {
+    const languageKey = `${key}_${language}`;
+    if (languageKey in metadata) {
+      return metadata[languageKey];
+    }
+  }
+
+  return undefined;
+}
+
+function readLocalizedMetadataValue(
+  metadata: ProductMetadata | undefined,
+  key: string,
+  locale?: string,
+): unknown {
+  const localeEntry = getLocaleMetadataEntry(metadata, locale);
+  if (localeEntry && key in localeEntry) {
+    return localeEntry[key];
+  }
+
+  return getFlatLocalizedMetadataValue(metadata, key, locale);
+}
+
+function mergeMetadataWithLocale(
+  metadata: ProductMetadata | undefined,
+  locale?: string,
+): ProductMetadata | undefined {
+  if (!metadata) {
+    return undefined;
+  }
+
+  const localeEntry = getLocaleMetadataEntry(metadata, locale);
+  if (!localeEntry) {
+    return metadata;
+  }
+
+  const normalizedLocale = normalizeLocaleCode(locale);
+  const mergedMetadata: ProductMetadata = {
+    ...metadata,
+    ...localeEntry,
+  };
+
+  if (normalizedLocale && normalizedLocale !== "en") {
+    for (const key of localeSensitiveMetadataKeys) {
+      if (!(key in localeEntry)) {
+        delete mergedMetadata[key];
+      }
+    }
+  }
+
+  return mergedMetadata;
+}
+
+function toNonEmptyString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function localizeProduct(product: Product, locale?: string): Product {
+  const metadata = isRecord(product.metadata) ? product.metadata : undefined;
+  const localizedMetadata = mergeMetadataWithLocale(metadata, locale);
+  const localizedTitle =
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "title", locale)) || product.title;
+  const localizedFullDescriptionRaw =
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "full_description", locale)) ||
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "fullDescription", locale)) ||
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "description", locale));
+  const localizedFullDescription = localizedFullDescriptionRaw
+    ? normalizeProductContent(localizedFullDescriptionRaw)
+    : product.fullDescription;
+  const localizedSeoDescription =
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "seo_description", locale)) ||
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "seoDescription", locale)) ||
+    product.seoDescription;
+  const localizedSummary =
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "description", locale)) ||
+    toNonEmptyString(readLocalizedMetadataValue(metadata, "summary", locale)) ||
+    deriveSummary(localizedFullDescription, localizedSeoDescription);
+
+  return {
+    ...product,
+    title: localizedTitle,
+    description: localizedSummary,
+    fullDescription: localizedFullDescription,
+    seoDescription: localizedSeoDescription,
+    metadata: localizedMetadata,
+  };
+}
+
+function localizeProducts(products: Product[], locale?: string): Product[] {
+  if (!locale) {
+    return products;
+  }
+
+  return products.map((product) => localizeProduct(product, locale));
+}
 
 function decodeBasicEntities(input: string): string {
   return Object.entries(htmlEntityDecodes).reduce(
@@ -179,6 +393,38 @@ function parseNumberPrice(value: number | undefined): number | null {
   }
 
   return value;
+}
+
+function parseSortOrder(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return null;
+    }
+
+    const parsed = Number(trimmed);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function sortProductsByOrderThenTitle(a: Product, b: Product): number {
+  const aOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
+  const bOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
+
+  if (aOrder !== bOrder) {
+    return aOrder - bOrder;
+  }
+
+  return a.title.localeCompare(b.title);
 }
 
 function normalizeImageUrl(url: string): string {
@@ -350,6 +596,7 @@ function mapRawEntriesToProducts(entries: RawProductEntry[]): Product[] {
         id: entry.id,
         slug: entry.slug,
         title: entry.title.replace(/\s+/g, " ").trim(),
+        sortOrder: parseSortOrder(entry.sortOrder ?? entry.sort_order) ?? undefined,
         description: summary,
         fullDescription,
         seoDescription: entry.seo_description,
@@ -362,10 +609,11 @@ function mapRawEntriesToProducts(entries: RawProductEntry[]): Product[] {
         imageUrls: entry.product.images.map((image) => normalizeImageUrl(image)),
         stockStatus: entry.product.stock_status,
         price: parsePrice(entry.product.price),
+        currencyCode: "EUR",
         rawPrice: entry.product.price,
       };
     })
-    .sort((a, b) => a.title.localeCompare(b.title));
+    .sort(sortProductsByOrderThenTitle);
 }
 
 function mapMedusaProduct(
@@ -451,14 +699,19 @@ function mapMedusaProduct(
   const calculatedAmount = primaryVariant?.calculated_price?.calculated_amount;
   const originalAmount = primaryVariant?.calculated_price?.original_amount;
   const parsedPrice = parseNumberPrice(calculatedAmount) ?? parseNumberPrice(originalAmount);
+  const parsedCurrencyCode = String(primaryVariant?.calculated_price?.currency_code || "")
+    .trim()
+    .toUpperCase();
 
   const metadataSeo = typeof metadata.seo_description === "string" ? metadata.seo_description : "";
+  const metadataSortOrder = parseSortOrder(metadata.sortOrder ?? metadata.sort_order);
   const summary = deriveSummary(fullDescription, metadataSeo);
 
   return {
     id: Number.parseInt(entry.id.replace(/[^0-9]/g, ""), 10) || 1_000_000 + index,
     slug,
     title,
+    sortOrder: metadataSortOrder ?? undefined,
     description: summary,
     fullDescription,
     seoDescription: metadataSeo,
@@ -469,11 +722,12 @@ function mapMedusaProduct(
     imageUrls,
     stockStatus,
     price: parsedPrice,
+    currencyCode: parsedCurrencyCode || null,
     rawPrice: parsedPrice === null ? "" : String(parsedPrice),
   };
 }
 
-async function loadProductsFromMedusa(): Promise<Product[] | null> {
+async function loadProductsFromMedusa(locale?: string): Promise<Product[] | null> {
   const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_URL || process.env.MEDUSA_BACKEND_URL;
 
   if (!medusaUrl) {
@@ -492,8 +746,8 @@ async function loadProductsFromMedusa(): Promise<Product[] | null> {
     headers["x-publishable-api-key"] = publishableKey;
   }
 
-  const configuredRegionId =
-    process.env.NEXT_PUBLIC_MEDUSA_REGION_ID || process.env.MEDUSA_REGION_ID || "";
+  const preferredCurrency = resolvePreferredCurrencyForLocale(locale);
+  const configuredRegionId = getConfiguredRegionIdForCurrency(preferredCurrency);
 
   try {
     let regionId = configuredRegionId;
@@ -511,13 +765,36 @@ async function loadProductsFromMedusa(): Promise<Product[] | null> {
 
       if (regionsResponse.ok) {
         const regionsPayload = (await regionsResponse.json()) as {
-          regions?: Array<{ id?: string; name?: string }>;
+          regions?: Array<{
+            id?: string;
+            name?: string;
+            currency_code?: string;
+            countries?: Array<{ iso_2?: string }>;
+          }>;
         };
 
-        regionId =
-          regionsPayload.regions?.find((region) => region.name === "Europe")?.id ||
-          regionsPayload.regions?.[0]?.id ||
-          "";
+        const regions = regionsPayload.regions || [];
+        const currencyRegions = regions.filter(
+          (region) => String(region.currency_code || "").trim().toLowerCase() === preferredCurrency,
+        );
+
+        if (preferredCurrency === "pln") {
+          regionId =
+            currencyRegions.find((region) =>
+              (region.countries || []).some(
+                (country) => String(country.iso_2 || "").trim().toLowerCase() === "pl",
+              ),
+            )?.id || currencyRegions[0]?.id || "";
+        } else {
+          regionId =
+            currencyRegions.find((region) => String(region.name || "") === "Europe")?.id ||
+            currencyRegions[0]?.id ||
+            "";
+        }
+
+        if (!regionId) {
+          regionId = regions.find((region) => region.name === "Europe")?.id || regions[0]?.id || "";
+        }
       }
     }
 
@@ -541,7 +818,7 @@ async function loadProductsFromMedusa(): Promise<Product[] | null> {
     const products = (payload.products ?? [])
       .filter((item) => item.status !== "draft")
       .map((item, index) => mapMedusaProduct(item, index, categoryFallbackMap))
-      .sort((a, b) => a.title.localeCompare(b.title));
+      .sort(sortProductsByOrderThenTitle);
 
     return products.length > 0 ? products : null;
   } catch {
@@ -549,8 +826,7 @@ async function loadProductsFromMedusa(): Promise<Product[] | null> {
   }
 }
 
-let productsCache: Product[] | null = null;
-let productsCacheAt = 0;
+const productsCacheByKey = new Map<string, { products: Product[]; at: number }>();
 
 function getMedusaCacheTtlMs(): number {
   if (process.env.NODE_ENV === "development") {
@@ -560,49 +836,65 @@ function getMedusaCacheTtlMs(): number {
   return 60_000;
 }
 
-async function resolveProducts(): Promise<Product[]> {
+async function resolveProducts(locale?: string): Promise<Product[]> {
   const source = getProductsSource();
+  const cacheKey =
+    source === "medusa"
+      ? `medusa:${resolvePreferredCurrencyForLocale(locale)}`
+      : "file";
+  const cached = productsCacheByKey.get(cacheKey);
 
-  if (productsCache && source === "file") {
-    return productsCache;
+  if (cached && source === "file") {
+    return cached.products;
   }
 
-  if (productsCache && source === "medusa") {
-    const isFresh = Date.now() - productsCacheAt < getMedusaCacheTtlMs();
+  if (cached && source === "medusa") {
+    const isFresh = Date.now() - cached.at < getMedusaCacheTtlMs();
     if (isFresh) {
-      return productsCache;
+      return cached.products;
     }
   }
 
   if (source === "medusa") {
-    const medusaProducts = await loadProductsFromMedusa();
+    const medusaProducts = await loadProductsFromMedusa(locale);
 
     if (medusaProducts) {
-      productsCache = medusaProducts;
-      productsCacheAt = Date.now();
-      return productsCache;
+      productsCacheByKey.set(cacheKey, {
+        products: medusaProducts,
+        at: Date.now(),
+      });
+      return medusaProducts;
     }
   }
 
-  productsCache = mapRawEntriesToProducts(loadRawProductsFromFile());
-  productsCacheAt = Date.now();
-  return productsCache;
+  const fileProducts = mapRawEntriesToProducts(loadRawProductsFromFile());
+  productsCacheByKey.set(cacheKey, {
+    products: fileProducts,
+    at: Date.now(),
+  });
+
+  return fileProducts;
 }
 
-export async function getAllProducts(): Promise<Product[]> {
-  return resolveProducts();
+export async function getAllProducts(locale?: string): Promise<Product[]> {
+  const products = await resolveProducts(locale);
+  return localizeProducts(products, locale);
 }
 
-export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
-  const products = await resolveProducts();
-  return products
+export async function getFeaturedProducts(limit = 6, locale?: string): Promise<Product[]> {
+  const products = await resolveProducts(locale);
+  return localizeProducts(
+    products
     .filter((product) => product.stockStatus === "instock" || product.stockStatus === "onbackorder")
-    .slice(0, limit);
+    .slice(0, limit),
+    locale,
+  );
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  const products = await resolveProducts();
-  return products.find((product) => product.slug === slug);
+export async function getProductBySlug(slug: string, locale?: string): Promise<Product | undefined> {
+  const products = await resolveProducts(locale);
+  const product = products.find((item) => item.slug === slug);
+  return product ? localizeProduct(product, locale) : undefined;
 }
 
 export async function getProductCategories(): Promise<string[]> {
@@ -617,8 +909,8 @@ export async function getProductCategories(): Promise<string[]> {
   return [...ordered, ...extraCategories];
 }
 
-export async function getRelatedProducts(slug: string, limit = 3): Promise<Product[]> {
-  const products = await resolveProducts();
+export async function getRelatedProducts(slug: string, limit = 3, locale?: string): Promise<Product[]> {
+  const products = await resolveProducts(locale);
   const current = products.find((product) => product.slug === slug);
 
   if (!current) {
@@ -641,5 +933,5 @@ export async function getRelatedProducts(slug: string, limit = 3): Promise<Produ
       !relatedByCategory.some((related) => related.slug === product.slug),
   );
 
-  return [...relatedByCategory, ...fallback].slice(0, limit);
+  return localizeProducts([...relatedByCategory, ...fallback].slice(0, limit), locale);
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
@@ -17,6 +18,7 @@ import { ProductCard } from "@/components/product-card";
 import { ProductGallery } from "@/components/product-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getAllProducts, getProductBySlug, getRelatedProducts } from "@/lib/products";
+import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 import { formatPrice, truncateText } from "@/lib/utils";
 
 // Force runtime rendering so product data (including variant IDs) is always
@@ -24,6 +26,28 @@ import { formatPrice, truncateText } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 const fallbackImage = "/images/products/cocoa-mass2-1.jpg";
+
+const categoryLabelsPl: Record<string, string> = {
+  "Vanilla Pods": "Laski wanilii",
+  "Vanilla Powder & Seeds": "Wanilia mielona i ziarenka",
+  "Vanilla Powders & Seeds": "Wanilia mielona i ziarenka",
+  "Vanilla Extracts": "Ekstrakty waniliowe",
+  Cocoa: "Kakao",
+  "Spices & Other": "Przyprawy i inne",
+  "Samples & Gift Sets": "Probki i zestawy prezentowe",
+};
+
+function localizeCategoryLabel(category: string | undefined, locale: SiteLocale): string {
+  if (!category) {
+    return locale === "pl" ? "Pochodzenie: Madagaskar" : "Madagascar Origin";
+  }
+
+  if (locale !== "pl") {
+    return category;
+  }
+
+  return categoryLabelsPl[category] || category;
+}
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -69,6 +93,8 @@ type ProductOverride = {
   }>; 
   youtubeEmbedUrl?: string;
 };
+
+const YOUTUBE_VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -176,6 +202,104 @@ function sanitizeImageList(values: string[]): string[] {
   return values
     .map((value) => normalizeImageSource(value))
     .filter((value): value is string => Boolean(value));
+}
+
+function parseYouTubeTimeToSeconds(value: string): number | null {
+  const raw = value.trim().toLowerCase();
+  if (!raw) {
+    return null;
+  }
+
+  if (/^\d+$/.test(raw)) {
+    const seconds = Number(raw);
+    return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+  }
+
+  const match = raw.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+  if (!match) {
+    return null;
+  }
+
+  const hours = Number(match[1] || 0);
+  const minutes = Number(match[2] || 0);
+  const seconds = Number(match[3] || 0);
+  const total = hours * 3600 + minutes * 60 + seconds;
+
+  return total > 0 ? total : null;
+}
+
+function normalizeYouTubeEmbedUrl(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const input = value.trim();
+  if (!input) {
+    return undefined;
+  }
+
+  if (YOUTUBE_VIDEO_ID_PATTERN.test(input)) {
+    return `https://www.youtube.com/embed/${input}`;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(input.startsWith("http://") || input.startsWith("https://") ? input : `https://${input}`);
+  } catch {
+    return undefined;
+  }
+
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  const isYouTubeHost = ["youtube.com", "m.youtube.com", "youtu.be", "youtube-nocookie.com"].includes(host);
+  if (!isYouTubeHost) {
+    return undefined;
+  }
+
+  const pathParts = parsed.pathname.split("/").filter(Boolean);
+  let videoId = "";
+
+  if (host === "youtu.be") {
+    videoId = pathParts[0] || "";
+  } else if (["embed", "shorts", "live", "v"].includes(pathParts[0] || "")) {
+    videoId = pathParts[1] || "";
+  } else {
+    videoId = parsed.searchParams.get("v") || "";
+  }
+
+  if (!YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) {
+    return undefined;
+  }
+
+  let startSeconds: number | null = null;
+  const startCandidates = [
+    parsed.searchParams.get("start"),
+    parsed.searchParams.get("t"),
+    parsed.searchParams.get("time_continue"),
+  ];
+
+  for (const candidate of startCandidates) {
+    if (!candidate) {
+      continue;
+    }
+
+    startSeconds = parseYouTubeTimeToSeconds(candidate);
+    if (startSeconds !== null) {
+      break;
+    }
+  }
+
+  const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
+
+  if (startSeconds !== null) {
+    embedUrl.searchParams.set("start", String(startSeconds));
+  }
+
+  const listParam = parsed.searchParams.get("list");
+  if (listParam) {
+    embedUrl.searchParams.set("list", listParam);
+  }
+
+  return embedUrl.toString();
 }
 
 function parseParagraphs(value: unknown): string[] {
@@ -342,9 +466,9 @@ function parseProductOverrideFromMetadata(metadata: unknown): ProductOverride {
   const packaging = String(source.custom_packaging ?? source.packaging ?? "").trim();
   const botanicalName = String(source.custom_botanical_name ?? source.botanical_name ?? "").trim();
   const typeLabel = String(source.custom_type_label ?? source.type_label ?? "").trim();
-  const youtubeEmbedUrl = String(
-    source.custom_youtube_embed_url ?? source.youtube_embed_url ?? "",
-  ).trim();
+  const youtubeEmbedUrl = normalizeYouTubeEmbedUrl(
+    String(source.custom_youtube_embed_url ?? source.youtube_embed_url ?? ""),
+  );
   const disableOriginStory = parseBoolean(
     source.custom_disable_origin_story ?? source.disable_origin_story,
   );
@@ -361,7 +485,7 @@ function parseProductOverrideFromMetadata(metadata: unknown): ProductOverride {
     packaging: packaging || undefined,
     botanicalName: botanicalName || undefined,
     typeLabel: typeLabel || undefined,
-    youtubeEmbedUrl: youtubeEmbedUrl || undefined,
+    youtubeEmbedUrl,
     disableOriginStory,
   };
 }
@@ -374,8 +498,12 @@ export async function generateStaticParams() {
 const siteUrl = "https://www.themysticaroma.com";
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlug(slug, locale);
 
   if (!product) {
     return { title: "Product not found" };
@@ -597,14 +725,18 @@ function parseProductStory(source: string, title: string): ProductStory {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlug(slug, locale);
 
   if (!product) {
     notFound();
   }
 
-  const related = await getRelatedProducts(slug, 3);
+  const related = await getRelatedProducts(slug, 3, locale);
   const override = parseProductOverrideFromMetadata(product.metadata);
   const normalizedSku = product.sku.trim().toUpperCase();
   const galleryImages =
@@ -617,10 +749,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const isCocoaBeansProduct =
     normalizedSku.includes("COCOA-BEAN") || product.title.toLowerCase().includes("cocoa beans");
   const isStarterPack = ["SET-E", "SET-T"].includes(product.sku.trim().toUpperCase());
-  const stockLabel = isInStock ? (isCocoaBeansProduct ? "FOB / CIF MADAGASCAR" : "In Stock") : "Request-Based";
+  const stockLabel = isInStock
+    ? isCocoaBeansProduct
+      ? "FOB / CIF MADAGASCAR"
+      : locale === "pl"
+        ? "Dostepny"
+        : "In Stock"
+    : locale === "pl"
+      ? "Na zapytanie"
+      : "Request-Based";
   const hasPrice = product.price !== null;
-  const categoryLabel = product.categoryNames[0] ?? "Madagascar Origin";
-  const regionId = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID || "";
+  const categoryLabel = localizeCategoryLabel(product.categoryNames[0], locale);
   const hideOriginStory = Boolean(override?.disableOriginStory);
 
   const story = parseProductStory(product.fullDescription || product.description, product.title);
@@ -657,7 +796,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           offers: {
             "@type": "Offer",
             price: product.price,
-            priceCurrency: "EUR",
+            priceCurrency: product.currencyCode || "EUR",
             availability: isInStock
               ? "https://schema.org/InStock"
               : "https://schema.org/PreOrder",
@@ -677,7 +816,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {
         "@type": "ListItem",
         position: 1,
-        name: "Shop",
+        name: locale === "pl" ? "Sklep" : "Shop",
         item: `${siteUrl}/products`,
       },
       {
@@ -730,11 +869,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <section className="container-shell py-8 md:py-12">
         <nav className="mb-7 flex items-center gap-2 text-ink/45">
           <Link
-            href="/products"
+            href={withLocalePrefix("/products", locale)}
             className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.15em] transition-colors hover:text-gold"
           >
             <ArrowLeft size={13} />
-            Shop
+            {locale === "pl" ? "Sklep" : "Shop"}
           </Link>
           <ChevronRight size={12} className="opacity-45" />
           <span className="text-xs font-bold uppercase tracking-[0.15em] text-gold/70">
@@ -747,10 +886,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <ProductGallery title={product.title} images={galleryImages} />
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {!hideOriginStory ? <InfoTile icon={MapPin} label="Origin" value="Madagascar" /> : null}
-              <InfoTile icon={Box} label="Category" value={categoryLabel} />
-              {botanicalName ? <InfoTile icon={Leaf} label="Botanical Name" value={botanicalName} /> : null}
-              {typeLabel ? <InfoTile icon={BadgeCheck} label="Type" value={typeLabel} /> : null}
+              {!hideOriginStory ? <InfoTile icon={MapPin} label={locale === "pl" ? "Pochodzenie" : "Origin"} value="Madagascar" /> : null}
+              <InfoTile icon={Box} label={locale === "pl" ? "Kategoria" : "Category"} value={categoryLabel} />
+              {botanicalName ? <InfoTile icon={Leaf} label={locale === "pl" ? "Nazwa botaniczna" : "Botanical Name"} value={botanicalName} /> : null}
+              {typeLabel ? <InfoTile icon={BadgeCheck} label={locale === "pl" ? "Typ" : "Type"} value={typeLabel} /> : null}
             </div>
           </div>
 
@@ -770,11 +909,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="flex flex-wrap items-center gap-3">
               {hasPrice ? (
                 <div className="rounded-full bg-gold px-5 py-2 text-sm font-bold text-bg shadow-[0_0_24px_rgba(201,169,110,0.25)]">
-                  {formatPrice(product.price)}
+                  {formatPrice(product.price, {
+                    currencyCode: product.currencyCode || undefined,
+                    locale: locale === "pl" ? "pl-PL" : "en-GB",
+                  })}
                 </div>
               ) : (
                 <div className="rounded-full border border-gold/40 bg-gold-dim px-5 py-2 text-sm font-bold text-gold">
-                  Price on Request
+                  {locale === "pl" ? "Cena na zapytanie" : "Price on Request"}
                 </div>
               )}
 
@@ -792,7 +934,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
               {isStarterPack ? (
                 <div className="rounded-full border border-gold/35 bg-gold/15 px-4 py-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-gold">
-                  Free Shipping Worldwide
+                  {locale === "pl" ? "Darmowa dostawa na caly swiat" : "Free Shipping Worldwide"}
                 </div>
               ) : null}
 
@@ -804,7 +946,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <div className="rounded-2xl border border-line/40 bg-card p-6">
-              <p className="label-sm mb-4 text-gold/60">Product Overview</p>
+              <p className="label-sm mb-4 text-gold/60">{locale === "pl" ? "Opis produktu" : "Product Overview"}</p>
               <div className="space-y-4">
                 {overviewParagraphs.map((paragraph) => (
                   <p key={paragraph} className="text-sm leading-relaxed text-ink/75">
@@ -816,7 +958,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             {story.highlights.length > 0 ? (
               <div className="rounded-2xl border border-gold/25 bg-gold-dim p-6">
-                <p className="label-sm mb-3 text-gold/70">Why It Stands Out</p>
+                <p className="label-sm mb-3 text-gold/70">{locale === "pl" ? "Dlaczego ten produkt" : "Why It Stands Out"}</p>
                 <ul className="space-y-2">
                   {story.highlights.map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm text-ink/80">
@@ -829,12 +971,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : null}
 
             <div className="flex flex-wrap gap-3">
-              <AddToCartButton variantId={product.variantId} regionId={regionId} />
+              <AddToCartButton variantId={product.variantId} />
               <Link
-                href="/products"
+                href={withLocalePrefix("/products", locale)}
                 className="inline-flex items-center rounded-full border border-line px-6 py-3 text-sm font-semibold text-ink/60 transition-colors hover:border-gold/40 hover:text-ink"
               >
-                Continue Shopping
+                {locale === "pl" ? "Kontynuuj zakupy" : "Continue Shopping"}
               </Link>
             </div>
           </div>
@@ -845,16 +987,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section className="container-shell py-6 md:py-8">
           <div className="mb-5 flex items-center gap-3">
             <div className="h-px w-6 bg-gold/60" />
-            <span className="label-sm text-gold/60">Storage & Packaging</span>
+            <span className="label-sm text-gold/60">{locale === "pl" ? "Przechowywanie i pakowanie" : "Storage & Packaging"}</span>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            {storageValue ? <InfoPanel title="Storage" icon={Clock3} content={storageValue} /> : null}
+            {storageValue ? <InfoPanel title={locale === "pl" ? "Przechowywanie" : "Storage"} icon={Clock3} content={storageValue} /> : null}
             {shelfLifeValue ? (
-              <InfoPanel title="Shelf Life" icon={BadgeCheck} content={shelfLifeValue} />
+              <InfoPanel title={locale === "pl" ? "Termin przydatnosci" : "Shelf Life"} icon={BadgeCheck} content={shelfLifeValue} />
             ) : null}
             {packagingValue ? (
-              <InfoPanel title="Packaging" icon={PackageCheck} content={packagingValue} />
+              <InfoPanel title={locale === "pl" ? "Pakowanie" : "Packaging"} icon={PackageCheck} content={packagingValue} />
             ) : null}
           </div>
         </section>
@@ -864,7 +1006,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section className="container-shell py-6 md:py-8">
           <div className="mb-6 flex items-center gap-3">
             <div className="h-px w-6 bg-gold/60" />
-            <span className="label-sm text-gold/60">Detailed Product Data</span>
+            <span className="label-sm text-gold/60">{locale === "pl" ? "Szczegolowe dane produktu" : "Detailed Product Data"}</span>
           </div>
 
           <div className="rounded-2xl border border-line/40 bg-card p-6 md:p-8">
@@ -921,7 +1063,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : null}
 
             <p className="mt-5 text-xs text-ink/55">
-              All photos show the actual product. No stock images.
+              {locale === "pl" ? "Wszystkie zdjecia przedstawiaja realny produkt. Bez zdjec stockowych." : "All photos show the actual product. No stock images."}
             </p>
           </div>
         </section>
@@ -931,7 +1073,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section className="container-shell py-6 md:py-8">
           <div className="mb-5 flex items-center gap-3">
             <div className="h-px w-6 bg-gold/60" />
-            <span className="label-sm text-gold/60">Product FAQ</span>
+            <span className="label-sm text-gold/60">{locale === "pl" ? "FAQ produktu" : "Product FAQ"}</span>
           </div>
 
           <div className="space-y-3">
@@ -956,7 +1098,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section className="container-shell py-6 md:py-8">
           <div className="mb-5 flex items-center gap-3">
             <div className="h-px w-6 bg-gold/60" />
-            <span className="label-sm text-gold/60">Product Video</span>
+            <span className="label-sm text-gold/60">{locale === "pl" ? "Wideo produktu" : "Product Video"}</span>
           </div>
 
           <div className="rounded-2xl border border-line/40 bg-card p-5 md:p-6">
@@ -981,10 +1123,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section className="container-shell py-10 md:py-12">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px w-6 bg-gold/60" />
-            <span className="label-sm text-gold/60">Related Products</span>
+            <span className="label-sm text-gold/60">{locale === "pl" ? "Produkty powiazane" : "Related Products"}</span>
           </div>
           <h2 className="mb-8 font-display text-ink" style={{ fontSize: "clamp(1.9rem, 3.4vw, 3rem)" }}>
-            You may also like
+            {locale === "pl" ? "Moga Ci sie rowniez spodobac" : "You may also like"}
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (

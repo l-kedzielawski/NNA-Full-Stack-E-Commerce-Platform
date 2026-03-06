@@ -1,13 +1,19 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { defaultLocale, getLocaleFromPathname } from "@/lib/i18n";
+
 export default function GlobalError({
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) || defaultLocale;
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body
         style={{
           margin: 0,
@@ -31,7 +37,7 @@ export default function GlobalError({
               marginBottom: "1rem",
             }}
           >
-            Critical Error
+            {locale === "pl" ? "Krytyczny blad" : "Critical Error"}
           </p>
           <h1
             style={{
@@ -41,7 +47,7 @@ export default function GlobalError({
               marginBottom: "1rem",
             }}
           >
-            Something Went Wrong
+            {locale === "pl" ? "Cos poszlo nie tak" : "Something Went Wrong"}
           </h1>
           <p
             style={{
@@ -51,7 +57,9 @@ export default function GlobalError({
               marginBottom: "2rem",
             }}
           >
-            An unexpected error occurred. Please try refreshing the page.
+            {locale === "pl"
+              ? "Wystapil nieoczekiwany blad. Odswiez strone i sprobuj ponownie."
+              : "An unexpected error occurred. Please try refreshing the page."}
           </p>
           <button
             onClick={reset}
@@ -66,7 +74,7 @@ export default function GlobalError({
               cursor: "pointer",
             }}
           >
-            Try Again
+            {locale === "pl" ? "Sprobuj ponownie" : "Try Again"}
           </button>
         </div>
       </body>

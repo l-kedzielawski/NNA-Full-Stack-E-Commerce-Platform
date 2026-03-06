@@ -17,6 +17,7 @@
     "seed": "medusa exec ./src/scripts/seed.ts",
     "import:mystic-products": "medusa exec ./src/scripts/import-mystic-products.ts",
     "set:product-content": "medusa exec ./src/scripts/set-product-content.ts",
+    "sync:product-i18n": "medusa exec ./src/scripts/sync-product-i18n-metadata.ts",
     "setup:starter-pack-offer": "medusa exec ./src/scripts/setup-starter-pack-offer.ts",
     "setup:checkout": "medusa exec ./src/scripts/setup-checkout-infra.ts",
     "start": "medusa start",

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { getAllPosts, getPostCategories } from "@/lib/posts";
+import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 type JournalPageProps = {
   searchParams?: Promise<{ category?: string }>;
@@ -41,6 +43,10 @@ const categoryVisuals: Record<string, { tint: string; accent: string; position: 
 };
 
 export default async function JournalPage({ searchParams }: JournalPageProps) {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const posts = getAllPosts();
   const categories = getPostCategories();
@@ -54,20 +60,29 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
       ? posts
       : posts.filter((post) => post.category === activeCategory);
 
+  const localizedJournalHref = (category?: string) => {
+    const base = withLocalePrefix("/journal", locale);
+    if (!category || category === "All") {
+      return base;
+    }
+
+    return `${base}?category=${encodeURIComponent(category)}`;
+  };
+
   return (
     <main className="pt-20">
       {/* Hero */}
       <section className="py-24 bg-bg-mid border-b border-line">
         <div className="container-shell text-center max-w-2xl mx-auto">
-          <p className="label-sm text-gold mb-4">Knowledge &amp; Stories</p>
+          <p className="label-sm text-gold mb-4">{locale === "pl" ? "Wiedza i historie" : "Knowledge & Stories"}</p>
           <h1 className="font-display text-5xl md:text-6xl text-ink mb-5">
-            The Mystic<br />
-            <span className="text-gold">Journal</span>
+            {locale === "pl" ? "Dziennik" : "The Mystic"}<br />
+            <span className="text-gold">{locale === "pl" ? "Natural Mystic Aroma" : "Journal"}</span>
           </h1>
           <p className="text-ink/60 text-lg leading-relaxed">
-            Ingredient deep-dives, sourcing stories from Madagascar, event
-            dispatches, and product guides — for professionals who care about
-            what goes into their products.
+            {locale === "pl"
+              ? "Poglebione analizy surowcow, historie sourcingu z Madagaskaru, relacje z wydarzen i praktyczne przewodniki produktowe dla profesjonalistow, ktorzy wiedza, co trafia do ich receptur."
+              : "Ingredient deep-dives, sourcing stories from Madagascar, event dispatches, and product guides — for professionals who care about what goes into their products."}
           </p>
         </div>
       </section>
@@ -79,7 +94,7 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
             {categories.map((cat) => (
               <Link
                 key={cat}
-                href={cat === "All" ? "/journal" : `/journal?category=${encodeURIComponent(cat)}`}
+                href={localizedJournalHref(cat)}
                 aria-current={activeCategory === cat ? "page" : undefined}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                   activeCategory === cat
@@ -97,10 +112,14 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
       {/* Post grid */}
       <section className="container-shell py-16">
         {filteredPosts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-line bg-bg-mid p-12 text-center">
-            <p className="font-display text-3xl text-gold/70 mb-2">No articles in this category yet</p>
+            <div className="rounded-2xl border border-dashed border-line bg-bg-mid p-12 text-center">
+            <p className="font-display text-3xl text-gold/70 mb-2">
+              {locale === "pl" ? "Brak artykulow w tej kategorii" : "No articles in this category yet"}
+            </p>
             <p className="text-sm text-ink/50">
-              Try another category or check back soon for new publications.
+              {locale === "pl"
+                ? "Wybierz inna kategorie lub wroc wkrotce po nowe publikacje."
+                : "Try another category or check back soon for new publications."}
             </p>
           </div>
         ) : (
@@ -126,7 +145,9 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
 
                 <div className="absolute top-4 left-5 flex items-center gap-2">
                   <div className={`h-1.5 w-1.5 rounded-full ${categoryVisuals[post.category]?.accent ?? "bg-gold/40"}`} />
-                  <span className="text-[0.6rem] font-bold tracking-[0.18em] uppercase text-ink/70">Journal</span>
+                  <span className="text-[0.6rem] font-bold tracking-[0.18em] uppercase text-ink/70">
+                    {locale === "pl" ? "Dziennik" : "Journal"}
+                  </span>
                 </div>
 
                 <div className="absolute bottom-4 left-5">
@@ -145,10 +166,10 @@ export default async function JournalPage({ searchParams }: JournalPageProps) {
                   {post.excerpt}
                 </p>
                 <Link
-                  href={`/journal/${post.slug}`}
+                  href={withLocalePrefix(`/journal/${post.slug}`, locale)}
                   className="text-sm font-medium text-gold/70 hover:text-gold transition-colors group-hover:underline"
                 >
-                  Read article →
+                  {locale === "pl" ? "Czytaj artykul ->" : "Read article ->"}
                 </Link>
               </div>
             </article>

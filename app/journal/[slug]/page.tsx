@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
+import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 type PostPageProps = {
   params: Promise<{ slug: string }>;
@@ -35,6 +37,10 @@ const categoryVisuals: Record<string, { tint: string; position: string }> = {
 };
 
 export default async function PostPage({ params }: PostPageProps) {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
@@ -84,11 +90,11 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="max-w-3xl mx-auto">
           {/* Back link */}
           <Link
-            href="/journal"
+            href={withLocalePrefix("/journal", locale)}
             className="inline-flex items-center gap-2 text-sm text-ink/40 hover:text-gold transition-colors mb-10"
           >
             <ArrowLeft size={14} />
-            Back to Journal
+            {locale === "pl" ? "Wroc do dziennika" : "Back to Journal"}
           </Link>
 
           {/* Excerpt / lead */}
@@ -108,17 +114,17 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* Footer nav */}
           <div className="mt-16 pt-8 border-t border-line flex items-center justify-between">
             <Link
-              href="/journal"
+              href={withLocalePrefix("/journal", locale)}
               className="inline-flex items-center gap-2 text-sm text-ink/40 hover:text-gold transition-colors"
             >
               <ArrowLeft size={14} />
-              All articles
+              {locale === "pl" ? "Wszystkie artykuly" : "All articles"}
             </Link>
             <Link
-              href="/products"
+              href={withLocalePrefix("/products", locale)}
               className="text-sm font-medium text-gold/70 hover:text-gold transition-colors"
             >
-              Browse our products →
+              {locale === "pl" ? "Przegladaj produkty ->" : "Browse our products ->"}
             </Link>
           </div>
         </div>

@@ -94,7 +94,16 @@ PRODUCTS_SOURCE=medusa
 NEXT_PUBLIC_MEDUSA_URL=http://localhost:9000
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_replace_me
 NEXT_PUBLIC_MEDUSA_REGION_ID=reg_replace_me
+NEXT_PUBLIC_MEDUSA_REGION_ID_EUR=reg_replace_eur
+NEXT_PUBLIC_MEDUSA_REGION_ID_PLN=reg_replace_pln
+MEDUSA_REGION_ID_EUR=reg_replace_eur
+MEDUSA_REGION_ID_PLN=reg_replace_pln
 ```
+
+Regional pricing behavior:
+
+- `/pl` defaults to PLN region pricing (Poland)
+- other locales default to EUR region pricing
 
 ## Cart and Checkout
 
@@ -194,6 +203,17 @@ By default, local backup is enabled in development and disabled in production.
 Leads are managed in Medusa Admin at `/a/leads`.
 Lead analytics is available at `/a/leads-analytics`.
 
+Leads admin now supports:
+
+- Manual lead creation (for phone/email/WhatsApp inquiries)
+- Custom Stripe checkout links per lead with custom amount and currency
+- Special-order Stripe links from catalog variants with custom per-item pricing
+- Payment status refresh directly from Stripe for generated links
+
+Custom payment links require `STRIPE_API_KEY` in `services/medusa/.env` and use `NEXT_PUBLIC_SITE_URL` for success/cancel redirects.
+
+Order details in Medusa Admin now include a widget to create a Stripe Checkout link with full order line-item breakdown (product names + amounts), useful when sharing manual payment links for existing orders.
+
 ## Analytics (GA4)
 
 Set your GA4 Measurement ID:
@@ -207,6 +227,8 @@ The storefront loads GA4 only when this env var is present and tracks:
 - Page views (App Router navigation)
 - Quote lead submits (`generate_lead`)
 - Quote submit errors (`quote_submit_error`)
+
+In addition, the storefront now sends first-party cookieless baseline page-hit telemetry to Medusa (`/store/traffic/hit`) for aggregate analytics in `/a/traffic`, even when optional analytics consent is not granted.
 
 Medusa Admin traffic dashboard is available at `/a/traffic` (served by Medusa backend). For that dashboard, set these in `services/medusa/.env`:
 

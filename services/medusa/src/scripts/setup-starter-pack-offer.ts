@@ -5,6 +5,7 @@ import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
 const ESSENCE_HANDLE = "essence-of-madagascar-premium-bourbon-vanilla-collection-in-glass-tubes";
 const TASTE_HANDLE = "taste-of-madagascar";
 const ESSENCE_PRICE_EUR = 40;
+const ESSENCE_PRICE_PLN = 179;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -75,6 +76,10 @@ export default async function setupStarterPackOffer({ container }: ExecArgs) {
               currency_code: "eur",
               amount: ESSENCE_PRICE_EUR,
             },
+            {
+              currency_code: "pln",
+              amount: ESSENCE_PRICE_PLN,
+            },
           ],
         },
       ];
@@ -93,5 +98,7 @@ export default async function setupStarterPackOffer({ container }: ExecArgs) {
     },
   });
 
-  logger.info(`Starter pack offer configured. Essence price set to EUR ${ESSENCE_PRICE_EUR}.`);
+  logger.info(
+    `Starter pack offer configured. Essence price set to EUR ${ESSENCE_PRICE_EUR} and PLN ${ESSENCE_PRICE_PLN}.`,
+  );
 }

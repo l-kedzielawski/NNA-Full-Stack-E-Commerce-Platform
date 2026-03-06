@@ -1,9 +1,18 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import { getLeadService, listLeadsWithCount } from "../../utils/lead-service";
+import { createLeadRecord, getLeadService, listLeadsWithCount } from "../../utils/lead-service";
 
 type LeadStatus = "new" | "contacted" | "qualified" | "won" | "lost" | "spam";
 
 const validStatuses: LeadStatus[] = ["new", "contacted", "qualified", "won", "lost", "spam"];
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function sanitize(value: unknown, maxLength = 5000): string {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
 
 function toString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -35,6 +44,8 @@ function includesSearch(lead: Record<string, unknown>, q: string): boolean {
 }
 
 function normalizeLead(lead: Record<string, unknown>) {
+  const paymentAmount = Number(lead.payment_amount);
+
   return {
     id: String(lead.id || ""),
     name: String(lead.name || ""),
@@ -53,6 +64,14 @@ function normalizeLead(lead: Record<string, unknown>) {
     assignee: String(lead.assignee || ""),
     notes: String(lead.notes || ""),
     source: String(lead.source || ""),
+    payment_link_url: String(lead.payment_link_url || ""),
+    payment_link_session_id: String(lead.payment_link_session_id || ""),
+    payment_link_expires_at: lead.payment_link_expires_at,
+    payment_status: String(lead.payment_status || ""),
+    payment_amount: Number.isFinite(paymentAmount) ? paymentAmount : null,
+    payment_currency: String(lead.payment_currency || ""),
+    payment_created_at: lead.payment_created_at,
+    payment_paid_at: lead.payment_paid_at,
     created_at: lead.created_at,
     updated_at: lead.updated_at,
   };
@@ -87,5 +106,57 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     count: searched.length,
     limit,
     offset,
+  });
+}
+
+export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  const body = (req.body || {}) as {
+    name?: unknown;
+    company?: unknown;
+    email?: unknown;
+    phone?: unknown;
+    country?: unknown;
+    product?: unknown;
+    quantity?: unknown;
+    message?: unknown;
+    consent?: unknown;
+    source?: unknown;
+  };
+
+  const name = sanitize(body.name, 120);
+  const company = sanitize(body.company, 140);
+  const email = sanitize(body.email, 254).toLowerCase();
+  const phone = sanitize(body.phone, 60);
+  const country = sanitize(body.country, 80);
+  const product = sanitize(body.product, 160);
+  const quantity = sanitize(body.quantity, 120);
+  const message = sanitize(body.message, 2000);
+  const source = sanitize(body.source, 60) || "manual_admin";
+  const consent = body.consent === true;
+
+  if (!name || !country || !email || !EMAIL_PATTERN.test(email)) {
+    return res.status(400).json({
+      message: "Please provide valid name, email, and country fields.",
+    });
+  }
+
+  const leadService = getLeadService(req.scope);
+  const created = await createLeadRecord(leadService, {
+    name,
+    company,
+    email,
+    phone,
+    country,
+    product,
+    quantity,
+    message,
+    consent,
+    source,
+    status: "new",
+    priority: "normal",
+  });
+
+  return res.status(200).json({
+    lead: normalizeLead(created),
   });
 }

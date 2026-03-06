@@ -20,6 +20,14 @@ type Lead = {
   assignee: string;
   notes: string;
   source: string;
+  payment_link_url: string;
+  payment_link_session_id: string;
+  payment_link_expires_at?: string;
+  payment_status: string;
+  payment_amount?: number | null;
+  payment_currency: string;
+  payment_created_at?: string;
+  payment_paid_at?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -31,6 +39,21 @@ type LeadStats = {
   last7d?: number;
   last30d?: number;
   wonRate?: number;
+};
+
+type CatalogVariant = {
+  id: string;
+  title: string;
+  sku: string;
+  product_id: string;
+  product_title: string;
+};
+
+type SpecialOrderLine = {
+  id: string;
+  variant_id: string;
+  quantity: string;
+  unit_price: string;
 };
 
 const statuses = ["new", "contacted", "qualified", "won", "lost", "spam"] as const;
@@ -64,6 +87,62 @@ function formatDate(value?: string): string {
   return date.toLocaleString();
 }
 
+function formatPaymentAmount(amountMinor?: number | null, currencyCode?: string): string {
+  if (!Number.isFinite(amountMinor)) {
+    return "-";
+  }
+
+  const amount = Number(amountMinor);
+  const currency = String(currencyCode || "").trim().toUpperCase() || "EUR";
+  const zeroDecimalCurrencies = new Set([
+    "BIF",
+    "CLP",
+    "DJF",
+    "GNF",
+    "JPY",
+    "KMF",
+    "KRW",
+    "MGA",
+    "PYG",
+    "RWF",
+    "UGX",
+    "VND",
+    "VUV",
+    "XAF",
+    "XOF",
+    "XPF",
+  ]);
+  const divisor = zeroDecimalCurrencies.has(currency) ? 1 : 100;
+
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: divisor === 1 ? 0 : 2,
+  }).format(amount / divisor);
+}
+
+function parseDecimalInput(value: string): number {
+  const parsed = Number(String(value || "").replace(",", ".").trim());
+  if (!Number.isFinite(parsed)) {
+    return NaN;
+  }
+
+  return parsed;
+}
+
+function formatMajorAmount(amountMajor: number, currencyCode?: string): string {
+  if (!Number.isFinite(amountMajor)) {
+    return "-";
+  }
+
+  const currency = String(currencyCode || "").trim().toUpperCase() || "EUR";
+  return new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  }).format(amountMajor);
+}
+
 function excerpt(value: string, maxLength = 80): string {
   const cleaned = String(value || "").trim();
   if (!cleaned) {
@@ -83,6 +162,20 @@ const LeadsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [showCreateLeadForm, setShowCreateLeadForm] = useState(false);
+  const [createLeadPending, setCreateLeadPending] = useState(false);
+  const [createLeadMessage, setCreateLeadMessage] = useState<string | null>(null);
+  const [createLeadForm, setCreateLeadForm] = useState({
+    name: "",
+    email: "",
+    country: "",
+    company: "",
+    phone: "",
+    product: "",
+    quantity: "",
+    message: "",
+    consent: false,
+  });
 
   const activeCount = useMemo(() => items.length, [items.length]);
   const selectedLead = useMemo(
@@ -90,7 +183,7 @@ const LeadsPage = () => {
     [items, selectedLeadId],
   );
 
-  const load = async () => {
+  const load = async (preferredLeadId?: string) => {
     setLoading(true);
     setError(null);
 
@@ -133,7 +226,12 @@ const LeadsPage = () => {
         wonRate: Number(statsPayload.wonRate || 0),
       });
 
-      if (!selectedLeadId && listPayload.leads && listPayload.leads.length > 0) {
+      if (preferredLeadId) {
+        const match = (listPayload.leads || []).find((entry) => entry.id === preferredLeadId);
+        if (match) {
+          setSelectedLeadId(match.id);
+        }
+      } else if (!selectedLeadId && listPayload.leads && listPayload.leads.length > 0) {
         setSelectedLeadId(listPayload.leads[0].id);
       }
     } catch (err) {
@@ -147,6 +245,47 @@ const LeadsPage = () => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
+
+  const createLead = async () => {
+    setCreateLeadPending(true);
+    setCreateLeadMessage(null);
+
+    try {
+      const response = await fetch("/admin/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(createLeadForm),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { lead?: Lead; message?: string }
+        | null;
+
+      if (!response.ok || !payload?.lead?.id) {
+        throw new Error(payload?.message || "Could not create lead.");
+      }
+
+      setCreateLeadForm({
+        name: "",
+        email: "",
+        country: "",
+        company: "",
+        phone: "",
+        product: "",
+        quantity: "",
+        message: "",
+        consent: false,
+      });
+      setCreateLeadMessage("Lead created.");
+      setShowCreateLeadForm(false);
+      await load(payload.lead.id);
+    } catch (err) {
+      setCreateLeadMessage(err instanceof Error ? err.message : "Could not create lead.");
+    } finally {
+      setCreateLeadPending(false);
+    }
+  };
 
   return (
     <div
@@ -206,6 +345,23 @@ const LeadsPage = () => {
           >
             Apply
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowCreateLeadForm((previous) => !previous);
+              setCreateLeadMessage(null);
+            }}
+            style={{
+              border: `1px solid ${theme.accent}`,
+              borderRadius: 10,
+              padding: "8px 12px",
+              background: showCreateLeadForm ? theme.accent : theme.panelBgSoft,
+              color: showCreateLeadForm ? theme.accentText : theme.text,
+              fontWeight: 700,
+            }}
+          >
+            {showCreateLeadForm ? "Close New Lead" : "Add Lead"}
+          </button>
           <a
             href="/a/leads-analytics"
             style={{
@@ -238,6 +394,151 @@ const LeadsPage = () => {
           </a>
         </div>
       </div>
+
+      {showCreateLeadForm ? (
+        <div
+          style={{
+            border: `1px solid ${theme.border}`,
+            borderRadius: 14,
+            padding: 14,
+            background: theme.panelBg,
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "grid", gap: 6 }}>
+            <h2 style={{ margin: 0, fontSize: 18, color: "#f8fafc" }}>Create Lead</h2>
+            <p style={{ margin: 0, color: theme.muted, fontSize: 12 }}>
+              Add a client manually when they came from phone, email, or messaging apps.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 10 }}>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Name *</label>
+              <input
+                value={createLeadForm.name}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, name: event.target.value }))}
+                placeholder="Client name"
+                style={inputStyle}
+                maxLength={120}
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Email *</label>
+              <input
+                value={createLeadForm.email}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, email: event.target.value }))}
+                placeholder="client@example.com"
+                style={inputStyle}
+                maxLength={254}
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Country *</label>
+              <input
+                value={createLeadForm.country}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, country: event.target.value }))}
+                placeholder="Poland"
+                style={inputStyle}
+                maxLength={80}
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Company</label>
+              <input
+                value={createLeadForm.company}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, company: event.target.value }))}
+                placeholder="Optional"
+                style={inputStyle}
+                maxLength={140}
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Phone</label>
+              <input
+                value={createLeadForm.phone}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, phone: event.target.value }))}
+                placeholder="Optional"
+                style={inputStyle}
+                maxLength={60}
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Product</label>
+              <input
+                value={createLeadForm.product}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, product: event.target.value }))}
+                placeholder="Optional"
+                style={inputStyle}
+                maxLength={160}
+              />
+            </div>
+            <div style={{ display: "grid", gap: 6 }}>
+              <label style={labelStyle}>Quantity</label>
+              <input
+                value={createLeadForm.quantity}
+                onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, quantity: event.target.value }))}
+                placeholder="Optional"
+                style={inputStyle}
+                maxLength={120}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={labelStyle}>Notes</label>
+            <textarea
+              value={createLeadForm.message}
+              onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, message: event.target.value }))}
+              rows={3}
+              style={{ ...inputStyle, resize: "vertical" }}
+              placeholder="Optional context from call or chat"
+              maxLength={2000}
+            />
+          </div>
+
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: theme.text }}>
+            <input
+              type="checkbox"
+              checked={createLeadForm.consent}
+              onChange={(event) => setCreateLeadForm((prev) => ({ ...prev, consent: event.target.checked }))}
+            />
+            Consent captured from client
+          </label>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => void createLead()}
+              disabled={createLeadPending}
+              style={{
+                border: `1px solid ${theme.accent}`,
+                borderRadius: 10,
+                padding: "8px 12px",
+                background: theme.accent,
+                color: theme.accentText,
+                fontWeight: 700,
+                opacity: createLeadPending ? 0.7 : 1,
+              }}
+            >
+              {createLeadPending ? "Creating..." : "Create Lead"}
+            </button>
+            {createLeadMessage ? (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 12,
+                  color: createLeadMessage === "Lead created." ? theme.success : theme.danger,
+                  alignSelf: "center",
+                }}
+              >
+                {createLeadMessage}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
         <StatCard label="Total" value={stats.total} active={statusFilter === "all"} onClick={() => setStatusFilter("all")} />
@@ -375,13 +676,36 @@ const LeadsPage = () => {
   );
 };
 
-const LeadDetails = ({ lead, onUpdated }: { lead: Lead; onUpdated: () => Promise<void> }) => {
+const LeadDetails = ({
+  lead,
+  onUpdated,
+}: {
+  lead: Lead;
+  onUpdated: (preferredLeadId?: string) => Promise<void>;
+}) => {
   const [status, setStatus] = useState(lead.status || "new");
   const [priority, setPriority] = useState(lead.priority || "normal");
   const [assignee, setAssignee] = useState(lead.assignee || "");
   const [notes, setNotes] = useState(lead.notes || "");
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentCurrency, setPaymentCurrency] = useState(
+    String(lead.payment_currency || "eur").toUpperCase() || "EUR",
+  );
+  const [paymentDescription, setPaymentDescription] = useState("");
+  const [paymentExpiresInHours, setPaymentExpiresInHours] = useState("24");
+  const [paymentPending, setPaymentPending] = useState(false);
+  const [paymentStatusPending, setPaymentStatusPending] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [catalogVariants, setCatalogVariants] = useState<CatalogVariant[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogMessage, setCatalogMessage] = useState<string | null>(null);
+  const [specialOrderLines, setSpecialOrderLines] = useState<SpecialOrderLine[]>([
+    { id: "line-1", variant_id: "", quantity: "1", unit_price: "" },
+  ]);
+  const [specialOrderPending, setSpecialOrderPending] = useState(false);
 
   useEffect(() => {
     setStatus(lead.status || "new");
@@ -389,7 +713,58 @@ const LeadDetails = ({ lead, onUpdated }: { lead: Lead; onUpdated: () => Promise
     setAssignee(lead.assignee || "");
     setNotes(lead.notes || "");
     setMessage(null);
-  }, [lead.id, lead.status, lead.priority, lead.assignee, lead.notes]);
+    setPaymentCurrency(String(lead.payment_currency || "eur").toUpperCase() || "EUR");
+    setPaymentDescription(lead.product ? `Payment for ${lead.product}` : `Payment request for ${lead.name || "client"}`);
+    setPaymentMessage(null);
+    setCatalogQuery("");
+    setCatalogMessage(null);
+    setSpecialOrderLines([{ id: "line-1", variant_id: "", quantity: "1", unit_price: "" }]);
+  }, [
+    lead.id,
+    lead.status,
+    lead.priority,
+    lead.assignee,
+    lead.notes,
+    lead.payment_currency,
+    lead.product,
+    lead.name,
+  ]);
+
+  const loadCatalogVariants = async (query?: string) => {
+    setCatalogLoading(true);
+    setCatalogMessage(null);
+
+    try {
+      const response = await fetch(
+        `/admin/leads/catalog-variants?limit=300${query ? `&q=${encodeURIComponent(query)}` : ""}`,
+        {
+          credentials: "include",
+        },
+      );
+
+      const payload = (await response.json().catch(() => null)) as
+        | { variants?: CatalogVariant[]; message?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Could not load catalog products.");
+      }
+
+      setCatalogVariants(Array.isArray(payload?.variants) ? payload.variants : []);
+      if (!payload?.variants?.length) {
+        setCatalogMessage("No catalog variants found for this search.");
+      }
+    } catch (err) {
+      setCatalogMessage(err instanceof Error ? err.message : "Could not load catalog products.");
+    } finally {
+      setCatalogLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadCatalogVariants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead.id]);
 
   const save = async () => {
     setPending(true);
@@ -414,6 +789,154 @@ const LeadDetails = ({ lead, onUpdated }: { lead: Lead; onUpdated: () => Promise
       setMessage(err instanceof Error ? err.message : "Could not update lead.");
     } finally {
       setPending(false);
+    }
+  };
+
+  const createPaymentLink = async () => {
+    setPaymentPending(true);
+    setPaymentMessage(null);
+
+    try {
+      const response = await fetch(`/admin/leads/${lead.id}/payment-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          amount: paymentAmount,
+          currency: paymentCurrency,
+          description: paymentDescription,
+          expiresInHours: paymentExpiresInHours,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { checkout_url?: string; message?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Could not create payment link.");
+      }
+
+      await onUpdated(lead.id);
+      setPaymentMessage(payload?.checkout_url ? "Payment link created." : "Payment link created, but URL was not returned.");
+    } catch (err) {
+      setPaymentMessage(err instanceof Error ? err.message : "Could not create payment link.");
+    } finally {
+      setPaymentPending(false);
+    }
+  };
+
+  const refreshPaymentStatus = async () => {
+    setPaymentStatusPending(true);
+    setPaymentMessage(null);
+
+    try {
+      const response = await fetch(`/admin/leads/${lead.id}/payment-link`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { payment_status?: string; message?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Could not refresh payment status.");
+      }
+
+      await onUpdated(lead.id);
+      setPaymentMessage(
+        payload?.payment_status
+          ? `Payment status refreshed: ${payload.payment_status}.`
+          : "Payment status refreshed.",
+      );
+    } catch (err) {
+      setPaymentMessage(err instanceof Error ? err.message : "Could not refresh payment status.");
+    } finally {
+      setPaymentStatusPending(false);
+    }
+  };
+
+  const copyPaymentUrl = async () => {
+    if (!lead.payment_link_url) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(lead.payment_link_url);
+      setPaymentMessage("Payment link copied.");
+    } catch {
+      setPaymentMessage("Could not copy automatically. Copy the URL manually.");
+    }
+  };
+
+  const updateSpecialOrderLine = (lineId: string, patch: Partial<SpecialOrderLine>) => {
+    setSpecialOrderLines((current) => current.map((line) => (line.id === lineId ? { ...line, ...patch } : line)));
+  };
+
+  const addSpecialOrderLine = () => {
+    const id = `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setSpecialOrderLines((current) => [...current, { id, variant_id: "", quantity: "1", unit_price: "" }]);
+  };
+
+  const removeSpecialOrderLine = (lineId: string) => {
+    setSpecialOrderLines((current) => {
+      if (current.length <= 1) {
+        return current;
+      }
+
+      return current.filter((line) => line.id !== lineId);
+    });
+  };
+
+  const createSpecialOrderPaymentLink = async () => {
+    setSpecialOrderPending(true);
+    setPaymentMessage(null);
+
+    const lines = specialOrderLines
+      .map((line) => ({
+        variant_id: line.variant_id,
+        quantity: line.quantity,
+        unit_price: line.unit_price,
+      }))
+      .filter((line) => line.variant_id && String(line.quantity).trim() && String(line.unit_price).trim());
+
+    if (!lines.length) {
+      setPaymentMessage("Select at least one catalog product and enter quantity + custom price.");
+      setSpecialOrderPending(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/admin/leads/${lead.id}/special-order-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          currency: paymentCurrency,
+          expiresInHours: paymentExpiresInHours,
+          lines,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { checkout_url?: string; message?: string; line_count?: number }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Could not create special-order payment link.");
+      }
+
+      await onUpdated(lead.id);
+      setPaymentMessage(
+        payload?.checkout_url
+          ? `Special-order link created with ${payload?.line_count || lines.length} line item(s).`
+          : "Special-order link created, but URL was not returned.",
+      );
+    } catch (err) {
+      setPaymentMessage(err instanceof Error ? err.message : "Could not create special-order payment link.");
+    } finally {
+      setSpecialOrderPending(false);
     }
   };
 
@@ -467,6 +990,10 @@ const LeadDetails = ({ lead, onUpdated }: { lead: Lead; onUpdated: () => Promise
         <InfoCard label="Consent" value={lead.consent ? "Yes" : "No"} />
         <InfoCard label="Source" value={lead.source || "quote_form"} />
         <InfoCard label="IP" value={lead.ip || "-"} />
+        <InfoCard label="Payment Status" value={lead.payment_status || "-"} />
+        <InfoCard label="Payment Amount" value={formatPaymentAmount(lead.payment_amount, lead.payment_currency)} />
+        <InfoCard label="Payment Currency" value={(lead.payment_currency || "-").toUpperCase()} />
+        <InfoCard label="Paid At" value={formatDate(lead.payment_paid_at)} />
       </div>
 
       <div style={{ display: "grid", gap: 8 }}>
@@ -532,15 +1059,299 @@ const LeadDetails = ({ lead, onUpdated }: { lead: Lead; onUpdated: () => Promise
         />
       </div>
 
-      {message ? (
+      <div
+        style={{
+          border: `1px solid ${theme.borderSoft}`,
+          borderRadius: 12,
+          padding: 12,
+          display: "grid",
+          gap: 10,
+          background: "rgba(15, 23, 42, 0.82)",
+        }}
+      >
+        <div style={{ display: "grid", gap: 4 }}>
+          <p style={{ ...labelStyle, margin: 0 }}>Custom Stripe Checkout</p>
+          <p style={{ margin: 0, fontSize: 12, color: theme.muted }}>
+            Generate a custom amount checkout link for this lead and refresh payment status any time.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 10 }}>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={labelStyle}>Amount *</label>
+            <input
+              value={paymentAmount}
+              onChange={(event) => setPaymentAmount(event.target.value)}
+              placeholder="120.00"
+              style={inputStyle}
+            />
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={labelStyle}>Currency *</label>
+            <input
+              value={paymentCurrency}
+              onChange={(event) => setPaymentCurrency(event.target.value.toUpperCase().slice(0, 3))}
+              placeholder="EUR"
+              style={inputStyle}
+              maxLength={3}
+            />
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <label style={labelStyle}>Expires (hours)</label>
+            <input
+              value={paymentExpiresInHours}
+              onChange={(event) => setPaymentExpiresInHours(event.target.value)}
+              placeholder="24"
+              style={inputStyle}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gap: 6 }}>
+          <label style={labelStyle}>Description</label>
+          <input
+            value={paymentDescription}
+            onChange={(event) => setPaymentDescription(event.target.value)}
+            placeholder="Payment for custom order"
+            style={inputStyle}
+            maxLength={180}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button
+            type="button"
+            onClick={() => void createPaymentLink()}
+            disabled={paymentPending}
+            style={{
+              border: `1px solid ${theme.accent}`,
+              borderRadius: 10,
+              padding: "8px 12px",
+              background: theme.accent,
+              color: theme.accentText,
+              fontWeight: 700,
+              opacity: paymentPending ? 0.7 : 1,
+            }}
+          >
+            {paymentPending ? "Creating link..." : "Create Checkout Link"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void refreshPaymentStatus()}
+            disabled={paymentStatusPending}
+            style={{
+              border: `1px solid ${theme.borderSoft}`,
+              borderRadius: 10,
+              padding: "8px 12px",
+              background: theme.panelBgSoft,
+              color: theme.text,
+              fontWeight: 600,
+              opacity: paymentStatusPending ? 0.7 : 1,
+            }}
+          >
+            {paymentStatusPending ? "Refreshing..." : "Refresh Payment Status"}
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gap: 6 }}>
+          <label style={labelStyle}>Current Checkout URL</label>
+          <div style={readonlyStyle}>{lead.payment_link_url || "No payment link created yet."}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => void copyPaymentUrl()}
+              disabled={!lead.payment_link_url}
+              style={{
+                border: `1px solid ${theme.borderSoft}`,
+                borderRadius: 10,
+                padding: "8px 12px",
+                background: theme.panelBgSoft,
+                color: theme.text,
+                fontWeight: 600,
+                opacity: lead.payment_link_url ? 1 : 0.6,
+              }}
+            >
+              Copy Link
+            </button>
+            <InfoChip label="Session" value={lead.payment_link_session_id || "-"} />
+            <InfoChip label="Expires" value={formatDate(lead.payment_link_expires_at)} />
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          border: `1px solid ${theme.borderSoft}`,
+          borderRadius: 12,
+          padding: 12,
+          display: "grid",
+          gap: 10,
+          background: "rgba(15, 23, 42, 0.82)",
+        }}
+      >
+        <div style={{ display: "grid", gap: 4 }}>
+          <p style={{ ...labelStyle, margin: 0 }}>Special Order Builder (Catalog + Custom Pricing)</p>
+          <p style={{ margin: 0, fontSize: 12, color: theme.muted }}>
+            Choose products from your store catalog, set your own unit prices, and generate a Stripe checkout link.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(220px,1fr) auto", gap: 8 }}>
+          <input
+            value={catalogQuery}
+            onChange={(event) => setCatalogQuery(event.target.value)}
+            placeholder="Search by product, variant, or SKU"
+            style={inputStyle}
+          />
+          <button
+            type="button"
+            onClick={() => void loadCatalogVariants(catalogQuery)}
+            disabled={catalogLoading}
+            style={{
+              border: `1px solid ${theme.borderSoft}`,
+              borderRadius: 10,
+              padding: "8px 12px",
+              background: theme.panelBgSoft,
+              color: theme.text,
+              fontWeight: 600,
+              opacity: catalogLoading ? 0.7 : 1,
+            }}
+          >
+            {catalogLoading ? "Loading..." : "Search Catalog"}
+          </button>
+        </div>
+
+        {catalogMessage ? <p style={{ margin: 0, fontSize: 12, color: theme.muted }}>{catalogMessage}</p> : null}
+
+        <div style={{ display: "grid", gap: 8 }}>
+          {specialOrderLines.map((line, index) => {
+            const quantity = Math.max(1, Math.round(Number(line.quantity) || 1));
+            const unitPrice = parseDecimalInput(line.unit_price);
+            const lineTotal = Number.isFinite(unitPrice) ? quantity * unitPrice : NaN;
+
+            return (
+              <div
+                key={line.id}
+                style={{
+                  border: `1px solid ${theme.borderSoft}`,
+                  borderRadius: 10,
+                  padding: 10,
+                  display: "grid",
+                  gap: 8,
+                  background: "rgba(15, 23, 42, 0.98)",
+                }}
+              >
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={labelStyle}>Product Variant #{index + 1}</label>
+                  <select
+                    value={line.variant_id}
+                    onChange={(event) => updateSpecialOrderLine(line.id, { variant_id: event.target.value })}
+                    style={inputStyle}
+                  >
+                    <option value="">Select a catalog variant</option>
+                    {catalogVariants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.product_title}
+                        {variant.title && variant.title.toLowerCase() !== "default" ? ` - ${variant.title}` : ""}
+                        {variant.sku ? ` [${variant.sku}]` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 8 }}>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={labelStyle}>Quantity *</label>
+                    <input
+                      value={line.quantity}
+                      onChange={(event) => updateSpecialOrderLine(line.id, { quantity: event.target.value })}
+                      placeholder="1"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={labelStyle}>Unit Price ({paymentCurrency}) *</label>
+                    <input
+                      value={line.unit_price}
+                      onChange={(event) => updateSpecialOrderLine(line.id, { unit_price: event.target.value })}
+                      placeholder="49.90"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <label style={labelStyle}>Line Total</label>
+                    <div style={readonlyStyle}>{formatMajorAmount(lineTotal, paymentCurrency)}</div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    type="button"
+                    onClick={() => removeSpecialOrderLine(line.id)}
+                    disabled={specialOrderLines.length <= 1}
+                    style={{
+                      border: `1px solid ${theme.borderSoft}`,
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                      background: theme.panelBgSoft,
+                      color: theme.text,
+                      fontSize: 12,
+                      opacity: specialOrderLines.length <= 1 ? 0.6 : 1,
+                    }}
+                  >
+                    Remove Line
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button
+            type="button"
+            onClick={addSpecialOrderLine}
+            style={{
+              border: `1px solid ${theme.borderSoft}`,
+              borderRadius: 10,
+              padding: "8px 12px",
+              background: theme.panelBgSoft,
+              color: theme.text,
+              fontWeight: 600,
+            }}
+          >
+            Add Product Line
+          </button>
+          <button
+            type="button"
+            onClick={() => void createSpecialOrderPaymentLink()}
+            disabled={specialOrderPending}
+            style={{
+              border: `1px solid ${theme.accent}`,
+              borderRadius: 10,
+              padding: "8px 12px",
+              background: theme.accent,
+              color: theme.accentText,
+              fontWeight: 700,
+              opacity: specialOrderPending ? 0.7 : 1,
+            }}
+          >
+            {specialOrderPending ? "Creating special link..." : "Create Special-Order Checkout Link"}
+          </button>
+        </div>
+      </div>
+
+      {message || paymentMessage ? (
         <p
           style={{
             margin: 0,
             fontSize: 12,
-            color: message === "Saved." ? theme.success : theme.danger,
+            color: /could not|invalid|required|outside|missing|must/i.test(message || paymentMessage || "")
+              ? theme.danger
+              : theme.success,
           }}
         >
-          {message}
+          {message || paymentMessage}
         </p>
       ) : null}
     </div>
@@ -581,6 +1392,24 @@ const readonlyStyle: CSSProperties = {
   color: theme.text,
   whiteSpace: "pre-wrap",
   wordBreak: "break-word",
+};
+
+const InfoChip = ({ label, value }: { label: string; value: string }) => {
+  return (
+    <div
+      style={{
+        border: `1px solid ${theme.borderSoft}`,
+        borderRadius: 10,
+        padding: "8px 10px",
+        background: "rgba(15, 23, 42, 0.98)",
+        display: "grid",
+        gap: 2,
+      }}
+    >
+      <p style={{ ...labelStyle, margin: 0 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 12, color: theme.text }}>{value}</p>
+    </div>
+  );
 };
 
 const StatCard = ({

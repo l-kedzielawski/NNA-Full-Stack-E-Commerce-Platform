@@ -52,6 +52,9 @@ const customModules = [
     resolve: "./src/modules/lead",
   },
   {
+    resolve: "./src/modules/traffic-hit",
+  },
+  {
     resolve: "./src/modules/email-template",
   },
 ];

@@ -1,22 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import type { Metadata } from "next";
+import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "About Us | The Mystic Aroma",
   description:
-    "Natural Mystic Aroma — direct sourcing from Madagascar and Nosy Be, transparent supply chains, and certified vanilla and spices for brands that value authenticity.",
+    "Natural Mystic Aroma, direct sourcing from Madagascar and Nosy Be, transparent supply chains, and certified vanilla and spices for brands that value authenticity.",
 };
 
 const milestones = [
-  { year: "2020", event: "First steps in Madagascar — exploring origins, meeting growers, understanding the land" },
-  { year: "2021–22", event: "The idea takes shape — early conversations, building relationships, defining what we want to build" },
+  { year: "2020", event: "First steps in Madagascar, exploring origins, meeting growers, understanding the land" },
+  { year: "2021–22", event: "The idea takes shape, early conversations, building relationships, defining what we want to build" },
   { year: "2023", event: "Natural Mystic Aroma officially founded in Poznań, Poland" },
-  { year: "2023–25", event: "Trade shows to learn, connect, and listen — SIAL Paris, Gulfood Dubai, BIOFACH Germany" },
-  { year: "2025", event: "The team is built — on the ground in both Poland and Madagascar" },
-  { year: "2025", event: "First verified, tested, and certified packages arrive in Poland — from field to shelf" },
-  { year: "2026", event: "Scaling verified supply across Europe — the next chapter begins" },
+  { year: "2023–25", event: "Trade shows to learn, connect, and listen, SIAL Paris, Gulfood Dubai, BIOFACH Germany" },
+  { year: "2025", event: "The team is built, on the ground in both Poland and Madagascar" },
+  { year: "2025", event: "First verified, tested, and certified packages arrive in Poland, from field to shelf" },
+  { year: "2026", event: "Scaling verified supply across Europe, the next chapter begins" },
 ];
 
 const values = [
@@ -49,19 +51,154 @@ const values = [
 const ops = [
   {
     num: "01",
-    body: "A dedicated team on the ground in Madagascar oversees every step — production, selection, and logistics — before anything leaves the island.",
+    body: "A dedicated team on the ground in Madagascar oversees every step, production, selection, and logistics, before anything leaves the island.",
   },
   {
     num: "02",
-    body: "Vanilla and select high-value spices are transported exclusively by air — no sea freight. Where aroma integrity and moisture content are critical, air is the only option that makes sense. Other products ship by the most appropriate method without compromising quality.",
+    body: "Vanilla and select high-value spices are transported exclusively by air, no sea freight. Where aroma integrity and moisture content are critical, air is the only option that makes sense. Other products ship by the most appropriate method without compromising quality.",
   },
   {
     num: "03",
-    body: "Our Poznań warehouse handles repacking at any volume — ensuring freshness, consistent quality, and reliable delivery across Europe and beyond.",
+    body: "Our Poznań warehouse handles repacking at any volume, ensuring freshness, consistent quality, and reliable delivery across Europe and beyond.",
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
+  if (locale === "pl") {
+    return (
+      <main className="pt-20">
+        <section className="relative min-h-[65vh] flex items-center overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <Image src="/hero.jpg" alt="Wanilia z Madagaskaru" fill className="object-cover" priority />
+            <div className="absolute inset-0 bg-gradient-to-r from-bg/97 via-bg/75 to-bg/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/50" />
+          </div>
+          <div className="relative container-shell py-24">
+            <p className="label-sm text-gold/70 mb-6">Nasza historia</p>
+            <h1 className="font-display text-ink leading-[0.88] mb-8 max-w-3xl" style={{ fontSize: "clamp(3rem, 7vw, 6.5rem)" }}>
+              Nie sprzedajemy
+              <br />
+              tylko przypraw.
+              <br />
+              <span className="text-gold">Dowozimy prawdziwe pochodzenie.</span>
+            </h1>
+            <p className="text-ink/60 text-lg max-w-xl leading-relaxed">
+              Zanim powstala marka, byl Madagaskar, rozmowy z plantatorami i praca u zrodla.
+              Tak dzialamy do dzis: bezposrednio, transparentnie i odpowiedzialnie.
+            </p>
+          </div>
+        </section>
+
+        <section className="container-shell py-20">
+          <div className="grid md:grid-cols-2 gap-14 items-center">
+            <div>
+              <p className="label-sm text-gold mb-4">Skad zaczelismy</p>
+              <h2 className="font-display text-4xl md:text-5xl text-ink mb-6">
+                Bezposrednio
+                <br />
+                <span className="text-gold">u zrodla</span>
+              </h2>
+              <div className="space-y-5 text-ink/60 leading-relaxed">
+                <p>
+                  Pierwsze wyjazdy na Madagaskar zaczely sie w 2020 roku. Chcielismy nie tylko kupowac,
+                  ale rozumiec terroir, ludzi i proces dojrzewania wanilii. To zbudowalo relacje,
+                  ktore daja stabilnosc partii sezon po sezonie.
+                </p>
+                <p>
+                  Nasza obecnosc na miejscu to nie haslo marketingowe, tylko realny model kontroli jakosci.
+                </p>
+              </div>
+            </div>
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-line">
+              <Image src="/Natural-Mystic-aroma.jpg" alt="Zweryfikowane pochodzenie" fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-bg-mid border-y border-line py-20">
+          <div className="container-shell">
+            <div className="text-center mb-12">
+              <p className="label-sm text-gold mb-3">Nasze zasady</p>
+              <h2 className="font-display text-4xl md:text-5xl text-ink">
+                Fundament kazdej
+                <br />
+                <span className="text-gold">wysylki</span>
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  title: "Direct sourcing",
+                  body: "Bez brokerow i bezposrednio od sprawdzonych producentow w Madagaskarze.",
+                },
+                {
+                  title: "Transparentnosc",
+                  body: "Pochodzenie, partia i dokumenty sa jasno opisane i gotowe do weryfikacji.",
+                },
+                {
+                  title: "Certyfikowana jakosc",
+                  body: "EU Organic, Fair Trade, certyfikat pochodzenia i dane laboratoryjne dla partii.",
+                },
+                {
+                  title: "Logistyka lotnicza",
+                  body: "Wanilia i kluczowe przyprawy trafiaja do Poznania droga lotnicza, by zachowac aromat.",
+                },
+                {
+                  title: "Uczciwy handel",
+                  body: "Wspolpraca z certyfikowanymi gospodarstwami i realny wplyw na lokalne spolecznosci.",
+                },
+                {
+                  title: "Skala i regularnosc",
+                  body: "Obsluga zamowien od probek po kontrakty wolumenowe z przewidywalna podaza.",
+                },
+              ].map((v) => (
+                <div key={v.title} className="bg-bg border border-line rounded-2xl p-7">
+                  <div className="w-8 h-px bg-gold mb-5" />
+                  <h3 className="font-display text-xl text-ink mb-3">{v.title}</h3>
+                  <p className="text-sm text-ink/55 leading-relaxed">{v.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <MarqueeStrip />
+
+        <section className="relative overflow-hidden border-t border-line/40">
+          <div className="absolute inset-0 z-0">
+            <Image src="/hero.jpg" alt="Madagaskar" fill className="object-cover opacity-15" sizes="100vw" />
+            <div className="absolute inset-0 bg-gradient-to-r from-bg/99 to-bg/80" />
+          </div>
+          <div className="relative z-10 container-shell py-24">
+            <div className="max-w-xl">
+              <h2 className="font-display text-ink leading-[0.9] mb-6" style={{ fontSize: "clamp(2.2rem, 4.5vw, 4rem)" }}>
+                Gotowy na sourcing
+                <br />
+                <span className="text-gold">prosto od zrodla?</span>
+              </h2>
+              <p className="text-ink/55 mb-8 leading-relaxed">
+                Wyslij zapytanie, a przygotujemy ceny, dostepnosc i plan dostaw pod Twoj produkt.
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link href={withLocalePrefix("/quote", locale)} className="px-8 py-4 rounded-full bg-gold text-bg font-semibold">
+                  Zapytanie B2B
+                </Link>
+                <Link href={withLocalePrefix("/certifications", locale)} className="px-8 py-4 rounded-full border border-line text-ink/70 hover:border-gold/50 hover:text-ink transition-all">
+                  Dokumenty i certyfikaty
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="pt-20">
 
@@ -127,7 +264,7 @@ export default function AboutPage() {
             <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-line">
               <Image
                 src="/Natural-Mystic-aroma.jpg"
-                alt="Natural Mystic Aroma vanilla pods — verified origin"
+                alt="Natural Mystic Aroma vanilla pods, verified origin"
                 fill
                 className="object-cover"
               />
@@ -170,12 +307,12 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            {/* Image — matches Journey section card style */}
+            {/* Image, matches Journey section card style */}
             <div className="relative">
               <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-line">
                 <Image
                   src="/NMA_1-scaled-1-766x731.jpg"
-                  alt="Madagascar — origin of Natural Mystic Aroma vanilla"
+                  alt="Madagascar, origin of Natural Mystic Aroma vanilla"
                   fill
                   className="object-cover"
                 />
@@ -241,7 +378,7 @@ export default function AboutPage() {
           <span className="text-gold">Perfume Island</span>
         </h2>
         <p className="text-ink/55 leading-relaxed">
-          Our ties to Madagascar extend to Nosy Be — the island off the northwest
+          Our ties to Madagascar extend to Nosy Be, the island off the northwest
           coast known as the perfume capital of the Indian Ocean. Some of the most
           aromatic vanilla and botanicals in the world grow here, in conditions
           unique to this latitude and soil. Our presence on Nosy Be gives you direct
@@ -291,7 +428,7 @@ export default function AboutPage() {
             style={{ fontSize: "clamp(1.8rem, 4vw, 3.4rem)" }}
           >
             Every certification we hold is your guarantee<br />
-            that what&apos;s on the label is what&apos;s in the bag —
+            that what&apos;s on the label is what&apos;s in the bag,
             <br />
             <span className="text-gold">backed by lab data, not assumptions.</span>
           </p>

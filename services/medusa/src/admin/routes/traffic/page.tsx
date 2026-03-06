@@ -44,6 +44,38 @@ type TrafficPayload = {
   devices: RankedRow[];
 };
 
+type BaselineRow = {
+  label: string;
+  hits: number;
+};
+
+type BaselineTrendPoint = {
+  date: string;
+  hits: number;
+};
+
+type BaselineTrafficPayload = {
+  range: {
+    key: TrafficRangeKey;
+    label: string;
+    startDate: string;
+    endDate: string;
+  };
+  overview: {
+    totalHits: number;
+    uniquePages: number;
+    countries: number;
+    referrers: number;
+    mobileSharePct: number;
+  };
+  trend: BaselineTrendPoint[];
+  topPages: BaselineRow[];
+  countries: BaselineRow[];
+  referrers: BaselineRow[];
+  devices: BaselineRow[];
+  locales: BaselineRow[];
+};
+
 const rangeOptions: Array<{ value: TrafficRangeKey; label: string }> = [
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },
@@ -69,33 +101,63 @@ function shortDate(value: string): string {
 const TrafficPage = () => {
   const [range, setRange] = useState<TrafficRangeKey>("30d");
   const [data, setData] = useState<TrafficPayload | null>(null);
+  const [baseline, setBaseline] = useState<BaselineTrafficPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [baselineError, setBaselineError] = useState<string | null>(null);
 
   const maxTrend = useMemo(() => {
     const values = data?.trend || [];
     return Math.max(1, ...values.map((item) => item.sessions));
   }, [data]);
 
+  const maxBaselineTrend = useMemo(() => {
+    const values = baseline?.trend || [];
+    return Math.max(1, ...values.map((item) => item.hits));
+  }, [baseline]);
+
   const load = async (selectedRange: TrafficRangeKey) => {
     setLoading(true);
     setError(null);
+    setBaselineError(null);
 
     try {
-      const response = await fetch(`/admin/traffic?range=${selectedRange}`, {
-        credentials: "include",
-      });
+      const [gaResult, baselineResult] = await Promise.allSettled([
+        fetch(`/admin/traffic?range=${selectedRange}`, {
+          credentials: "include",
+        }),
+        fetch(`/admin/traffic/baseline?range=${selectedRange}`, {
+          credentials: "include",
+        }),
+      ]);
 
-      const payload = (await response.json()) as Partial<TrafficPayload> & { message?: string };
+      if (gaResult.status === "fulfilled") {
+        const payload = (await gaResult.value.json()) as Partial<TrafficPayload> & { message?: string };
 
-      if (!response.ok) {
-        throw new Error(payload.message || "Could not load traffic analytics.");
+        if (!gaResult.value.ok) {
+          setError(payload.message || "Could not load GA4 analytics.");
+          setData(null);
+        } else {
+          setData(payload as TrafficPayload);
+        }
+      } else {
+        setError("Could not load GA4 analytics.");
+        setData(null);
       }
 
-      setData(payload as TrafficPayload);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error.");
-      setData(null);
+      if (baselineResult.status === "fulfilled") {
+        const payload = (await baselineResult.value.json()) as Partial<BaselineTrafficPayload> & { message?: string };
+
+        if (!baselineResult.value.ok) {
+          setBaselineError(payload.message || "Could not load baseline analytics.");
+          setBaseline(null);
+        } else {
+          setBaseline(payload as BaselineTrafficPayload);
+        }
+      } else {
+        setBaselineError("Could not load baseline analytics.");
+        setBaseline(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -111,7 +173,7 @@ const TrafficPage = () => {
         <div>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Traffic Analytics</h1>
           <p style={{ margin: "6px 0 0", opacity: 0.75, fontSize: 13 }}>
-            GA4 website traffic dashboard inside Medusa.
+            GA4 (consented) + first-party cookieless baseline analytics inside Medusa.
           </p>
         </div>
 
@@ -152,6 +214,7 @@ const TrafficPage = () => {
       </div>
 
       {error ? <p style={{ margin: 0, color: "#b91c1c", fontSize: 13 }}>{error}</p> : null}
+      {baselineError ? <p style={{ margin: 0, color: "#b45309", fontSize: 13 }}>{baselineError}</p> : null}
 
       {data ? (
         <>
@@ -193,7 +256,56 @@ const TrafficPage = () => {
             <RankedTable title="Devices" rows={data.devices} columns={["sessions", "users"]} />
           </div>
         </>
-      ) : loading ? (
+      ) : null}
+
+      {baseline ? (
+        <>
+          <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 8, paddingTop: 14 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Cookieless Baseline</h2>
+            <p style={{ margin: "6px 0 0", fontSize: 12, opacity: 0.75 }}>
+              Anonymous first-party page hit metrics for all visitors, regardless of consent choice.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 10 }}>
+            <Metric label="Total Hits" value={baseline.overview.totalHits} />
+            <Metric label="Unique Pages" value={baseline.overview.uniquePages} />
+            <Metric label="Countries" value={baseline.overview.countries} />
+            <Metric label="Referrer Domains" value={baseline.overview.referrers} />
+            <Metric label="Mobile Share" value={`${baseline.overview.mobileSharePct.toFixed(2)}%`} />
+          </div>
+
+          <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 14, display: "grid", gap: 10 }}>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Cookieless Hit Trend ({baseline.range.label})</h2>
+            {baseline.trend.length ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(46px,1fr))", gap: 6, alignItems: "end", minHeight: 170 }}>
+                {baseline.trend.map((point) => {
+                  const height = `${Math.max(8, Math.round((point.hits / maxBaselineTrend) * 120))}px`;
+                  return (
+                    <div key={`baseline-${point.date}`} style={{ display: "grid", gap: 5, justifyItems: "center" }}>
+                      <div style={{ fontSize: 10, opacity: 0.75 }}>{point.hits}</div>
+                      <div style={{ width: 18, height, borderRadius: 6, background: "#334155" }} />
+                      <div style={{ fontSize: 10, opacity: 0.7 }}>{shortDate(point.date)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>No baseline trend data.</p>
+            )}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 12 }}>
+            <BaselineRankedTable title="Top Pages" rows={baseline.topPages} />
+            <BaselineRankedTable title="Referrer Domains" rows={baseline.referrers} />
+            <BaselineRankedTable title="Countries" rows={baseline.countries} />
+            <BaselineRankedTable title="Devices" rows={baseline.devices} />
+            <BaselineRankedTable title="Locales" rows={baseline.locales} />
+          </div>
+        </>
+      ) : null}
+
+      {!data && !baseline && loading ? (
         <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>Loading traffic analytics...</p>
       ) : null}
     </div>
@@ -246,6 +358,34 @@ const RankedTable = ({
                     {Number(row[column] || 0).toLocaleString()}
                   </td>
                 ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+const BaselineRankedTable = ({ title, rows }: { title: string; rows: BaselineRow[] }) => {
+  return (
+    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 14, display: "grid", gap: 10 }}>
+      <h2 style={{ margin: 0, fontSize: 16 }}>{title}</h2>
+      {rows.length === 0 ? (
+        <p style={{ margin: 0, opacity: 0.75, fontSize: 13 }}>No data yet.</p>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Label</th>
+              <th style={{ ...thStyle, textAlign: "right" }}>hits</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={`${title}-${row.label}`}>
+                <td style={tdStyle}>{row.label}</td>
+                <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700 }}>{row.hits.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

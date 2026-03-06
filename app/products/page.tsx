@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { ProductShop } from "@/components/product-catalog";
 import { Reveal } from "@/components/reveal";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { getAllProducts, getProductCategories } from "@/lib/products";
+import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
 // Force runtime rendering so product data (including variant IDs) is always
 // fetched live from Medusa rather than being baked in at build time.
@@ -17,7 +19,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ProductsPage() {
-  const products = await getAllProducts();
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
+  const products = await getAllProducts(locale);
   const categories = await getProductCategories();
 
   return (
@@ -40,21 +46,23 @@ export default async function ProductsPage() {
         <div className="relative z-10 container-shell py-20">
           <Reveal>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-6 h-px bg-gold/60" />
-              <span className="label-sm text-gold/60">Our Products</span>
-            </div>
+                <div className="w-6 h-px bg-gold/60" />
+                <span className="label-sm text-gold/60">{locale === "pl" ? "Nasze produkty" : "Our Products"}</span>
+              </div>
             <h1
               className="font-display text-ink leading-[0.9] mb-6"
               style={{ fontSize: "clamp(3.5rem, 7vw, 7rem)" }}
             >
-              Bourbon Vanilla.<br />
-              <span className="text-gold">Cocoa &amp; Exotic Spices.</span>
-            </h1>
-            <p className="text-ink/55 text-base leading-relaxed max-w-xl">
-              Explore our full available range, packaged for your needs. Order
-              samples, validate quality in your own process, and when you need
-              something specific from Madagascar, we&apos;ll source it with you.
-            </p>
+                {locale === "pl" ? "Wanilia Bourbon." : "Bourbon Vanilla."}<br />
+                <span className="text-gold">
+                  {locale === "pl" ? "Kakao i egzotyczne przyprawy." : "Cocoa & Exotic Spices."}
+                </span>
+              </h1>
+              <p className="text-ink/55 text-base leading-relaxed max-w-xl">
+                {locale === "pl"
+                  ? "Poznaj pelna oferte produktow gotowych do wdrozenia w Twoim procesie. Zamow probki, zweryfikuj jakosc, a jesli potrzebujesz czegos konkretnego z Madagaskaru, znajdziemy to razem z Toba."
+                  : "Explore our full available range, packaged for your needs. Order samples, validate quality in your own process, and when you need something specific from Madagascar, we'll source it with you."}
+              </p>
           </Reveal>
         </div>
       </section>

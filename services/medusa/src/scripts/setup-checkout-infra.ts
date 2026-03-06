@@ -1,6 +1,7 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
+  createPricePreferencesWorkflow,
   createServiceZonesWorkflow,
   createRegionsWorkflow,
   createTaxRatesWorkflow,
@@ -13,6 +14,7 @@ import {
   createSalesChannelsWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
   updateTaxRegionsWorkflow,
+  updatePricePreferencesWorkflow,
   updateRegionsWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
@@ -56,7 +58,6 @@ const EUROPE_COUNTRIES = [
   "mt",
   "nl",
   "no",
-  "pl",
   "pt",
   "ro",
   "rs",
@@ -423,7 +424,7 @@ export default async function setupCheckoutInfra({ container }: ExecArgs) {
     },
     {
       name: "Poland",
-      currency_code: "eur",
+      currency_code: "pln",
       countries: polandCountries,
     },
   ].filter((region) => region.countries.length > 0);
@@ -476,6 +477,74 @@ export default async function setupCheckoutInfra({ container }: ExecArgs) {
 
     regionIds.set(regionConfig.name, String((result as Array<{ id: string }>)[0].id));
   }
+
+  const managedPricePreferenceTargets = [
+    ...Array.from(regionIds.values()).map((regionId) => ({
+      attribute: "region_id",
+      value: regionId,
+    })),
+    ...unique(regionConfigs.map((region) => region.currency_code)).map((currencyCode) => ({
+      attribute: "currency_code",
+      value: currencyCode,
+    })),
+  ];
+
+  const { data: existingPricePreferences = [] } = await query.graph({
+    entity: "price_preference",
+    fields: ["id", "attribute", "value", "is_tax_inclusive"],
+    filters: {
+      $or: managedPricePreferenceTargets.map((target) => ({
+        attribute: target.attribute,
+        value: target.value,
+      })),
+    },
+    pagination: { take: 500 },
+  });
+
+  const existingPricePreferenceIds = existingPricePreferences
+    .map((preference) => String(preference.id || ""))
+    .filter(Boolean);
+
+  if (existingPricePreferenceIds.length) {
+    await updatePricePreferencesWorkflow(container).run({
+      input: {
+        selector: {
+          id: existingPricePreferenceIds,
+        },
+        update: {
+          is_tax_inclusive: true,
+        },
+      },
+    });
+  }
+
+  const existingPricePreferenceKeys = new Set(
+    existingPricePreferences
+      .map((preference) => {
+        const attribute = String(preference.attribute || "").trim();
+        const value = String(preference.value || "").trim();
+        return attribute && value ? `${attribute}:${value}` : "";
+      })
+      .filter(Boolean)
+  );
+
+  const missingPricePreferences = managedPricePreferenceTargets.filter(
+    (target) => !existingPricePreferenceKeys.has(`${target.attribute}:${target.value}`)
+  );
+
+  if (missingPricePreferences.length) {
+    await createPricePreferencesWorkflow(container).run({
+      input: missingPricePreferences.map((target) => ({
+        attribute: target.attribute,
+        value: target.value,
+        is_tax_inclusive: true,
+      })),
+    });
+  }
+
+  logger.info(
+    `Ensured tax-inclusive price preferences for ${managedPricePreferenceTargets.length} region/currency target(s).`
+  );
 
   try {
     await createTaxRegionsWorkflow(container).run({

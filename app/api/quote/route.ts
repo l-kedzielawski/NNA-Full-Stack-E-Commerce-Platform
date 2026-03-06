@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import { isIP } from "node:net";
 import path from "node:path";
+import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,7 @@ type QuotePayload = {
   message?: unknown;
   consent?: unknown;
   website?: unknown;
+  locale?: unknown;
 };
 
 type StoredQuote = {
@@ -243,27 +245,30 @@ async function sendLeadToMedusa(record: StoredQuote): Promise<{ id?: string }> {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: Request) {
+  const responseLocale = resolveResponseLocale(request);
   const ip = getClientIp(request);
   const userAgent = request.headers.get("user-agent") ?? "unknown";
+
+  const t = messageCatalog[responseLocale];
 
   // --- Parse body ---
   let raw: QuotePayload;
   try {
     raw = (await request.json()) as QuotePayload;
   } catch {
-    return NextResponse.json({ message: "Invalid request." }, { status: 400 });
+    return NextResponse.json({ message: t.invalidRequest }, { status: 400 });
   }
 
   // --- Honeypot bot check ---
   if (typeof raw.website === "string" && raw.website.trim().length > 0) {
-    return NextResponse.json({ message: "Request ignored." }, { status: 200 });
+    return NextResponse.json({ message: t.requestIgnored }, { status: 200 });
   }
 
   // --- Rate limiting ---
   const rateLimitKey = getRateLimitKey(request, userAgent, raw.email);
   if (isRateLimited(rateLimitKey)) {
     return NextResponse.json(
-      { message: "Too many requests. Please wait a few minutes and try again." },
+      { message: t.tooManyRequests },
       { status: 429 },
     );
   }
@@ -288,7 +293,7 @@ export async function POST(request: Request) {
   for (const [field, value] of required) {
     if (!value) {
       return NextResponse.json(
-        { message: `Please provide a valid ${field}.` },
+        { message: responseLocale === "pl" ? `Podaj poprawne pole: ${field}.` : `Please provide a valid ${field}.` },
         { status: 400 },
       );
     }
@@ -297,7 +302,7 @@ export async function POST(request: Request) {
   // --- Email validation ---
   if (!email || !EMAIL_PATTERN.test(email)) {
     return NextResponse.json(
-      { message: "Please provide a valid email address." },
+      { message: t.invalidEmail },
       { status: 400 },
     );
   }
@@ -305,7 +310,7 @@ export async function POST(request: Request) {
   // --- Consent ---
   if (!consent) {
     return NextResponse.json(
-      { message: "Please accept the data processing consent before submitting." },
+      { message: t.consentRequired },
       { status: 400 },
     );
   }
@@ -333,7 +338,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        message: "We could not submit your quote right now. Please try again in a minute.",
+        message: t.submitFailed,
       },
       { status: 502 },
     );
@@ -364,10 +369,41 @@ export async function POST(request: Request) {
 
   return NextResponse.json(
     {
-      message: "Thanks. Your request is in. We will contact you shortly.",
+      message: t.success,
       requestId: quoteRecord.id,
       leadId,
     },
     { status: 200 },
   );
+}
+
+const messageCatalog: Record<SiteLocale, Record<string, string>> = {
+  en: {
+    invalidRequest: "Invalid request.",
+    requestIgnored: "Request ignored.",
+    tooManyRequests: "Too many requests. Please wait a few minutes and try again.",
+    invalidEmail: "Please provide a valid email address.",
+    consentRequired: "Please accept the data processing consent before submitting.",
+    submitFailed: "We could not submit your quote right now. Please try again in a minute.",
+    success: "Thanks. Your request is in. We will contact you shortly.",
+  },
+  pl: {
+    invalidRequest: "Niepoprawne zadanie.",
+    requestIgnored: "Zapytanie pominiete.",
+    tooManyRequests: "Zbyt wiele prob. Odczekaj kilka minut i sprobuj ponownie.",
+    invalidEmail: "Podaj poprawny adres e-mail.",
+    consentRequired: "Zaakceptuj zgode na przetwarzanie danych przed wyslaniem formularza.",
+    submitFailed: "Nie udalo sie wyslac zapytania w tej chwili. Sprobuj ponownie za minute.",
+    success: "Dziekujemy. Otrzymalismy zapytanie i skontaktujemy sie w najblizszym czasie.",
+  },
+};
+
+function resolveResponseLocale(request: Request): SiteLocale {
+  const localeFromHeader = request.headers.get("x-site-locale") || "";
+
+  if (isSupportedLocale(localeFromHeader)) {
+    return localeFromHeader;
+  }
+
+  return defaultLocale;
 }

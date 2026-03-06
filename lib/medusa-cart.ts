@@ -40,6 +40,8 @@ export type MedusaRegion = {
   countries: MedusaCountry[];
 };
 
+type PreferredCurrencyCode = "eur" | "pln";
+
 export type CheckoutCountryOption = {
   code: string;
   name: string;
@@ -74,6 +76,11 @@ type PaymentCollection = {
 
 type StoreProductVariant = {
   id?: string;
+  calculated_price?: {
+    calculated_amount?: number;
+    original_amount?: number;
+    currency_code?: string;
+  };
 };
 
 type StoreProductSummary = {
@@ -83,7 +90,33 @@ type StoreProductSummary = {
   variants?: StoreProductVariant[];
 };
 
+export type ProductPricingSummary = {
+  handle: string;
+  title: string;
+  variantId: string | null;
+  price: number | null;
+  currencyCode: string | null;
+};
+
+function parseNumberPrice(value: number | undefined): number | null {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return null;
+  }
+
+  if (Number.isInteger(value) && value >= 1000) {
+    return value / 100;
+  }
+
+  return value;
+}
+
 const CART_STORAGE_KEY = "mystic_cart_id";
+const REGIONS_CACHE_TTL_MS = 60_000;
+
+let regionsCache: {
+  rows: MedusaRegion[];
+  at: number;
+} | null = null;
 
 function getMedusaUrl(): string {
   // All browser-side cart calls go through the Next.js proxy at /api/medusa.
@@ -92,12 +125,6 @@ function getMedusaUrl(): string {
   // In SSR contexts (server components) this relative URL is resolved against
   // the current request origin, which is correct for both dev and production.
   return "/api/medusa";
-}
-
-function getPublishableKey(): string {
-  // Key is now applied server-side by the proxy route — not needed in the browser.
-  // Kept as a no-op so the call sites compile without changes.
-  return "";
 }
 
 function getCartStorage(): Storage | null {
@@ -176,9 +203,117 @@ export async function getCart(cartId: string): Promise<MedusaCart | null> {
   }
 }
 
-export async function listRegions(): Promise<MedusaRegion[]> {
+export async function listRegions(force = false): Promise<MedusaRegion[]> {
+  if (!force && regionsCache && Date.now() - regionsCache.at < REGIONS_CACHE_TTL_MS) {
+    return regionsCache.rows;
+  }
+
   const data = await medusaFetch<{ regions: MedusaRegion[] }>("/store/regions?limit=500");
-  return data.regions || [];
+  const rows = data.regions || [];
+  regionsCache = {
+    rows,
+    at: Date.now(),
+  };
+
+  return rows;
+}
+
+function normalizeLocale(value?: string): string {
+  return String(value || "").trim().toLowerCase();
+}
+
+function normalizeCountryCode(value?: string): string {
+  return String(value || "").trim().toLowerCase();
+}
+
+function resolvePreferredCurrency(locale?: string, countryCode?: string): PreferredCurrencyCode {
+  const normalizedLocale = normalizeLocale(locale);
+  const normalizedCountryCode = normalizeCountryCode(countryCode);
+  const isPolishLocale = normalizedLocale.startsWith("pl");
+
+  if (isPolishLocale && (!normalizedCountryCode || normalizedCountryCode === "pl")) {
+    return "pln";
+  }
+
+  return "eur";
+}
+
+function getConfiguredRegionIdForCurrency(currencyCode: PreferredCurrencyCode): string {
+  if (currencyCode === "pln") {
+    return (
+      process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_PLN ||
+      process.env.MEDUSA_REGION_ID_PLN ||
+      ""
+    ).trim();
+  }
+
+  return (
+    process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_EUR ||
+    process.env.MEDUSA_REGION_ID_EUR ||
+    process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ||
+    process.env.MEDUSA_REGION_ID ||
+    ""
+  ).trim();
+}
+
+function regionSupportsCountry(region: MedusaRegion, countryCode?: string): boolean {
+  const normalized = normalizeCountryCode(countryCode);
+  if (!normalized) {
+    return true;
+  }
+
+  return (region.countries || []).some(
+    (country) => String(country.iso_2 || "").trim().toLowerCase() === normalized,
+  );
+}
+
+function findRegionByCurrency(
+  regions: MedusaRegion[],
+  currencyCode: PreferredCurrencyCode,
+  countryCode?: string,
+): MedusaRegion | null {
+  const byCurrency = regions.filter(
+    (region) => String(region.currency_code || "").trim().toLowerCase() === currencyCode,
+  );
+
+  if (!byCurrency.length) {
+    return null;
+  }
+
+  const withCountry = byCurrency.find((region) => regionSupportsCountry(region, countryCode));
+  return withCountry || byCurrency[0];
+}
+
+export async function resolvePreferredRegionId(locale?: string, countryCode?: string): Promise<string> {
+  const preferredCurrency = resolvePreferredCurrency(locale, countryCode);
+  const regions = await listRegions();
+
+  const configuredRegionId = getConfiguredRegionIdForCurrency(preferredCurrency);
+  if (configuredRegionId) {
+    const configuredRegion = regions.find((region) => region.id === configuredRegionId);
+    if (configuredRegion) {
+      return configuredRegion.id;
+    }
+  }
+
+  const discoveredRegion = findRegionByCurrency(regions, preferredCurrency, countryCode);
+  if (discoveredRegion?.id) {
+    return discoveredRegion.id;
+  }
+
+  if (configuredRegionId) {
+    return configuredRegionId;
+  }
+
+  if (preferredCurrency === "pln") {
+    throw new Error(
+      "PLN region is not configured. Set NEXT_PUBLIC_MEDUSA_REGION_ID_PLN (and MEDUSA_REGION_ID_PLN for server-side usage).",
+    );
+  }
+
+  throw new Error(
+    "EUR region is not configured. Set NEXT_PUBLIC_MEDUSA_REGION_ID_EUR (or NEXT_PUBLIC_MEDUSA_REGION_ID).",
+  );
 }
 
 export async function listCheckoutCountries(): Promise<CheckoutCountryOption[]> {
@@ -202,6 +337,40 @@ export async function listCheckoutCountries(): Promise<CheckoutCountryOption[]> 
   }
 
   return Array.from(countryByCode.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function listCheckoutCountriesForLocale(locale?: string): Promise<CheckoutCountryOption[]> {
+  try {
+    const normalizedLocale = normalizeLocale(locale);
+    const preferredCountry = normalizedLocale.startsWith("pl") ? "PL" : undefined;
+    const preferredRegionId = await resolvePreferredRegionId(locale, preferredCountry);
+    const regions = await listRegions();
+    const preferredRegion = regions.find((region) => region.id === preferredRegionId);
+
+    if (!preferredRegion) {
+      return listCheckoutCountries();
+    }
+
+    const countryRows = (preferredRegion.countries || [])
+      .map((country) => {
+        const code = String(country.iso_2 || "").toUpperCase();
+        const name = country.display_name || country.name || code;
+
+        return {
+          code,
+          name,
+        };
+      })
+      .filter((row) => row.code.length === 2);
+
+    if (!countryRows.length) {
+      return listCheckoutCountries();
+    }
+
+    return countryRows.sort((a, b) => a.name.localeCompare(b.name));
+  } catch {
+    return listCheckoutCountries();
+  }
 }
 
 export async function ensureCartRegionForCountry(
@@ -233,6 +402,25 @@ export async function ensureCartRegionForCountry(
   return updated.cart;
 }
 
+export async function ensureCartRegionForLocaleAndCountry(
+  cart: MedusaCart,
+  locale: string,
+  countryCode?: string,
+): Promise<MedusaCart> {
+  const targetRegionId = await resolvePreferredRegionId(locale, countryCode);
+
+  if (cart.region_id === targetRegionId) {
+    return cart;
+  }
+
+  const updated = await medusaFetch<{ cart: MedusaCart }>(`/store/carts/${cart.id}`, {
+    method: "POST",
+    body: JSON.stringify({ region_id: targetRegionId }),
+  });
+
+  return updated.cart;
+}
+
 export async function ensureCart(regionId: string): Promise<MedusaCart> {
   if (!regionId) {
     throw new Error("Missing NEXT_PUBLIC_MEDUSA_REGION_ID for cart creation.");
@@ -243,6 +431,16 @@ export async function ensureCart(regionId: string): Promise<MedusaCart> {
   if (existingId) {
     const existing = await getCart(existingId);
     if (existing) {
+      if (existing.region_id !== regionId) {
+        const switched = await medusaFetch<{ cart: MedusaCart }>(`/store/carts/${existing.id}`, {
+          method: "POST",
+          body: JSON.stringify({ region_id: regionId }),
+        });
+
+        emitCartUpdated();
+        return switched.cart;
+      }
+
       return existing;
     }
   }
@@ -292,6 +490,49 @@ export async function findVariantIdByProductHandle(handle: string): Promise<stri
 
   const variant = (product.variants || []).find((entry) => typeof entry.id === "string" && entry.id.length > 0);
   return variant?.id || null;
+}
+
+export async function getProductPricingSummaryByHandle(
+  handle: string,
+  regionId?: string,
+): Promise<ProductPricingSummary | null> {
+  const normalizedHandle = handle.trim().toLowerCase();
+  if (!normalizedHandle) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    handle: normalizedHandle,
+    limit: "1",
+    fields: "handle,title,*variants.id,*variants.calculated_price",
+  });
+
+  if (regionId && regionId.trim()) {
+    params.set("region_id", regionId.trim());
+  }
+
+  const data = await medusaFetch<{ products: StoreProductSummary[] }>(`/store/products?${params.toString()}`);
+  const product = (data.products || [])[0];
+
+  if (!product) {
+    return null;
+  }
+
+  const variant = (product.variants || []).find((entry) => typeof entry.id === "string" && entry.id.length > 0);
+  const calculatedAmount = variant?.calculated_price?.calculated_amount;
+  const originalAmount = variant?.calculated_price?.original_amount;
+  const parsedPrice = parseNumberPrice(calculatedAmount) ?? parseNumberPrice(originalAmount);
+  const currencyCode = String(variant?.calculated_price?.currency_code || "")
+    .trim()
+    .toUpperCase();
+
+  return {
+    handle: String(product.handle || normalizedHandle),
+    title: String(product.title || normalizedHandle),
+    variantId: variant?.id || null,
+    price: parsedPrice,
+    currencyCode: currencyCode || null,
+  };
 }
 
 export async function updateLineItem(cartId: string, lineId: string, quantity: number): Promise<MedusaCart> {
@@ -433,9 +674,12 @@ export async function completeCart(cartId: string) {
 }
 
 export function formatAmount(amount: number, currencyCode: string): string {
-  return new Intl.NumberFormat("en-GB", {
+  const normalizedCurrency = currencyCode.toUpperCase();
+  const numberLocale = normalizedCurrency === "PLN" ? "pl-PL" : "en-GB";
+
+  return new Intl.NumberFormat(numberLocale, {
     style: "currency",
-    currency: currencyCode.toUpperCase(),
+    currency: normalizedCurrency,
     maximumFractionDigits: 2,
   }).format(amount);
 }

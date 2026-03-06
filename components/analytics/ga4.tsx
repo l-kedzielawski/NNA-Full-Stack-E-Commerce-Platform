@@ -54,7 +54,7 @@ export function GA4() {
     }
 
     const search = typeof window !== "undefined" ? window.location.search : "";
-    const url = search ? `${pathname}?${search}` : pathname;
+    const url = search ? `${pathname}${search}` : pathname;
     trackPageview(url);
   }, [pathname, analyticsEnabled, gaReady]);
 

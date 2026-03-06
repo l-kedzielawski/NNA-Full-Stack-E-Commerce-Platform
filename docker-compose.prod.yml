@@ -65,6 +65,9 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY}
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      GA4_PROPERTY_ID: ${GA4_PROPERTY_ID}
+      GA4_CLIENT_EMAIL: ${GA4_CLIENT_EMAIL}
+      GA4_PRIVATE_KEY: ${GA4_PRIVATE_KEY}
     depends_on:
       postgres:
         condition: service_healthy

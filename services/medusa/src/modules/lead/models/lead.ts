@@ -18,6 +18,14 @@ const Lead = model.define("lead", {
   assignee: model.text().nullable(),
   notes: model.text().nullable(),
   source: model.text().default("quote_form"),
+  payment_link_url: model.text().nullable(),
+  payment_link_session_id: model.text().nullable(),
+  payment_link_expires_at: model.dateTime().nullable(),
+  payment_status: model.text().nullable(),
+  payment_amount: model.number().nullable(),
+  payment_currency: model.text().nullable(),
+  payment_created_at: model.dateTime().nullable(),
+  payment_paid_at: model.dateTime().nullable(),
 });
 
 export default Lead;

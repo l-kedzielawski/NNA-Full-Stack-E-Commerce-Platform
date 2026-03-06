@@ -1,6 +1,9 @@
 "use client";
 
-const items = [
+import { usePathname } from "next/navigation";
+import { defaultLocale, getLocaleFromPathname } from "@/lib/i18n";
+
+const itemsEn = [
   "100% Bourbon Grade A",
   "Single Origin Madagascar",
   "Powder from Whole Pods — Never Extracted",
@@ -27,7 +30,38 @@ const items = [
   "Direct from Madagascar",
 ];
 
+const itemsPl = [
+  "100% Bourbon Grade A",
+  "Jedno pochodzenie: Madagaskar",
+  "Puder z calych lasek - bez pozostalosci po ekstrakcji",
+  "Pelna dokumentacja dla kazdej partii",
+  "Rygorystyczna kontrola jakosci",
+  "Stabilny lancuch dostaw",
+  "Bez alergenow",
+  "Bez greenwashingu",
+  "Certyfikat EU Organic",
+  "Fair Trade · Control Union",
+  "Bez brokerow · bez posrednikow",
+  "Egzotyczne przyprawy",
+  "Dzikie kakao",
+  "Pelna oferta wanilii",
+  "Wanilia dostarczana lotniczo do Europy",
+  "Certyfikat pochodzenia",
+  "Identyfikowalnosc na poziomie partii",
+  "Laski klasy A 19 cm+",
+  "Stala jakosc miedzy partiami",
+  "Magazyn Poznan · stock UE",
+  "COA · SDS · dane mikrobiologiczne",
+  "Zgodnosc z TRACES",
+  "Dostawy B2B i hurtowe",
+  "Bezposrednio z Madagaskaru",
+];
+
 export function MarqueeStrip() {
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) || defaultLocale;
+  const items = locale === "pl" ? itemsPl : itemsEn;
+
   // Double the items so the loop is seamless
   const all = [...items, ...items];
 

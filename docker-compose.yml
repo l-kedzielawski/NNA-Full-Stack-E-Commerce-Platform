@@ -39,7 +39,7 @@ services:
     container_name: mystic-medusa
     profiles: ["app"]
     working_dir: /srv/medusa
-    command: sh -lc "npm install && npm run dev"
+    command: sh -lc "[ -d node_modules ] || npm install; npm run dev"
     volumes:
       - ./services/medusa:/srv/medusa
     environment:
@@ -50,7 +50,7 @@ services:
       AUTH_CORS: ${AUTH_CORS:-http://localhost:3000,http://localhost:3001}
       MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-http://localhost:9000}
     ports:
-      - "9000:9000"
+      - "127.0.0.1:${MEDUSA_HOST_PORT:-9000}:9000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,7 +62,7 @@ services:
     container_name: mystic-strapi
     profiles: ["app"]
     working_dir: /srv/strapi
-    command: sh -lc "npm install && npm run develop"
+    command: sh -lc "[ -d node_modules ] || npm install; npm run develop"
     volumes:
       - ./services/strapi:/srv/strapi
     environment:
@@ -76,7 +76,7 @@ services:
       HOST: 0.0.0.0
       PORT: 1337
     ports:
-      - "1337:1337"
+      - "127.0.0.1:${STRAPI_HOST_PORT:-1337}:1337"
     depends_on:
       postgres:
         condition: service_healthy

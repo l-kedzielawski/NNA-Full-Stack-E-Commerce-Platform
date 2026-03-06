@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/gtag";
+import { defaultLocale, getLocaleFromPathname, type SiteLocale } from "@/lib/i18n";
 
 type RequestQuoteFormProps = {
   productOptions: string[];
@@ -44,26 +46,26 @@ const initialState: FormState = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^[+\d\s\-().]{0,30}$/;
 
-function validateForm(f: FormState): FieldErrors {
+function validateForm(f: FormState, locale: SiteLocale): FieldErrors {
   const errors: FieldErrors = {};
 
-  if (!f.name.trim()) errors.name = "Full name is required.";
-  else if (f.name.trim().length < 2) errors.name = "Please enter your full name.";
+  if (!f.name.trim()) errors.name = locale === "pl" ? "Imie i nazwisko jest wymagane." : "Full name is required.";
+  else if (f.name.trim().length < 2) errors.name = locale === "pl" ? "Wpisz pelne imie i nazwisko." : "Please enter your full name.";
 
 
 
-  if (!f.email.trim()) errors.email = "Email address is required.";
-  else if (!EMAIL_RE.test(f.email.trim())) errors.email = "Please enter a valid email address.";
+  if (!f.email.trim()) errors.email = locale === "pl" ? "Adres e-mail jest wymagany." : "Email address is required.";
+  else if (!EMAIL_RE.test(f.email.trim())) errors.email = locale === "pl" ? "Podaj poprawny adres e-mail." : "Please enter a valid email address.";
 
   if (f.phone && !PHONE_RE.test(f.phone.trim()))
-    errors.phone = "Phone number contains invalid characters.";
+    errors.phone = locale === "pl" ? "Numer telefonu zawiera niepoprawne znaki." : "Phone number contains invalid characters.";
 
-  if (!f.country.trim()) errors.country = "Destination country is required.";
+  if (!f.country.trim()) errors.country = locale === "pl" ? "Kraj dostawy jest wymagany." : "Destination country is required.";
 
 
 
   if (f.message.trim().length > 0 && f.message.trim().length < 10)
-    errors.message = "Please provide a bit more detail.";
+    errors.message = locale === "pl" ? "Dodaj prosze troche wiecej szczegolow." : "Please provide a bit more detail.";
 
   return errors;
 }
@@ -76,6 +78,22 @@ export function RequestQuoteForm({
   productOptions,
   preselectedProduct,
 }: RequestQuoteFormProps) {
+  const pathname = usePathname() || "/";
+  const locale = getLocaleFromPathname(pathname) || defaultLocale;
+
+  const t = {
+    consentRequired:
+      locale === "pl"
+        ? "Zaakceptuj zgode na przetwarzanie danych przed wyslaniem formularza."
+        : "Please accept the data processing consent before submitting.",
+    submitError: locale === "pl" ? "Nie udalo sie wyslac zapytania ofertowego." : "Could not submit quote request.",
+    success:
+      locale === "pl"
+        ? "Dziekujemy. Otrzymalismy zapytanie i wrocilmy z odpowiedzia najszybciej jak to mozliwe."
+        : "Thanks. Your request is in. We will contact you shortly.",
+    genericError: locale === "pl" ? "Wystapil blad. Sprobuj ponownie." : "Something went wrong. Please try again.",
+  };
+
   const defaultProduct = useMemo(
     () =>
       preselectedProduct && productOptions.includes(preselectedProduct)
@@ -107,7 +125,7 @@ export function RequestQuoteForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const errors = validateForm(formState);
+    const errors = validateForm(formState, locale);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       // Scroll to first error
@@ -117,7 +135,7 @@ export function RequestQuoteForm({
     }
 
     if (!formState.consent) {
-      setServerMessage("Please accept the data processing consent before submitting.");
+      setServerMessage(t.consentRequired);
       setStatus("error");
       return;
     }
@@ -128,19 +146,22 @@ export function RequestQuoteForm({
     try {
       const response = await fetch("/api/quote", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-site-locale": locale,
+        },
         body: JSON.stringify(formState),
       });
 
       const data = (await response.json()) as { message?: string };
 
       if (!response.ok) {
-        throw new Error(data.message ?? "Could not submit quote request.");
+        throw new Error(data.message ?? t.submitError);
       }
 
       setStatus("success");
       setServerMessage(
-        data.message ?? "Thanks. Your request is in. We will contact you shortly.",
+        data.message ?? t.success,
       );
       trackEvent("generate_lead", {
         event_category: "quote",
@@ -151,7 +172,7 @@ export function RequestQuoteForm({
     } catch (error) {
       setStatus("error");
       setServerMessage(
-        error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        error instanceof Error ? error.message : t.genericError,
       );
       trackEvent("quote_submit_error", {
         event_category: "quote",
@@ -177,11 +198,11 @@ export function RequestQuoteForm({
       {/* Row 1: Name + Company */}
       <div className="grid gap-4 md:grid-cols-2">
         <Field
-          label="Full Name"
+          label={locale === "pl" ? "Imie i nazwisko" : "Full Name"}
           name="name"
           value={formState.name}
           onChange={(v) => setField("name", v)}
-          placeholder="Your full name"
+          placeholder={locale === "pl" ? "Pelne imie i nazwisko" : "Your full name"}
           className={inputClass("name")}
           autoComplete="name"
           maxLength={120}
@@ -189,11 +210,11 @@ export function RequestQuoteForm({
           error={fieldErrors.name}
         />
         <Field
-          label="Company (optional)"
+          label={locale === "pl" ? "Firma (opcjonalnie)" : "Company (optional)"}
           name="company"
           value={formState.company}
           onChange={(v) => setField("company", v)}
-          placeholder="Company name"
+          placeholder={locale === "pl" ? "Nazwa firmy" : "Company name"}
           className={`${inputBase} border-line focus:border-gold/40`}
           autoComplete="organization"
           maxLength={140}
@@ -204,7 +225,7 @@ export function RequestQuoteForm({
       {/* Row 2: Email + Phone */}
       <div className="grid gap-4 md:grid-cols-2">
         <Field
-          label="Email"
+          label={locale === "pl" ? "E-mail" : "Email"}
           name="email"
           type="email"
           value={formState.email}
@@ -217,7 +238,7 @@ export function RequestQuoteForm({
           error={fieldErrors.email}
         />
         <Field
-          label="Phone"
+          label={locale === "pl" ? "Telefon" : "Phone"}
           name="phone"
           type="tel"
           value={formState.phone}
@@ -234,11 +255,11 @@ export function RequestQuoteForm({
       {/* Row 3: Country + Product */}
       <div className="grid gap-4 md:grid-cols-2">
         <Field
-          label="Destination Country"
+          label={locale === "pl" ? "Kraj dostawy" : "Destination Country"}
           name="country"
           value={formState.country}
           onChange={(v) => setField("country", v)}
-          placeholder="e.g. Germany"
+          placeholder={locale === "pl" ? "np. Niemcy" : "e.g. Germany"}
           className={inputClass("country")}
           autoComplete="country-name"
           maxLength={80}
@@ -251,7 +272,7 @@ export function RequestQuoteForm({
             htmlFor="product"
             className="block text-[0.65rem] font-bold tracking-[0.2em] text-gold/55 uppercase"
           >
-            Product Interest (optional)
+            {locale === "pl" ? "Interesujacy produkt (opcjonalnie)" : "Product Interest (optional)"}
           </label>
           <select
             id="product"
@@ -260,7 +281,7 @@ export function RequestQuoteForm({
             onChange={(e) => setField("product", e.target.value)}
             className={`${inputBase} border-line focus:border-gold/40`}
           >
-            <option value="">Select a product</option>
+            <option value="">{locale === "pl" ? "Wybierz produkt" : "Select a product"}</option>
             {productOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -278,11 +299,11 @@ export function RequestQuoteForm({
 
       {/* Expected Quantity (optional) */}
       <Field
-        label="Expected Quantity (optional)"
+        label={locale === "pl" ? "Planowana ilosc (opcjonalnie)" : "Expected Quantity (optional)"}
         name="quantity"
         value={formState.quantity}
         onChange={(v) => setField("quantity", v)}
-        placeholder="e.g. 50 kg per month"
+        placeholder={locale === "pl" ? "np. 50 kg miesiecznie" : "e.g. 50 kg per month"}
         className={`${inputBase} border-line focus:border-gold/40`}
         autoComplete="off"
         maxLength={120}
@@ -294,7 +315,7 @@ export function RequestQuoteForm({
           htmlFor="message"
           className="block text-[0.65rem] font-bold tracking-[0.2em] text-gold/55 uppercase"
         >
-          Details (optional)
+          {locale === "pl" ? "Szczegoly (opcjonalnie)" : "Details (optional)"}
         </label>
         <textarea
           id="message"
@@ -307,7 +328,11 @@ export function RequestQuoteForm({
               ? "border-red-500/60 focus:border-red-500/80"
               : "border-line focus:border-gold/40"
           }`}
-          placeholder="Describe your use case, quality requirements, and preferred timeline."
+          placeholder={
+            locale === "pl"
+              ? "Opisz zastosowanie, wymagania jakosciowe i oczekiwany termin wdrozenia."
+              : "Describe your use case, quality requirements, and preferred timeline."
+          }
           maxLength={2000}
         />
         {fieldErrors.message ? (
@@ -345,20 +370,29 @@ export function RequestQuoteForm({
           required
         />
         <span>
-          I agree that Natural Mystic Aroma may process my details to respond to this inquiry
-          in accordance with the Privacy Policy.
+          {locale === "pl"
+            ? "Wyrazam zgode na przetwarzanie moich danych przez Natural Mystic Aroma w celu odpowiedzi na zapytanie, zgodnie z Polityka prywatnosci."
+            : "I agree that Natural Mystic Aroma may process my details to respond to this inquiry in accordance with the Privacy Policy."}
         </span>
       </label>
 
       {/* Submit row */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pt-2">
-        <p className="text-xs text-ink/35">We respond within 24 hours on business days.</p>
+        <p className="text-xs text-ink/35">
+          {locale === "pl" ? "Odpowiadamy w ciagu 24 godzin w dni robocze." : "We respond within 24 hours on business days."}
+        </p>
         <button
           type="submit"
           disabled={status === "loading"}
           className="group inline-flex items-center gap-2.5 rounded-full bg-gold px-6 py-3 text-sm font-bold text-bg shadow-[0_0_20px_rgba(201,169,110,0.25)] hover:bg-gold-light hover:shadow-[0_0_30px_rgba(201,169,110,0.4)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
         >
-          {status === "loading" ? "Sending…" : "Send Quote Request"}
+          {status === "loading"
+            ? locale === "pl"
+              ? "Wysylanie..."
+              : "Sending..."
+            : locale === "pl"
+              ? "Wyslij zapytanie ofertowe"
+              : "Send Quote Request"}
           {status !== "loading" && (
             <ArrowRight
               size={14}

@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { ArrowRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Contact | The Mystic Aroma",
   description:
-    "Get in touch with Natural Mystic Aroma — direct B2B supplier of Bourbon vanilla and spices from Madagascar. Personal contact, samples, and documentation.",
+    "Get in touch with Natural Mystic Aroma, direct B2B supplier of Bourbon vanilla and spices from Madagascar. Personal contact, samples, and documentation.",
 };
 
 const contacts = [
@@ -15,14 +17,14 @@ const contacts = [
     type: "Business Development & Sales",
     value: "l.kedzielawski@themysticaroma.com",
     href: "mailto:l.kedzielawski@themysticaroma.com",
-    desc: "Sourcing, pricing, samples & B2B partnerships — Łukasz",
+    desc: "Sourcing, pricing, samples & B2B partnerships, Łukasz",
   },
   {
     icon: Mail,
     type: "Customer Care & Sales",
     value: "k.kucharski@themysticaroma.com",
     href: "mailto:k.kucharski@themysticaroma.com",
-    desc: "Orders, documentation & trade queries — Karol",
+    desc: "Orders, documentation & trade queries, Karol",
   },
   {
     icon: MessageCircle,
@@ -34,7 +36,7 @@ const contacts = [
 ];
 
 const values = [
-  "Straight answers — no fluff",
+  "Straight answers, no fluff",
   "Direct access to Madagascar",
   "A long-term partner, not a transaction",
   "Predictable supply and transparent pricing",
@@ -42,7 +44,50 @@ const values = [
   "Flexible order volumes",
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const requestHeaders = await headers();
+  const localeHeader = requestHeaders.get("x-site-locale") || "";
+  const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+
+  const contactsLocalized =
+    locale === "pl"
+      ? [
+          {
+            icon: Mail,
+            type: "Rozwój biznesu i sprzedaż",
+            value: "l.kedzielawski@themysticaroma.com",
+            href: "mailto:l.kedzielawski@themysticaroma.com",
+            desc: "Sourcing, wyceny, próbki i partnerstwa B2B — Łukasz",
+          },
+          {
+            icon: Mail,
+            type: "Obsługa klienta i sprzedaż",
+            value: "k.kucharski@themysticaroma.com",
+            href: "mailto:k.kucharski@themysticaroma.com",
+            desc: "Zamówienia, dokumentacja i zapytania handlowe — Karol",
+          },
+          {
+            icon: MessageCircle,
+            type: "WhatsApp",
+            value: "+48 665 103 994",
+            href: "https://wa.me/48665103994",
+            desc: "Szybka odpowiedź w pilnych sprawach handlowych",
+          },
+        ]
+      : contacts;
+
+  const valuesLocalized =
+    locale === "pl"
+      ? [
+          "Konkretnie i bez lania wody",
+          "Bezpośredni dostęp do Madagaskaru",
+          "Partnerstwo długoterminowe, nie jednorazowa transakcja",
+          "Przewidywalna podaż i transparentne ceny",
+          "Pełna dokumentacja wykonana poprawnie",
+          "Elastyczne wolumeny zamówień",
+        ]
+      : values;
+
   return (
     <main className="min-h-screen">
 
@@ -63,22 +108,24 @@ export default function ContactPage() {
         <div className="relative z-10 container-shell py-24 pt-36">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-6 h-px bg-gold/60" />
-            <span className="label-sm text-gold/60">Get in Touch</span>
-          </div>
-          <h1
-            className="font-display text-ink leading-[0.9]"
-            style={{ fontSize: "clamp(3rem, 6vw, 6.5rem)" }}
-          >
-            Thank You for<br />
-            <span className="text-gold">Visiting Us.</span>
-          </h1>
-          <p className="mt-6 text-ink/55 text-base leading-relaxed max-w-lg">
-            Every conversation matters to us. Whether you&apos;re exploring our products,
-            ready to place an order, or looking for a long-term sourcing partner —
-            we respond personally, within one business day.
+                <span className="label-sm text-gold/60">{locale === "pl" ? "Skontaktuj się" : "Get in Touch"}</span>
+              </div>
+              <h1
+                className="font-display text-ink leading-[0.9]"
+                style={{ fontSize: "clamp(3rem, 6vw, 6.5rem)" }}
+              >
+                {locale === "pl" ? "Dziękujemy za" : "Thank You for"}<br />
+                <span className="text-gold">{locale === "pl" ? "Twoją wizytę." : "Visiting Us."}</span>
+              </h1>
+              <p className="mt-6 text-ink/55 text-base leading-relaxed max-w-lg">
+            {locale === "pl"
+              ? "Każda rozmowa ma dla nas znaczenie. Niezależnie od tego, czy dopiero poznajesz naszą ofertę, chcesz złożyć zamówienie, czy szukasz długoterminowego partnera sourcingowego — odpowiadamy osobiście, zwykle w ciągu jednego dnia roboczego."
+              : "Every conversation matters to us. Whether you're exploring our products, ready to place an order, or looking for a long-term sourcing partner, we respond personally, within one business day."}
           </p>
           <p className="mt-3 text-ink/35 text-sm">
-            Mon–Fri · 08:00–18:00 CET · Real people, no auto-replies.
+            {locale === "pl"
+              ? "Pon–Pt · 08:00–18:00 CET · Odpowiadają realne osoby, nie automaty."
+              : "Mon–Fri · 08:00–18:00 CET · Real people, no auto-replies."}
           </p>
         </div>
       </section>
@@ -88,7 +135,7 @@ export default function ContactPage() {
       {/* ── CONTACT CHANNELS ─────────────────────────────────── */}
       <section className="container-shell pt-16 pb-0">
         <div className="grid md:grid-cols-3 gap-5">
-          {contacts.map((c) => {
+          {contactsLocalized.map((c) => {
             const Icon = c.icon;
             return (
               <a
@@ -116,19 +163,19 @@ export default function ContactPage() {
       <section className="container-shell py-20">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-6 h-px bg-gold/60" />
-          <span className="label-sm text-gold/60">The Founders</span>
+          <span className="label-sm text-gold/60">{locale === "pl" ? "Założyciele" : "The Founders"}</span>
         </div>
         <h2
           className="font-display text-ink mb-3"
           style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}
         >
-          Talk directly<br />
-          <span className="text-gold">to the people behind it.</span>
+          {locale === "pl" ? "Porozmawiaj bezpośrednio" : "Talk directly"}<br />
+          <span className="text-gold">{locale === "pl" ? "z osobami, które to tworzą." : "to the people behind it."}</span>
         </h2>
         <p className="text-ink/45 text-sm leading-relaxed max-w-xl mb-14">
-          No ticketing system. No account managers. You speak directly with the
-          founders who built this company — and who still manage every sourcing
-          relationship personally.
+          {locale === "pl"
+            ? "Bez ticketów i bez anonimowych kolejek. Rozmawiasz bezpośrednio z założycielami, którzy budowali firmę i nadal osobiście prowadzą kluczowe relacje sourcingowe."
+            : "No ticketing system. No account managers. You speak directly with the founders who built this company, and who still manage every sourcing relationship personally."}
         </p>
 
         {/* ── ŁUKASZ — photo left, text right ── */}
@@ -152,7 +199,7 @@ export default function ContactPage() {
 
             {/* Text */}
             <div className="flex flex-col justify-center p-10 md:pl-8 border-t md:border-t-0 md:border-l border-line/30">
-              <p className="label-sm text-gold/50 mb-3">Business Development &amp; Sales</p>
+              <p className="label-sm text-gold/50 mb-3">{locale === "pl" ? "Rozwój biznesu i sprzedaż" : "Business Development & Sales"}</p>
               <h3
                 className="font-display text-ink mb-5 leading-tight"
                 style={{ fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)" }}
@@ -160,9 +207,9 @@ export default function ContactPage() {
                 Łukasz Kędzielawski
               </h3>
               <p className="text-sm text-ink/50 leading-relaxed mb-8 max-w-sm">
-                Leads direct sourcing relationships in Madagascar and manages key B2B
-                accounts across Europe. Your first call for product questions, samples,
-                and pricing.
+                {locale === "pl"
+                  ? "Prowadzi bezpośrednie relacje sourcingowe na Madagaskarze i obsługuje kluczowe konta B2B w Europie. To pierwszy kontakt w sprawach produktowych, próbek i wycen."
+                  : "Leads direct sourcing relationships in Madagascar and manages key B2B accounts across Europe. Your first call for product questions, samples, and pricing."}
               </p>
               <div className="space-y-3">
                 <a
@@ -191,7 +238,7 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-2 min-h-[420px]">
             {/* Text — comes first in DOM, second visually on desktop via order */}
             <div className="flex flex-col justify-center p-10 md:pr-8 border-b md:border-b-0 md:border-r border-line/30 order-2 md:order-1">
-              <p className="label-sm text-gold/50 mb-3">Customer Care &amp; Sales</p>
+              <p className="label-sm text-gold/50 mb-3">{locale === "pl" ? "Obsługa klienta i sprzedaż" : "Customer Care & Sales"}</p>
               <h3
                 className="font-display text-ink mb-5 leading-tight"
                 style={{ fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)" }}
@@ -199,9 +246,9 @@ export default function ContactPage() {
                 Karol Kucharski
               </h3>
               <p className="text-sm text-ink/50 leading-relaxed mb-8 max-w-sm">
-                Oversees supply chain logistics, certification compliance, and order
-                fulfilment from Poland. Contact Karol for documentation, shipping, and
-                trade queries.
+                {locale === "pl"
+                  ? "Odpowiada za logistykę łańcucha dostaw, zgodność certyfikacyjną i realizację zamówień z Polski. W sprawach dokumentacji, dostaw i zapytań handlowych skontaktuj się z Karolem."
+                  : "Oversees supply chain logistics, certification compliance, and order fulfilment from Poland. Contact Karol for documentation, shipping, and trade queries."}
               </p>
               <div className="space-y-3">
                 <a
@@ -249,26 +296,28 @@ export default function ContactPage() {
             <div>
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-6 h-px bg-gold/60" />
-                <span className="label-sm text-gold/60">Who We Work With</span>
+                <span className="label-sm text-gold/60">{locale === "pl" ? "Z kim pracujemy" : "Who We Work With"}</span>
               </div>
               <h2
                 className="font-display text-ink mb-5"
                 style={{ fontSize: "clamp(1.75rem, 3vw, 3rem)" }}
               >
-                Not every partner<br />
-                <span className="text-gold">is the right fit.</span>
+                {locale === "pl" ? "Nie każde partnerstwo" : "Not every partner"}<br />
+                <span className="text-gold">{locale === "pl" ? "będzie dobrym dopasowaniem." : "is the right fit."}</span>
               </h2>
               <p className="text-ink/50 text-sm leading-relaxed mb-4">
-                We don&apos;t just move products — we move standards. If you&apos;re
-                looking for the cheapest commodity spice, this isn&apos;t the place.
+                {locale === "pl"
+                  ? "Nie handlujemy tylko surowcem — dowozimy standard. Jeśli szukasz najtańszego towaru masowego, to nie jesteśmy dla Ciebie."
+                  : "We don't just move products, we move standards. If you're looking for the cheapest commodity spice, this isn't the place."}
               </p>
               <p className="text-ink/50 text-sm leading-relaxed">
-                But if you care about verified origin, sustainable trade, and ingredients
-                that truly deliver — we should talk. We invest in proof, not promises.
+                {locale === "pl"
+                  ? "Jeśli jednak liczy się dla Ciebie potwierdzone pochodzenie, uczciwy handel i składniki, które realnie dowozu jakość — porozmawiajmy. Inwestujemy w dowody, nie w obietnice."
+                  : "But if you care about verified origin, sustainable trade, and ingredients that truly deliver, we should talk. We invest in proof, not promises."}
               </p>
             </div>
             <div className="space-y-3">
-              {values.map((v) => (
+              {valuesLocalized.map((v) => (
                 <div key={v} className="flex items-center gap-3 text-sm text-ink/60">
                   <div className="w-1.5 h-1.5 rounded-full bg-gold/60 shrink-0" />
                   {v}
@@ -276,10 +325,10 @@ export default function ContactPage() {
               ))}
               <div className="pt-4">
                 <Link
-                  href="/b2b"
+                  href={withLocalePrefix("/b2b", locale)}
                   className="group inline-flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors"
                 >
-                  Learn about our B2B approach
+                  {locale === "pl"                   ? "Poznaj nasze podejście B2B" : "Learn about our B2B approach"}
                   <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
@@ -296,7 +345,7 @@ export default function ContactPage() {
           <div className="rounded-2xl border border-line/60 bg-card p-8 flex flex-col gap-6">
             {/* Light logo */}
             <div className="pb-2">
-              <p className="label-sm text-gold/50 mb-4">The Company</p>
+              <p className="label-sm text-gold/50 mb-4">{locale === "pl" ? "Spółka" : "The Company"}</p>
               <Image
                 src="/logo-light.png"
                 alt="Natural Mystic Aroma"
@@ -336,7 +385,7 @@ export default function ContactPage() {
 
             {/* Legal */}
             <div className="pt-4 border-t border-line/40">
-              <p className="label-sm text-ink/25 mb-1.5">Tax &amp; Registration</p>
+              <p className="label-sm text-ink/25 mb-1.5">{locale === "pl" ? "Dane rejestrowe i podatkowe" : "Tax & Registration"}</p>
               <div className="space-y-0.5 text-xs text-ink/30">
                 <p>TAX ID (NIP): PL7831881805</p>
                 <p>KRS: 0001039186 · REGON: 525446867</p>
@@ -347,25 +396,25 @@ export default function ContactPage() {
           {/* CTA card */}
           <div className="rounded-2xl border border-gold/20 bg-gold-dim p-8 flex flex-col justify-between">
             <div>
-              <p className="label-sm text-gold/60 mb-4">Ready to Source?</p>
+              <p className="label-sm text-gold/60 mb-4">{locale === "pl" ? "Gotowy na sourcing?" : "Ready to Source?"}</p>
               <h3
                 className="font-display text-ink mb-4"
                 style={{ fontSize: "clamp(1.75rem, 2.5vw, 2.5rem)" }}
               >
-                Start a B2B Inquiry
+                {locale === "pl" ? "Rozpocznij zapytanie B2B" : "Start a B2B Inquiry"}
               </h3>
               <p className="text-sm text-ink/55 leading-relaxed mb-8">
-                Tell us your volume, format, and application. We come back within
-                24 hours with a real, tailored offer — not an auto-reply.
-                Samples available on request.
+                {locale === "pl"
+                  ? "Podaj wolumen, format i zastosowanie. Odpowiemy w ciągu 1 dnia roboczego z konkretną, dopasowaną ofertą — bez automatycznych odpowiedzi. Próbki dostępne na prośbę."
+                                     : "Tell us your volume, format, and application. We come back within 1 business day with a real, tailored offer, not an auto-reply. Samples available on request."}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                href="/quote"
+                href={withLocalePrefix("/quote", locale)}
                 className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gold text-bg font-bold text-sm shadow-[0_0_20px_rgba(201,169,110,0.25)] hover:bg-gold-light hover:shadow-[0_0_30px_rgba(201,169,110,0.4)] transition-all duration-300"
               >
-                Start a B2B Inquiry
+                {locale === "pl" ? "Rozpocznij zapytanie B2B" : "Start a B2B Inquiry"}
                 <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <a
@@ -375,7 +424,7 @@ export default function ContactPage() {
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-line text-sm font-semibold text-ink/60 hover:border-gold/40 hover:text-ink transition-all duration-300"
               >
                 <MessageCircle size={14} />
-                WhatsApp Us
+                {locale === "pl" ? "Napisz na WhatsApp" : "WhatsApp Us"}
               </a>
             </div>
           </div>
