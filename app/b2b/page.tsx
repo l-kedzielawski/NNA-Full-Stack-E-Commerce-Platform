@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { Reveal } from "@/components/reveal";
+import { ThemedImage } from "@/components/themed-image";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -502,16 +502,18 @@ export default async function B2BPage() {
         <section className="relative min-h-[76vh] flex items-center overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="hero-zoom absolute inset-[-4%]">
-              <Image
-                src="/hero.jpg"
+              <ThemedImage
+                darkSrc="/hero.jpg"
+                lightSrc="/hero-light.png"
                 alt="Wanilia i przyprawy z Madagaskaru dla B2B"
                 fill
-                className="object-cover"
+                className="hero-main-image object-cover object-[72%_44%] md:object-[80%_40%]"
                 priority
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-bg/98 via-bg/86 to-bg/30" />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/50" />
+            <div className="absolute inset-0 hero-overlay-horizontal" />
+            <div className="absolute inset-0 hero-overlay-vertical" />
+            <div className="absolute inset-0 hero-overlay-radial" />
           </div>
 
           <div className="relative container-shell py-32">
@@ -913,14 +915,16 @@ export default async function B2BPage() {
         {/* ── CTA ── */}
         <section className="relative overflow-hidden border-t border-line/40">
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/hero.jpg"
+            <ThemedImage
+              darkSrc="/hero.jpg"
+              lightSrc="/hero-light.png"
               alt="B2B sourcing wanilii z Madagaskaru"
               fill
-              className="object-cover opacity-15"
+              className="hero-support-image object-cover object-[74%_42%] md:object-[82%_40%]"
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-bg/99 to-bg/85" />
+            <div className="absolute inset-0 hero-overlay-horizontal" />
+            <div className="absolute inset-0 hero-overlay-vertical" />
           </div>
 
           <div className="relative z-10 container-shell py-24">
@@ -978,16 +982,18 @@ export default async function B2BPage() {
       <section className="relative min-h-[76vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="hero-zoom absolute inset-[-4%]">
-            <Image
-              src="/hero.jpg"
+            <ThemedImage
+              darkSrc="/hero.jpg"
+              lightSrc="/hero-light.png"
               alt="Madagascar vanilla and spice sourcing for B2B supply"
               fill
-              className="object-cover"
+              className="hero-main-image object-cover object-[72%_44%] md:object-[80%_40%]"
               priority
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/98 via-bg/86 to-bg/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/50" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
+          <div className="absolute inset-0 hero-overlay-radial" />
         </div>
 
         <div className="relative container-shell py-32">
@@ -1373,14 +1379,16 @@ export default async function B2BPage() {
       {/* ── CTA ── */}
       <section className="relative overflow-hidden border-t border-line/40">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero.jpg"
+          <ThemedImage
+            darkSrc="/hero.jpg"
+            lightSrc="/hero-light.png"
             alt="B2B vanilla sourcing from Madagascar"
             fill
-            className="object-cover opacity-15"
+            className="hero-support-image object-cover object-[74%_42%] md:object-[82%_40%]"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/99 to-bg/85" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
         </div>
 
         <div className="relative z-10 container-shell py-24">

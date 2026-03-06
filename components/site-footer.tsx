@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { headers } from "next/headers";
 import { CookieSettingsButton } from "@/components/cookie-settings-button";
+import { ThemedImage } from "@/components/themed-image";
 import { defaultLocale, isSupportedLocale, type SiteLocale, withLocalePrefix } from "@/lib/i18n";
 
 const socials = [
@@ -166,7 +166,13 @@ export async function SiteFooter() {
             <div className="flex flex-col gap-5">
               <Link href={withLocalePrefix("/", locale)}>
                 <div className="relative h-11 w-[100px]">
-                  <Image src="/logo-light.png" alt="Natural Mystic Aroma" fill className="object-contain object-left" />
+                  <ThemedImage
+                    darkSrc="/logo-light.png"
+                    lightSrc="/logo-dark.png"
+                    alt="Natural Mystic Aroma"
+                    fill
+                    className="object-contain object-left"
+                  />
                 </div>
               </Link>
               <div>

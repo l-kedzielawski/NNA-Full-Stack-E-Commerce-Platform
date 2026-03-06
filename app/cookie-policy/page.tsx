@@ -77,67 +77,67 @@ const sections = [
 export default async function CookiePolicyPage() {
   const cookieGroupsPl = [
     {
-      name: "Niezbedne",
-      purpose: "Bezpieczenstwo, integralnosc sesji, checkout i podstawowe dzialanie strony.",
-      legalBasis: "Niezbednosc techniczna i uzasadniony interes.",
-      canDisable: "Nie. Sa wymagane do kluczowych funkcji serwisu.",
+      name: "Niezbędne",
+      purpose: "Bezpieczeństwo, integralność sesji, checkout i podstawowe działanie strony.",
+      legalBasis: "Niezbędność techniczna i uzasadniony interes.",
+      canDisable: "Nie. Są wymagane do kluczowych funkcji serwisu.",
       examples: "nma_cookie_consent (cookie), nma_cookie_consent (localStorage), mystic_cart_id (localStorage).",
     },
     {
       name: "Preferencje",
-      purpose: "Zapisuja ustawienia interfejsu i wybor zgody, aby poprawic wygode korzystania.",
+      purpose: "Zapisują ustawienia interfejsu i wybór zgody, aby poprawić wygodę korzystania.",
       legalBasis: "Zgoda.",
       canDisable: "Tak.",
       examples: "Stan preferencji cookies i podobne ustawienia wygody.",
     },
     {
       name: "Analityka",
-      purpose: "Pomaga zrozumiec ruch i wydajnosc stron w formie zagregowanej.",
+      purpose: "Pomaga zrozumieć ruch i wydajność stron w formie zagregowanej.",
       legalBasis: "Zgoda.",
       canDisable: "Tak.",
       examples: "Identyfikatory Google Analytics 4 (np. _ga, _ga_*).",
     },
     {
       name: "Marketing",
-      purpose: "Wykorzystywane do targetowania reklam, atrybucji kampanii i profilowania miedzy serwisami.",
+      purpose: "Wykorzystywane do targetowania reklam, atrybucji kampanii i profilowania między serwisami.",
       legalBasis: "Zgoda.",
       canDisable: "Tak.",
-      examples: "Domyslnie nieaktywne na tej stronie.",
+      examples: "Domyślnie nieaktywne na tej stronie.",
     },
   ];
 
   const sectionsPl = [
     {
-      title: "1. Kim jestesmy",
-      body: `Niniejsza Polityka cookies dotyczy serwisu prowadzonego przez Natural Mystic Aroma Sp. z o.o. (ul. Pamiatkowa 2/56, 61-512 Poznan, Polska; NIP: PL7831881805). Dokument wyjasnia, w jaki sposob i w jakim celu korzystamy z cookies i podobnych technologii w serwisie themysticaroma.com oraz powiazanych stronach sklepu.`,
+      title: "1. Kim jesteśmy",
+      body: `Niniejsza Polityka cookies dotyczy serwisu prowadzonego przez Natural Mystic Aroma Sp. z o.o. (ul. Pamiątkowa 2/56, 61-512 Poznań, Polska; NIP: PL7831881805). Dokument wyjaśnia, w jaki sposób i w jakim celu korzystamy z cookies i podobnych technologii w serwisie themysticaroma.com oraz powiązanych stronach sklepu.`,
     },
     {
-      title: "2. Czym sa cookies",
-      body: `Cookies to male pliki tekstowe zapisywane na urzadzeniu uzytkownika. Czesciowo sa to pliki pierwszej strony ustawiane przez nasz serwis, a czesciowo moga pochodzic od narzedzi zewnetrznych aktywowanych po uzyskaniu zgody. Korzystamy tez z localStorage do funkcji technicznych (np. ciaglosc koszyka i zapamietanie zgody).`,
+      title: "2. Czym są cookies",
+      body: `Cookies to małe pliki tekstowe zapisywane na urządzeniu użytkownika. Częściowo są to pliki pierwszej strony ustawiane przez nasz serwis, a częściowo mogą pochodzić od narzędzi zewnętrznych aktywowanych po uzyskaniu zgody. Korzystamy też z localStorage do funkcji technicznych (np. ciągłość koszyka i zapamiętanie zgody).`,
     },
     {
       title: "3. Podstawa prawna (RODO i ePrivacy)",
-      body: `Technologie niezbedne stosujemy, aby zapewnic podstawowe funkcje serwisu i bezpieczenstwo transakcji. Kategorie opcjonalne (preferencje, analityka, marketing) uruchamiamy dopiero po wyrazeniu zgody. Zgode mozna wycofac lub zmienic w dowolnym momencie przez "Ustawienia cookies" w stopce.`,
+      body: `Technologie niezbędne stosujemy, aby zapewnić podstawowe funkcje serwisu i bezpieczeństwo transakcji. Kategorie opcjonalne (preferencje, analityka, marketing) uruchamiamy dopiero po wyrażeniu zgody. Zgodę można wycofać lub zmienić w dowolnym momencie przez "Ustawienia cookies" w stopce.`,
     },
     {
       title: "4. Okres przechowywania",
-      body: `Okres przechowywania zalezy od technologii i dostawcy. Rekord zgody przechowujemy do 12 miesiecy (o ile nie zostanie zmieniony wczesniej). Identyfikatory analityczne, jesli aktywne, podlegaja ustawieniom retencji i wygasania Google Analytics. Cookies i dane strony mozesz usunac w ustawieniach przegladarki.`,
+      body: `Okres przechowywania zależy od technologii i dostawcy. Rekord zgody przechowujemy do 12 miesięcy (o ile nie zostanie zmieniony wcześniej). Identyfikatory analityczne, jeśli aktywne, podlegają ustawieniom retencji i wygasania Google Analytics. Cookies i dane strony możesz usunąć w ustawieniach przeglądarki.`,
     },
     {
-      title: "5. Transfery miedzynarodowe",
-      body: `Jezeli opcjonalne narzedzia analityczne obejmuja przetwarzanie poza EOG, stosujemy uznane zabezpieczenia, m.in. Standardowe Klauzule Umowne oraz dodatkowe srodki wymagane prawem.`,
+      title: "5. Transfery międzynarodowe",
+      body: `Jeżeli opcjonalne narzędzia analityczne obejmują przetwarzanie poza EOG, stosujemy uznane zabezpieczenia, m.in. Standardowe Klauzule Umowne oraz dodatkowe środki wymagane prawem.`,
     },
     {
-      title: "6. Zarzadzanie cookies",
-      body: `Zgoda moze byc zarzadzana w dowolnym momencie przez "Ustawienia cookies" w stopce. Cookies mozna tez blokowac lub usuwac z poziomu przegladarki. Zablokowanie technologii niezbednych moze uniemozliwic checkout i inne kluczowe funkcje.`,
+      title: "6. Zarządzanie cookies",
+      body: `Zgoda może być zarządzana w dowolnym momencie przez "Ustawienia cookies" w stopce. Cookies można też blokować lub usuwać z poziomu przeglądarki. Zablokowanie technologii niezbędnych może uniemożliwić checkout i inne kluczowe funkcje.`,
     },
     {
-      title: "7. Technologie zewnetrzne",
-      body: `Po udzieleniu zgody analitycznej strona moze ladowac Google Analytics 4 do celow pomiarowych. Technologie marketingowe nie sa aktywne domyslnie i zostana uruchomione dopiero po wdrozeniu oraz uzyskaniu zgody.`,
+      title: "7. Technologie zewnętrzne",
+      body: `Po udzieleniu zgody analitycznej strona może ładować Google Analytics 4 do celów pomiarowych. Technologie marketingowe nie są aktywne domyślnie i zostaną uruchomione dopiero po wdrożeniu oraz uzyskaniu zgody.`,
     },
     {
       title: "8. Aktualizacje i kontakt",
-      body: `Polityka cookies moze byc aktualizowana wraz ze zmianami prawa lub technologii. Data najnowszej wersji jest podana u gory strony. W razie pytan napisz na info@themysticaroma.com. Mozesz tez wniesc skarge do Prezesa UODO.`,
+      body: `Polityka cookies może być aktualizowana wraz ze zmianami prawa lub technologii. Data najnowszej wersji jest podana u góry strony. W razie pytań napisz na info@themysticaroma.com. Możesz też wnieść skargę do Prezesa UODO.`,
     },
   ];
 
@@ -156,7 +156,7 @@ export default async function CookiePolicyPage() {
           <h1 className="font-display text-5xl text-ink mb-3">{locale === "pl" ? "Polityka cookies" : "Cookie Policy"}</h1>
           <p className="text-ink/45 text-sm">
             {locale === "pl"
-              ? "Ostatnia aktualizacja: luty 2026 · zgodnosc z RODO i ePrivacy"
+              ? "Ostatnia aktualizacja: luty 2026 · zgodność z RODO i ePrivacy"
               : "Last updated: February 2026 · GDPR and ePrivacy aligned"}
           </p>
         </div>
@@ -174,8 +174,8 @@ export default async function CookiePolicyPage() {
                   <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Kategoria" : "Category"}</th>
                   <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Cel" : "Purpose"}</th>
                   <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Podstawa prawna" : "Legal Basis"}</th>
-                  <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Czy mozna wylaczyc?" : "Can You Disable?"}</th>
-                  <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Przyklady" : "Typical Examples"}</th>
+                  <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Czy można wyłączyć?" : "Can You Disable?"}</th>
+                  <th className="px-4 py-3 text-[0.65rem] tracking-[0.16em] uppercase text-gold/80">{locale === "pl" ? "Przykłady" : "Typical Examples"}</th>
                 </tr>
               </thead>
               <tbody>

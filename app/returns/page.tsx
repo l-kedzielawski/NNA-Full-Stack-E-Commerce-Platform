@@ -54,23 +54,23 @@ export default async function ReturnsPage() {
       ? [
           {
             n: "01",
-            title: "Sprawdz przesylke po odbiorze",
-            body: "Zweryfikuj towar w ciagu 2 dni roboczych od dostawy. Sprawdz uszkodzenia, niezgodnosci asortymentu i roznice jakosciowe. W razie potrzeby odnotuj uwagi na dokumentach przewoznika.",
+            title: "Sprawdź przesyłkę po odbiorze",
+            body: "Zweryfikuj towar w ciągu 2 dni roboczych od dostawy. Sprawdź uszkodzenia, niezgodności asortymentu i różnice jakościowe. W razie potrzeby odnotuj uwagi na dokumentach przewoźnika.",
           },
           {
             n: "02",
-            title: "Skontaktuj sie niezwlocznie",
-            body: "Napisz na orders@themysticaroma.com najszybciej jak to mozliwe. Dla roszczen jakosciowych B2B prosimy o zgloszenie w ciagu 5 dni roboczych od dostawy, o ile przepisy bezwzgledne nie stanowia inaczej. Dolacz numer zamowienia, opis problemu i zdjecia produktu oraz opakowania.",
+            title: "Skontaktuj się niezwłocznie",
+            body: "Napisz na orders@themysticaroma.com najszybciej jak to możliwe. Dla roszczeń jakościowych B2B prosimy o zgłoszenie w ciągu 5 dni roboczych od dostawy, o ile przepisy bezwzględne nie stanowią inaczej. Dołącz numer zamówienia, opis problemu i zdjęcia produktu oraz opakowania.",
           },
           {
             n: "03",
             title: "Weryfikacja",
-            body: "Zweryfikujemy zgloszenie w ciagu 3 dni roboczych. W razie potrzeby poprosimy o probe produktu do analizy laboratoryjnej. Kazde zgloszenie jakosciowe traktujemy priorytetowo.",
+            body: "Zweryfikujemy zgłoszenie w ciągu 3 dni roboczych. W razie potrzeby poprosimy o próbę produktu do analizy laboratoryjnej. Każde zgłoszenie jakościowe traktujemy priorytetowo.",
           },
           {
             n: "04",
-            title: "Rozwiazanie",
-            body: "Uznane reklamacje rozwiazujemy przez: (a) wysylke zamienna, (b) note kredytowa na kolejne zamowienia, lub (c) zwrot czesciowy/pelny zaleznie od charakteru sprawy. Celem jest zamkniecie procesu w ciagu 10 dni roboczych.",
+            title: "Rozwiązanie",
+            body: "Uznane reklamacje rozwiązujemy przez: (a) wysyłkę zamienną, (b) notę kredytową na kolejne zamówienia, lub (c) zwrot częściowy/pełny zależnie od charakteru sprawy. Celem jest zamknięcie procesu w ciągu 10 dni roboczych.",
           },
         ]
       : steps;
@@ -81,12 +81,12 @@ export default async function ReturnsPage() {
           {
             title: "Formularz reklamacyjny (PDF)",
             href: "/pdfs/COMPLAINT-FORM.pdf",
-            description: "Uzyj tego formularza, aby zglosic wady produktu, uszkodzenia lub problemy z dostawa.",
+            description: "Użyj tego formularza, aby zgłosić wady produktu, uszkodzenia lub problemy z dostawą.",
           },
           {
-            title: "Formularz odstapienia (PDF)",
+            title: "Formularz odstąpienia (PDF)",
             href: "/pdfs/WITHDRAWAL-FORM.pdf",
-            description: "Uzyj tego formularza przy ustawowym odstapieniu konsumenckim, jesli ma zastosowanie.",
+            description: "Użyj tego formularza przy ustawowym odstąpieniu konsumenckim, jeśli ma zastosowanie.",
           },
         ]
       : downloadableForms;
@@ -95,14 +95,14 @@ export default async function ReturnsPage() {
     <main className="pt-20">
       <section className="py-24 bg-bg-mid border-b border-line">
         <div className="container-shell max-w-2xl mx-auto">
-          <p className="label-sm text-gold mb-4">{locale === "pl" ? "Obsluga klienta" : "Customer Service"}</p>
+          <p className="label-sm text-gold mb-4">{locale === "pl" ? "Obsługa klienta" : "Customer Service"}</p>
           <h1 className="font-display text-5xl text-ink mb-3">
             {locale === "pl" ? "Zwroty i" : "Returns &"}<br />
             <span className="text-gold">{locale === "pl" ? "reklamacje" : "Complaints"}</span>
           </h1>
           <p className="text-ink/60 text-lg leading-relaxed mt-4">
             {locale === "pl"
-              ? "Bierzemy odpowiedzialnosc za jakosc kazdej wysylki. Jesli cos nie gra, rozwiazemy to szybko i profesjonalnie."
+              ? "Bierzemy odpowiedzialność za jakość każdej wysyłki. Jeśli coś nie gra, rozwiążemy to szybko i profesjonalnie."
               : "We stand behind the quality of every shipment. If something isn't right, we want to make it right quickly and professionally."}
           </p>
         </div>
@@ -110,7 +110,7 @@ export default async function ReturnsPage() {
 
       {/* Process steps */}
       <section className="container-shell py-20 max-w-3xl mx-auto">
-        <h2 className="font-display text-3xl text-ink mb-12">{locale === "pl" ? "Jak to dziala" : "The Process"}</h2>
+        <h2 className="font-display text-3xl text-ink mb-12">{locale === "pl" ? "Jak to działa" : "The Process"}</h2>
         <div className="space-y-6">
           {stepsLocalized.map((s) => (
             <div key={s.n} className="flex gap-6 items-start border border-line rounded-xl p-6 bg-bg hover:border-gold/20 transition-colors">
@@ -130,18 +130,18 @@ export default async function ReturnsPage() {
       <section className="bg-bg-mid border-y border-line py-16">
         <div className="container-shell max-w-3xl mx-auto">
           <h2 className="font-display text-3xl text-ink mb-8">
-            {locale === "pl" ? "Warunki reklamacji jakosciowej B2B" : "Conditions for B2B Quality Claims"}
+            {locale === "pl" ? "Warunki reklamacji jakościowej B2B" : "Conditions for B2B Quality Claims"}
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-bg border border-line rounded-xl p-6">
-              <p className="font-semibold text-ink mb-3">{locale === "pl" ? "Akceptowane zgloszenia" : "Accepted Claims"}</p>
+              <p className="font-semibold text-ink mb-3">{locale === "pl" ? "Akceptowane zgłoszenia" : "Accepted Claims"}</p>
               <ul className="space-y-2 text-sm text-ink/60">
                 {[
-                  locale === "pl" ? "Produkty istotnie odbiegajace od specyfikacji" : "Products materially different from specification",
-                  locale === "pl" ? "Potwierdzalne zanieczyszczenia lub ciala obce" : "Verifiable contamination or foreign matter",
-                  locale === "pl" ? "Wysylka nieprawidlowego asortymentu" : "Incorrect products shipped",
-                  locale === "pl" ? "Uszkodzenia transportowe (z dokumentacja przewoznika)" : "Damage in transit (with carrier documentation)",
-                  locale === "pl" ? "Brak wymaganych dokumentow certyfikacyjnych" : "Missing certification documents",
+                  locale === "pl" ? "Produkty istotnie odbiegające od specyfikacji" : "Products materially different from specification",
+                  locale === "pl" ? "Potwierdzalne zanieczyszczenia lub ciała obce" : "Verifiable contamination or foreign matter",
+                  locale === "pl" ? "Wysyłka nieprawidłowego asortymentu" : "Incorrect products shipped",
+                  locale === "pl" ? "Uszkodzenia transportowe (z dokumentacją przewoźnika)" : "Damage in transit (with carrier documentation)",
+                  locale === "pl" ? "Brak wymaganych dokumentów certyfikacyjnych" : "Missing certification documents",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="text-gold mt-0.5">✓</span>
@@ -151,14 +151,14 @@ export default async function ReturnsPage() {
               </ul>
             </div>
             <div className="bg-bg border border-line rounded-xl p-6">
-              <p className="font-semibold text-ink mb-3">{locale === "pl" ? "Zgloszenia nieakceptowane" : "Not Accepted"}</p>
+              <p className="font-semibold text-ink mb-3">{locale === "pl" ? "Zgłoszenia nieakceptowane" : "Not Accepted"}</p>
               <ul className="space-y-2 text-sm text-ink/60">
                 {[
-                  locale === "pl" ? "Zgloszenia po uplywie 5 dni roboczych od dostawy" : "Claims submitted after 5 business days of delivery",
-                  locale === "pl" ? "Produkty otwarte i czesciowo zuzyte" : "Products that have been opened and partially used",
-                  locale === "pl" ? "Preferencje subiektywne (intensywnosc aromatu, odcien)" : "Subjective preference (aroma intensity, color shade)",
-                  locale === "pl" ? "Uszkodzenia wynikajace z niewlasciwego magazynowania po stronie Kupujacego" : "Damage caused by improper storage by Buyer",
-                  locale === "pl" ? "Zamowienia specjalne/niestandardowe (o ile nie sa wadliwe)" : "Custom/special orders (unless defective)",
+                  locale === "pl" ? "Zgłoszenia po upływie 5 dni roboczych od dostawy" : "Claims submitted after 5 business days of delivery",
+                  locale === "pl" ? "Produkty otwarte i częściowo zużyte" : "Products that have been opened and partially used",
+                  locale === "pl" ? "Preferencje subiektywne (intensywność aromatu, odcień)" : "Subjective preference (aroma intensity, color shade)",
+                  locale === "pl" ? "Uszkodzenia wynikające z niewłaściwego magazynowania po stronie Kupującego" : "Damage caused by improper storage by Buyer",
+                  locale === "pl" ? "Zamówienia specjalne/niestandardowe (o ile nie są wadliwe)" : "Custom/special orders (unless defective)",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="text-ink/30 mt-0.5">✗</span>
@@ -173,24 +173,24 @@ export default async function ReturnsPage() {
 
       <section className="container-shell py-16 max-w-3xl mx-auto">
         <h2 className="font-display text-3xl text-ink mb-6">
-          {locale === "pl" ? "Zwroty konsumenckie (sprzedaz na odleglosc UE)" : "Consumer Returns (EU Distance Sales)"}
+            {locale === "pl" ? "Zwroty konsumenckie (sprzedaż na odległość UE)" : "Consumer Returns (EU Distance Sales)"}
         </h2>
         <div className="rounded-xl border border-line bg-bg-mid/60 p-6 space-y-4">
           <p className="text-sm text-ink/65 leading-relaxed">
             {locale === "pl"
-              ? "Jezeli kupujesz jako konsument, moze przyslugiwac Ci ustawowe 14-dniowe prawo odstapienia od umowy liczone od dnia dostawy, chyba ze zastosowanie ma wyjatek ustawowy. Typowe wyjatki to m.in. zapieczetowane towary, ktore po otwarciu nie nadaja sie do zwrotu ze wzgledow higienicznych, oraz towary wykonane wedlug Twojej specyfikacji."
+              ? "Jeżeli kupujesz jako konsument, może przysługiwać Ci ustawowe 14-dniowe prawo odstąpienia od umowy liczone od dnia dostawy, chyba że zastosowanie ma wyjątek ustawowy. Typowe wyjątki to m.in. zapieczętowane towary, które po otwarciu nie nadają się do zwrotu ze względów higienicznych, oraz towary wykonane według Twojej specyfikacji."
               : "If you purchase as a consumer, you may have a statutory 14-day right of withdrawal from delivery, unless a legal exception applies. Typical exceptions include sealed goods that are not suitable for return for health or hygiene reasons once unsealed, or custom-made goods prepared to your specification."}
           </p>
           <p className="text-sm text-ink/65 leading-relaxed">
-            {locale === "pl" ? "Aby odstapic od umowy, napisz na" : "To request withdrawal, email"}
+            {locale === "pl" ? "Aby odstąpić od umowy, napisz na" : "To request withdrawal, email"}
             <a href="mailto:orders@themysticaroma.com" className="text-gold hover:text-gold-light transition-colors"> orders@themysticaroma.com</a>
             {locale === "pl"
-              ? " podajac numer zamowienia i oswiadczenie o odstapieniu przed odeslaniem towaru."
+              ? " podając numer zamówienia i oświadczenie o odstąpieniu przed odesłaniem towaru."
               : " with your order number and withdrawal notice before sending goods back."}
           </p>
           <p className="text-xs text-ink/45 leading-relaxed">
             {locale === "pl"
-              ? "Niniejsza sekcja nie ogranicza Twoich bezwzglednie obowiazujacych praw wynikajacych z przepisow konsumenckich."
+              ? "Niniejsza sekcja nie ogranicza Twoich bezwzględnie obowiązujących praw wynikających z przepisów konsumenckich."
               : "This section does not limit any mandatory rights you have under applicable consumer law."}
           </p>
         </div>
@@ -217,14 +217,14 @@ export default async function ReturnsPage() {
 
       {/* Contact */}
       <section className="container-shell py-16 text-center max-w-xl mx-auto">
-        <h2 className="font-display text-3xl text-ink mb-4">{locale === "pl" ? "Zglos reklamacje" : "Submit a Complaint"}</h2>
+        <h2 className="font-display text-3xl text-ink mb-4">{locale === "pl" ? "Zgłoś reklamację" : "Submit a Complaint"}</h2>
         <p className="text-ink/55 mb-6">
           {locale === "pl" ? "Napisz na" : "Email us at"}{" "}
           <a href="mailto:orders@themysticaroma.com" className="text-gold hover:text-gold-light transition-colors font-medium">
             orders@themysticaroma.com
           </a>{" "}
           {locale === "pl"
-            ? "podajac numer zamowienia, zdjecia i opis problemu."
+            ? "podając numer zamówienia, zdjęcia i opis problemu."
             : "with your order number, photos, and a description of the issue."}
         </p>
         <Link

@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { ArrowRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { ThemedImage } from "@/components/themed-image";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -94,16 +95,18 @@ export default async function ContactPage() {
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden min-h-[55vh] flex items-end">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero.jpg"
+          <ThemedImage
+            darkSrc="/hero.jpg"
+            lightSrc="/hero-light.png"
             alt="Madagascar vanilla fields"
             fill
-            className="object-cover object-center opacity-25 hero-zoom"
+            className="hero-main-image hero-zoom object-cover object-[72%_46%] md:object-[80%_42%]"
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/80 to-bg/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/50 to-transparent" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
+          <div className="absolute inset-0 hero-overlay-radial" />
         </div>
         <div className="relative z-10 container-shell py-24 pt-36">
           <div className="flex items-center gap-3 mb-5">
@@ -160,64 +163,83 @@ export default async function ContactPage() {
       </section>
 
       {/* ── MEET US + WHO WE WORK WITH ────────────────────────── */}
-      <section className="container-shell py-20">
-        <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-6 lg:gap-8 mb-14">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-px bg-gold/60" />
-              <span className="label-sm text-gold/60">{locale === "pl" ? "Poznaj nas" : "Meet Us"}</span>
-            </div>
-            <h2
-              className="font-display text-ink mb-3"
-              style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}
-            >
-              {locale === "pl" ? "Porozmawiaj bezpośrednio" : "Talk directly"}<br />
-              <span className="text-gold">{locale === "pl" ? "z osobami, które to tworzą." : "to the people behind it."}</span>
-            </h2>
-            <p className="text-ink/45 text-sm leading-relaxed max-w-xl">
-              {locale === "pl"
-                ? "Bez ticketów i bez anonimowych kolejek. Rozmawiasz bezpośrednio z zespołem, który prowadzi sourcing i osobiście odpowiada za każdy kluczowy kontakt handlowy."
-                : "No ticketing system. No anonymous queues. You speak directly with the team that runs sourcing and personally owns every key business relationship."}
-            </p>
-          </div>
+      <section className="container-shell pt-20 pb-5">
+        <div className="relative overflow-hidden rounded-3xl border border-line/60 bg-card/70 p-5 sm:p-7 lg:p-9 mb-10">
+          <div className="absolute -top-16 -left-16 h-56 w-56 rounded-full bg-gold/10 blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl" />
 
-          <div className="rounded-2xl border border-line/60 bg-card p-7 sm:p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-px bg-gold/60" />
-              <span className="label-sm text-gold/60">{locale === "pl" ? "Z kim pracujemy" : "Who We Work With"}</span>
+          <div className="relative grid lg:grid-cols-[1.05fr_0.95fr] gap-5 lg:gap-6">
+            <div className="rounded-2xl border border-line/40 bg-bg-soft/30 p-6 sm:p-7 lg:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-6 h-px bg-gold/60" />
+                <span className="label-sm text-gold/60">{locale === "pl" ? "Poznaj nas" : "Meet Us"}</span>
+              </div>
+              <h2
+                className="font-display text-ink mb-4 leading-[0.95]"
+                style={{ fontSize: "clamp(2rem, 3.2vw, 3.25rem)" }}
+              >
+                {locale === "pl" ? "Porozmawiaj bezpośrednio" : "Talk directly"}<br />
+                <span className="text-gold">{locale === "pl" ? "z osobami, które to tworzą." : "to the people behind it."}</span>
+              </h2>
+              <p className="text-ink/55 text-sm leading-relaxed max-w-xl">
+                {locale === "pl"
+                  ? "Bez ticketów i bez anonimowych kolejek. Rozmawiasz bezpośrednio z zespołem, który prowadzi sourcing i osobiście odpowiada za każdy kluczowy kontakt handlowy."
+                  : "No ticketing system. No anonymous queues. You speak directly with the team that runs sourcing and personally owns every key business relationship."}
+              </p>
+
+              <div className="mt-6 grid sm:grid-cols-3 gap-2.5">
+                {(locale === "pl"
+                  ? ["3 osoby kontaktowe", "Odpowiedź do 1 dnia", "Bezpośredni sourcing"]
+                  : ["3 direct contacts", "Reply within 1 business day", "Direct sourcing"]
+                ).map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-full border border-line/40 bg-card/70 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-ink/70"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3
-              className="font-display text-ink mb-4"
-              style={{ fontSize: "clamp(1.45rem, 2.2vw, 2rem)" }}
-            >
-              {locale === "pl" ? "Nie każde partnerstwo" : "Not every partner"}<br />
-              <span className="text-gold">{locale === "pl" ? "będzie dobrym dopasowaniem." : "is the right fit."}</span>
-            </h3>
-            <p className="text-ink/50 text-sm leading-relaxed mb-3">
-              {locale === "pl"
-                ? "Nie handlujemy tylko surowcem - dowozimy standard. Jeśli szukasz najtańszego towaru masowego, to nie jesteśmy dla Ciebie."
-                : "We don't just move products, we move standards. If you're looking for the cheapest commodity spice, this isn't the place."}
-            </p>
-            <p className="text-ink/50 text-sm leading-relaxed mb-5">
-              {locale === "pl"
-                ? "Jeśli jednak liczy się dla Ciebie potwierdzone pochodzenie, uczciwy handel i składniki, które realnie dowożą jakość - porozmawiajmy. Inwestujemy w dowody, nie w obietnice."
-                : "But if you care about verified origin, sustainable trade, and ingredients that truly deliver, we should talk. We invest in proof, not promises."}
-            </p>
-            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5 mb-5">
-              {valuesLocalized.map((v) => (
-                <div key={v} className="flex items-center gap-2.5 text-sm text-ink/60">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gold/60 shrink-0" />
-                  {v}
-                </div>
-              ))}
+
+            <div className="rounded-2xl border border-line/50 bg-card p-6 sm:p-7 lg:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-6 h-px bg-gold/60" />
+                <span className="label-sm text-gold/60">{locale === "pl" ? "Z kim pracujemy" : "Who We Work With"}</span>
+              </div>
+              <h3
+                className="font-display text-ink mb-4 leading-tight"
+                style={{ fontSize: "clamp(1.45rem, 2.2vw, 2rem)" }}
+              >
+                {locale === "pl" ? "Nie każde partnerstwo" : "Not every partner"}<br />
+                <span className="text-gold">{locale === "pl" ? "będzie dobrym dopasowaniem." : "is the right fit."}</span>
+              </h3>
+              <p className="text-ink/55 text-sm leading-relaxed mb-3">
+                {locale === "pl"
+                  ? "Nie handlujemy tylko surowcem - dowozimy standard. Jeśli szukasz najtańszego towaru masowego, to nie jesteśmy dla Ciebie."
+                  : "We don't just move products, we move standards. If you're looking for the cheapest commodity spice, this isn't the place."}
+              </p>
+              <p className="text-ink/55 text-sm leading-relaxed mb-5">
+                {locale === "pl"
+                  ? "Jeśli jednak liczy się dla Ciebie potwierdzone pochodzenie, uczciwy handel i składniki, które realnie dowożą jakość - porozmawiajmy. Inwestujemy w dowody, nie w obietnice."
+                  : "But if you care about verified origin, sustainable trade, and ingredients that truly deliver, we should talk. We invest in proof, not promises."}
+              </p>
+              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5 mb-5">
+                {valuesLocalized.map((v) => (
+                  <div key={v} className="flex items-center gap-2.5 text-sm text-ink/68">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gold/60 shrink-0" />
+                    {v}
+                  </div>
+                ))}
+              </div>
+              <Link
+                href={withLocalePrefix("/b2b", locale)}
+                className="group inline-flex items-center gap-2 text-sm text-gold/75 hover:text-gold transition-colors"
+              >
+                {locale === "pl" ? "Poznaj nasze podejście B2B" : "Learn about our B2B approach"}
+                <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </div>
-            <Link
-              href={withLocalePrefix("/b2b", locale)}
-              className="group inline-flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors"
-            >
-              {locale === "pl" ? "Poznaj nasze podejście B2B" : "Learn about our B2B approach"}
-              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-            </Link>
           </div>
         </div>
 
@@ -365,7 +387,7 @@ export default async function ContactPage() {
       </section>
 
       {/* ── COMPANY + QUOTE ──────────────────────────────────── */}
-      <section className="container-shell py-16">
+      <section className="container-shell pt-0 pb-16">
         <div className="grid md:grid-cols-2 gap-6">
 
           {/* Company card */}
@@ -373,8 +395,9 @@ export default async function ContactPage() {
             {/* Light logo */}
             <div className="pb-2">
               <p className="label-sm text-gold/50 mb-4">{locale === "pl" ? "Spółka" : "The Company"}</p>
-              <Image
-                src="/logo-light.png"
+              <ThemedImage
+                darkSrc="/logo-light.png"
+                lightSrc="/logo-dark.png"
                 alt="Natural Mystic Aroma"
                 width={220}
                 height={108}

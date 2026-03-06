@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import { ProductShop } from "@/components/product-catalog";
 import { Reveal } from "@/components/reveal";
 import { MarqueeStrip } from "@/components/marquee-strip";
+import { ThemedImage } from "@/components/themed-image";
 import { getAllProducts, getProductCategories } from "@/lib/products";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
@@ -31,16 +31,17 @@ export default async function ProductsPage() {
       {/* Hero banner */}
       <section className="relative overflow-hidden min-h-[42vh] flex items-center">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero.jpg"
+          <ThemedImage
+            darkSrc="/hero.jpg"
+            lightSrc="/hero-light.png"
             alt="Madagascar products"
             fill
             priority
-            className="object-cover object-center opacity-40"
+            className="hero-main-image object-cover object-[72%_45%] md:object-[80%_42%]"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/99 via-bg/90 to-bg/60" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/80" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
         </div>
 
         <div className="relative z-10 container-shell py-20">
@@ -60,7 +61,7 @@ export default async function ProductsPage() {
               </h1>
               <p className="text-ink/55 text-base leading-relaxed max-w-xl">
                 {locale === "pl"
-                  ? "Poznaj pelna oferte produktow gotowych do wdrozenia w Twoim procesie. Zamow probki, zweryfikuj jakosc, a jesli potrzebujesz czegos konkretnego z Madagaskaru, znajdziemy to razem z Toba."
+                  ? "Poznaj pełną ofertę produktów gotowych do wdrożenia w Twoim procesie. Zamów próbki, zweryfikuj jakość, a jeśli potrzebujesz czegoś konkretnego z Madagaskaru, znajdziemy to razem z Tobą."
                   : "Explore our full available range, packaged for your needs. Order samples, validate quality in your own process, and when you need something specific from Madagascar, we'll source it with you."}
               </p>
           </Reveal>

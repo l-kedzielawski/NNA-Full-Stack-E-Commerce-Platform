@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { ThemedImage } from "@/components/themed-image";
 import { getFeaturedProducts, getProductBySlug } from "@/lib/products";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 import { formatPrice } from "@/lib/utils";
@@ -34,20 +35,21 @@ export default async function Home() {
         <section className="relative min-h-[calc(100svh-5rem)] lg:min-h-[100svh] flex items-center overflow-hidden">
           <div className="absolute inset-0 z-0 overflow-hidden">
             <div className="hero-zoom absolute inset-[-4%]">
-              <Image
-                src="/hero.jpg"
-                alt="Wanilia i przyprawy z Madagaskaru"
-                fill
-                priority
-                className="object-cover object-[60%_35%]"
-                sizes="100vw"
-              />
+                <ThemedImage
+                  darkSrc="/hero.jpg"
+                  lightSrc="/hero-light.png"
+                  alt="Wanilia i przyprawy z Madagaskaru"
+                  fill
+                  priority
+                  className="hero-main-image object-cover object-[74%_35%] md:object-[84%_34%]"
+                  sizes="100vw"
+                />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-bg/92 via-bg/68 to-bg/12" />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg/82 via-transparent to-bg/45" />
+            <div className="absolute inset-0 hero-overlay-horizontal" />
+            <div className="absolute inset-0 hero-overlay-vertical" />
             <div
               className="absolute inset-0"
-              style={{ background: "radial-gradient(ellipse 60% 80% at 20% 50%, transparent 0%, rgba(8,10,7,0.35) 100%)" }}
+              style={{ background: "var(--hero-overlay-radial)" }}
             />
           </div>
 
@@ -62,14 +64,18 @@ export default async function Home() {
                 </div>
 
                 <h1
-                  className="font-display leading-[0.88] text-ink max-w-3xl"
+                  className="font-display leading-[0.88] text-[var(--hero-ink)] max-w-3xl"
                   style={{ fontSize: "clamp(3.3rem, 9.2vw, 9.5rem)" }}
                 >
                   Zweryfikowana wanilia.<br />
-                  <em className="text-gold not-italic">Bezpośrednio z Madagaskaru.</em>
+                  <em className="text-gold not-italic">
+                    <span className="whitespace-nowrap">Bezpośrednio z</span>
+                    <br />
+                    Madagaskaru.
+                  </em>
                 </h1>
 
-                <p className="mt-6 max-w-lg text-base leading-relaxed text-ink/60 md:mt-8 md:text-lg">
+                <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--hero-ink-muted)] md:mt-8 md:text-lg">
                   Wanilia Bourbon, dzikie kakao i przyprawy, pozyskiwane bezpośrednio na Madagaskarze,
                   certyfikowane ekologicznie, wysyłane do naszego magazynu w Poznaniu.
                   Dla marek, które oczekują potwierdzonego pochodzenia.
@@ -85,20 +91,20 @@ export default async function Home() {
                   </Link>
                   <Link
                     href={withLocalePrefix("/quote", locale)}
-                    className="group inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold text-ink/70 border border-line hover:border-gold/40 hover:text-ink rounded-full transition-all duration-300"
+                    className="group inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold text-[var(--hero-ink-muted)] border border-line hover:border-gold/40 hover:text-[var(--hero-ink)] rounded-full transition-all duration-300"
                   >
                     Rozpocznij zapytanie B2B
                     <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </Link>
                 </div>
 
-                <div className="mt-6 max-w-xl rounded-2xl border border-gold/25 bg-black/30 p-4 backdrop-blur-sm md:mt-7">
+                <div className="hero-starter-panel mt-6 max-w-xl rounded-2xl border p-4 backdrop-blur-sm md:mt-7">
                   <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold/70">Polecany zestaw startowy</p>
-                  <p className="mt-2 font-display text-2xl leading-tight text-ink">Essence of Madagascar</p>
-                  <p className="mt-1 text-sm text-ink/65">
+                  <p className="mt-2 font-display text-2xl leading-tight text-[var(--hero-ink)]">Essence of Madagascar</p>
+                  <p className="mt-1 text-sm text-[var(--hero-ink-muted)]">
                     Zacznij od próbki: <span className="font-semibold text-gold">{starterPackPriceLabel}</span> z darmową dostawą na cały świat.
                   </p>
-                  <p className="mt-2 text-xs font-medium uppercase tracking-[0.08em] text-ink/70">
+                  <p className="mt-2 text-xs font-medium uppercase tracking-[0.08em] text-[var(--hero-ink-muted)]">
                     3 x laski wanilii gourmet | 20 g proszku waniliowego | 30 g ziarenek wanilii | 20 g proszku combava
                   </p>
 
@@ -147,8 +153,10 @@ export default async function Home() {
                     className="font-display text-ink leading-[0.9] mb-8"
                     style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)" }}
                   >
-                    Bez pośredników.<br />
-                    Bez odsprzedawców.<br />
+                    <span className="whitespace-nowrap">Bez pośredników.</span>
+                    <br />
+                    <span className="whitespace-nowrap">Bez odsprzedawców.</span>
+                    <br />
                     <span className="text-gold">Prosto ze źródła.</span>
                   </h2>
                   <p className="text-ink/55 leading-relaxed text-base mb-10 max-w-md">
@@ -179,7 +187,7 @@ export default async function Home() {
                   />
                   <div
                     className="absolute inset-0 pointer-events-none"
-                    style={{ background: "radial-gradient(ellipse 75% 75% at 52% 48%, transparent 30%, rgba(8,10,7,0.72) 100%)" }}
+                    style={{ background: "var(--image-vignette-strong)" }}
                   />
                   <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
                   <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-bg to-transparent" />
@@ -686,7 +694,7 @@ export default async function Home() {
               </div>
             </Reveal>
 
-            <div className="mt-10 rounded-[2rem] border border-line/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),rgba(201,169,110,0.03)_40%,rgba(0,0,0,0.12))] p-6 sm:p-8 md:p-10">
+            <div className="surface-ornate mt-10 rounded-[2rem] border border-line/50 p-6 sm:p-8 md:p-10">
               <Reveal className="text-center mb-12">
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <div className="w-6 h-px bg-gold/40" />
@@ -768,15 +776,16 @@ export default async function Home() {
 
         <section className="relative overflow-hidden border-t border-line/40">
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/hero.jpg"
+            <ThemedImage
+              darkSrc="/hero.jpg"
+              lightSrc="/hero-light.png"
               alt="Madagaskar"
               fill
-              className="object-cover object-right-center opacity-32"
+              className="hero-support-image object-cover object-[76%_42%] md:object-[84%_40%]"
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-bg/88 via-bg/74 to-bg/50" />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg/40 to-transparent" />
+            <div className="absolute inset-0 hero-overlay-horizontal" />
+            <div className="absolute inset-0 hero-overlay-vertical" />
           </div>
 
           <div className="relative z-10 container-shell py-32">
@@ -787,14 +796,14 @@ export default async function Home() {
                   <span className="label-sm text-gold/60">Gotowi na sourcing?</span>
                 </div>
                 <h2
-                  className="font-display text-ink leading-[0.9] mb-6"
+                  className="font-display text-[var(--hero-ink)] leading-[0.9] mb-6"
                   style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)" }}
                 >
                   Twój kolejny świetny<br />
                   produkt zaczyna się<br />
                   <span className="text-gold">tutaj.</span>
                 </h2>
-                <p className="text-ink/55 text-base leading-relaxed mb-10 max-w-md">
+                <p className="text-[var(--hero-ink-muted)] text-base leading-relaxed mb-10 max-w-md">
                   Podaj wolumen, format i zastosowanie.
                   Odpowiemy w ciągu 1 dnia roboczego z konkretną ofertą, bez automatycznych odpowiedzi.
                 </p>
@@ -808,7 +817,7 @@ export default async function Home() {
                   </Link>
                   <Link
                     href={withLocalePrefix("/b2b", locale)}
-                    className="inline-flex items-center rounded-full border border-line px-8 py-4 text-sm font-semibold text-ink/70 hover:border-gold/40 hover:text-ink transition-all duration-300"
+                    className="inline-flex items-center rounded-full border border-line px-8 py-4 text-sm font-semibold text-[var(--hero-ink-muted)] hover:border-gold/40 hover:text-[var(--hero-ink)] transition-all duration-300"
                   >
                     B2B i hurt
                   </Link>
@@ -828,19 +837,20 @@ export default async function Home() {
       <section className="relative min-h-[calc(100svh-5rem)] lg:min-h-[100svh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="hero-zoom absolute inset-[-4%]">
-            <Image
-              src="/hero.jpg"
+            <ThemedImage
+              darkSrc="/hero.jpg"
+              lightSrc="/hero-light.png"
               alt="Madagascar vanilla orchid and spices"
               fill
               priority
-              className="object-cover object-[60%_35%]"
+              className="hero-main-image object-cover object-[74%_35%] md:object-[84%_34%]"
               sizes="100vw"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/92 via-bg/68 to-bg/12" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg/82 via-transparent to-bg/45" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
           <div className="absolute inset-0"
-            style={{background: "radial-gradient(ellipse 60% 80% at 20% 50%, transparent 0%, rgba(8,10,7,0.35) 100%)"}} />
+            style={{ background: "var(--hero-overlay-radial)" }} />
         </div>
 
         <div className="absolute left-[8vw] top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold/20 to-transparent hidden lg:block" />
@@ -856,14 +866,14 @@ export default async function Home() {
               </div>
 
                 <h1
-                  className="font-display leading-[0.88] text-ink max-w-3xl"
+                  className="font-display leading-[0.88] text-[var(--hero-ink)] max-w-3xl"
                   style={{ fontSize: "clamp(3.3rem, 9.2vw, 9.5rem)" }}
                 >
                   Verified Vanilla.<br />
                   <em className="text-gold not-italic">Direct from Madagascar.</em>
                 </h1>
 
-              <p className="mt-6 max-w-lg text-base leading-relaxed text-ink/60 md:mt-8 md:text-lg">
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--hero-ink-muted)] md:mt-8 md:text-lg">
                 Bourbon Vanilla, Wild Cocoa &amp; Spices, sourced directly in Madagascar,
                 certified organic, shipped to our Poznań warehouse.
                 For brands that require documented provenance.
@@ -879,24 +889,24 @@ export default async function Home() {
                 </Link>
                 <Link
                   href="/quote"
-                  className="group inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold text-ink/70 border border-line hover:border-gold/40 hover:text-ink rounded-full transition-all duration-300"
+                  className="group inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold text-[var(--hero-ink-muted)] border border-line hover:border-gold/40 hover:text-[var(--hero-ink)] rounded-full transition-all duration-300"
                 >
                   Start a B2B Inquiry
                   <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
               </div>
 
-              <div className="mt-6 max-w-xl rounded-2xl border border-gold/25 bg-black/30 p-4 backdrop-blur-sm md:mt-7">
+              <div className="hero-starter-panel mt-6 max-w-xl rounded-2xl border p-4 backdrop-blur-sm md:mt-7">
                 <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold/70">
                   Recommended Starter Pack
                 </p>
-                <p className="mt-2 font-display text-2xl leading-tight text-ink">
+                <p className="mt-2 font-display text-2xl leading-tight text-[var(--hero-ink)]">
                   Essence of Madagascar
                 </p>
-                <p className="mt-1 text-sm text-ink/65">
+                <p className="mt-1 text-sm text-[var(--hero-ink-muted)]">
                   Just try it: <span className="font-semibold text-gold">{starterPackPriceLabel}</span> with free shipping worldwide.
                 </p>
-                <p className="mt-2 text-xs font-medium uppercase tracking-[0.08em] text-ink/70">
+                <p className="mt-2 text-xs font-medium uppercase tracking-[0.08em] text-[var(--hero-ink-muted)]">
                   3 x Gourmet Pods | 20g Vanilla Powder | 30g Vanilla Seeds | 20g Combava Powder
                 </p>
 
@@ -979,7 +989,7 @@ export default async function Home() {
                 />
                 {/* Vignette, darkens edges, keeps center sharp */}
                 <div className="absolute inset-0 pointer-events-none"
-                  style={{ background: "radial-gradient(ellipse 75% 75% at 52% 48%, transparent 30%, rgba(8,10,7,0.72) 100%)" }}
+                  style={{ background: "var(--image-vignette-strong)" }}
                 />
                 {/* Bottom fade into section bg */}
                 <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
@@ -1459,7 +1469,7 @@ export default async function Home() {
             </div>
           </Reveal>
 
-          <div className="mt-10 rounded-[2rem] border border-line/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),rgba(201,169,110,0.03)_40%,rgba(0,0,0,0.12))] p-6 sm:p-8 md:p-10">
+          <div className="surface-ornate mt-10 rounded-[2rem] border border-line/50 p-6 sm:p-8 md:p-10">
             <Reveal className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-3">
                 <div className="w-6 h-px bg-gold/40" />
@@ -1543,15 +1553,16 @@ export default async function Home() {
       {/* ── CTA BANNER ───────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-t border-line/40">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero.jpg"
+          <ThemedImage
+            darkSrc="/hero.jpg"
+            lightSrc="/hero-light.png"
             alt="Madagascar"
             fill
-            className="object-cover object-right-center opacity-32"
+            className="hero-support-image object-cover object-[76%_42%] md:object-[84%_40%]"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/88 via-bg/74 to-bg/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg/40 to-transparent" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
         </div>
 
         <div className="relative z-10 container-shell py-32">
@@ -1562,14 +1573,14 @@ export default async function Home() {
                 <span className="label-sm text-gold/60">Ready to source?</span>
               </div>
               <h2
-                className="font-display text-ink leading-[0.9] mb-6"
+                className="font-display text-[var(--hero-ink)] leading-[0.9] mb-6"
                 style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)" }}
               >
                 Your next great<br />
                 product starts<br />
                 <span className="text-gold">here.</span>
               </h2>
-              <p className="text-ink/55 text-base leading-relaxed mb-10 max-w-md">
+              <p className="text-[var(--hero-ink-muted)] text-base leading-relaxed mb-10 max-w-md">
                  Tell us your volume, format, and application. We respond
                  within 1 business day with a real offer, not an auto-reply.
               </p>
@@ -1583,7 +1594,7 @@ export default async function Home() {
                 </Link>
                 <Link
                   href="/b2b"
-                  className="inline-flex items-center rounded-full border border-line px-8 py-4 text-sm font-semibold text-ink/70 hover:border-gold/40 hover:text-ink transition-all duration-300"
+                  className="inline-flex items-center rounded-full border border-line px-8 py-4 text-sm font-semibold text-[var(--hero-ink-muted)] hover:border-gold/40 hover:text-[var(--hero-ink)] transition-all duration-300"
                 >
                   B2B &amp; Wholesale
                 </Link>
@@ -1601,7 +1612,7 @@ function HeroStat({ value, label }: { value: string; label: string }) {
   return (
     <div>
       <p className="font-display text-2xl md:text-3xl leading-none text-gold">{value}</p>
-      <p className="mt-1 text-[0.65rem] tracking-[0.18em] text-ink/40 uppercase">{label}</p>
+      <p className="mt-1 text-[0.65rem] tracking-[0.18em] text-[var(--hero-ink-soft)] uppercase">{label}</p>
     </div>
   );
 }

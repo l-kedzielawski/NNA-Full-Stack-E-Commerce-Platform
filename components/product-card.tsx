@@ -59,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const productPath = withLocalePrefix(`/products/${product.slug}`, locale);
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-line bg-card hover:border-gold/40 transition-all duration-700 shadow-[0_8px_40px_rgba(0,0,0,0.5)] hover:shadow-[0_20px_80px_rgba(0,0,0,0.8),0_0_60px_rgba(201,169,110,0.08)]">
+    <article className="product-card-shell group relative overflow-hidden rounded-2xl border border-line bg-card hover:border-gold/40 transition-all duration-700">
 
       {/* Gold accent top bar — sweeps in on hover */}
       <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent z-20 scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-center" />
@@ -67,7 +67,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <Link href={productPath} className="block">
 
         {/* ── IMAGE ZONE ───────────────────────────────────── */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-[#0d0c08]">
+        <div className="product-card-image-bg relative aspect-[4/3] overflow-hidden">
 
           {/* Photo — zooms in slightly, sharpens on hover */}
           <Image
@@ -79,7 +79,7 @@ export function ProductCard({ product }: ProductCardProps) {
           />
 
           {/* Cinematic overlay — warm dark veil at rest, fades on hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/18 via-black/8 to-[#1a1000]/22 group-hover:opacity-0 transition-opacity duration-700 ease-out" />
+          <div className="product-card-image-veil absolute inset-0 group-hover:opacity-0 transition-opacity duration-700 ease-out" />
 
           {/* Persistent bottom fade — keeps text readable always */}
           <div className="absolute inset-0 bg-gradient-to-t from-card/58 via-card/10 to-transparent" />
@@ -94,18 +94,15 @@ export function ProductCard({ product }: ProductCardProps) {
           />
 
           {/* Gold sheen sweep — diagonal flash on hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
             style={{
               background: "linear-gradient(115deg, transparent 30%, rgba(201,169,110,0.07) 50%, transparent 70%)",
             }}
           />
 
           {/* Vignette edges */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{
-               background: "radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,0.30) 100%)",
-            }}
-          />
+          <div className="product-card-image-vignette absolute inset-0 pointer-events-none" />
 
           {/* ── BADGES & CONTROLS ── */}
 
@@ -129,7 +126,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* View label — slides up from bottom on hover */}
           <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-            <span className="px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-gold/30 text-[0.65rem] tracking-[0.2em] uppercase text-gold/90 font-semibold">
+            <span className="product-card-view-chip px-4 py-1.5 rounded-full backdrop-blur-sm border border-gold/30 text-[0.65rem] tracking-[0.2em] uppercase text-gold/90 font-semibold">
               {locale === "pl" ? "Zobacz" : "View Product"}
             </span>
           </div>
@@ -145,7 +142,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.title}
           </h3>
 
-          <p className="text-xs leading-relaxed text-ink/40 line-clamp-2">
+          <p className="text-xs leading-relaxed text-ink/55 line-clamp-2">
             {truncateText(product.description, 100)}
           </p>
 

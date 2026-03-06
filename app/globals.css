@@ -1,6 +1,7 @@
 @import "../node_modules/tailwindcss/index.css";
 
 :root {
+  color-scheme: dark;
   /* Dark premium palette — warm earthy dark, not cold black */
   --bg: #0a0906;
   --bg-mid: #110f0a;
@@ -16,6 +17,67 @@
   --line-strong: rgba(201, 169, 110, 0.32);
   --card: #131109;
   --card-hover: #1c1a10;
+  --hero-overlay-horizontal: linear-gradient(90deg, rgba(10, 9, 6, 0.92) 0%, rgba(10, 9, 6, 0.68) 56%, rgba(10, 9, 6, 0.12) 100%);
+  --hero-overlay-vertical: linear-gradient(0deg, rgba(10, 9, 6, 0.82) 0%, transparent 52%, rgba(10, 9, 6, 0.45) 100%);
+  --hero-overlay-radial: radial-gradient(ellipse 60% 80% at 20% 50%, transparent 0%, rgba(8, 10, 7, 0.35) 100%);
+  --hero-ink: #f0e6cc;
+  --hero-ink-muted: rgba(240, 230, 204, 0.74);
+  --hero-ink-soft: rgba(240, 230, 204, 0.56);
+  --image-vignette-strong: radial-gradient(ellipse 75% 75% at 52% 48%, transparent 30%, rgba(8, 10, 7, 0.72) 100%);
+  --hero-panel-bg: rgba(0, 0, 0, 0.3);
+  --hero-panel-border: rgba(201, 169, 110, 0.25);
+  --surface-ornate: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(201, 169, 110, 0.03) 40%, rgba(0, 0, 0, 0.12));
+  --shadow-card: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 20px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(201, 169, 110, 0.08);
+  --card-image-bg: #0d0c08;
+  --card-image-veil: linear-gradient(115deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.08) 55%, rgba(26, 16, 0, 0.22) 100%);
+  --card-image-vignette: radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.3) 100%);
+  --card-view-chip-bg: rgba(0, 0, 0, 0.4);
+}
+
+/* ── LIGHT THEME ────────────────────────────────────── */
+/* Madagascar vanilla — sunlit parchment, aged linen, warm ivory */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f0e6cc;
+  --bg-mid: #f9f2dc;
+  --bg-soft: #efe2c1;
+  --ink: #576137;
+  --ink-muted: rgba(28, 40, 24, 0.78);
+  --gold: #5d4939;
+  --gold-light: #7a6350;
+  --gold-dim: rgba(93, 73, 57, 0.14);
+  --moss: #576137;
+  --moss-light: #576137;
+  --line: rgba(93, 73, 57, 0.24);
+  --line-strong: rgba(93, 73, 57, 0.4);
+  --card: #f5ebd2;
+  --card-hover: #eee1c2;
+  --hero-overlay-horizontal: linear-gradient(90deg, rgba(240, 230, 204, 0.84) 0%, rgba(240, 230, 204, 0.52) 56%, rgba(240, 230, 204, 0.16) 100%);
+  --hero-overlay-vertical: linear-gradient(0deg, rgba(240, 230, 204, 0.68) 0%, transparent 52%, rgba(240, 230, 204, 0.35) 100%);
+  --hero-overlay-radial: radial-gradient(ellipse 60% 80% at 20% 50%, transparent 0%, rgba(249, 242, 220, 0.56) 100%);
+  --hero-ink: #576137;
+  --hero-ink-muted: rgba(28, 40, 24, 0.86);
+  --hero-ink-soft: rgba(28, 40, 24, 0.7);
+  --image-vignette-strong: radial-gradient(ellipse 75% 75% at 52% 48%, transparent 28%, rgba(87, 97, 55, 0.2) 100%);
+  --hero-panel-bg: rgba(249, 242, 220, 0.74);
+  --hero-panel-border: rgba(93, 73, 57, 0.3);
+  --surface-ornate: linear-gradient(180deg, rgba(249, 242, 220, 0.8), rgba(122, 99, 80, 0.14) 45%, rgba(93, 73, 57, 0.08));
+  --shadow-card: 0 10px 28px rgba(93, 73, 57, 0.14);
+  --shadow-card-hover: 0 18px 44px rgba(93, 73, 57, 0.22), 0 0 42px rgba(122, 99, 80, 0.2);
+  --card-image-bg: #decea8;
+  --card-image-veil: linear-gradient(115deg, rgba(93, 73, 57, 0.2) 0%, rgba(93, 73, 57, 0.08) 55%, rgba(249, 242, 220, 0.22) 100%);
+  --card-image-vignette: radial-gradient(ellipse at center, transparent 58%, rgba(93, 73, 57, 0.16) 100%);
+  --card-view-chip-bg: rgba(249, 242, 220, 0.72);
+}
+
+[data-theme="light"] :is(a, button, input[type="submit"], input[type="button"]).bg-gold,
+[data-theme="light"] :is(a, button, input[type="submit"], input[type="button"]).bg-gold-light {
+  color: #f9f2dc;
+}
+
+[data-theme="light"] :is(.text-ink\/25, .text-ink\/30, .text-ink\/35, .text-ink\/40, .text-ink\/45, .text-ink\/50, .text-ink\/55, .text-ink\/60, .text-ink\/68, .text-ink\/70) {
+  color: #1c2818;
 }
 
 @theme inline {
@@ -53,6 +115,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -76,6 +139,69 @@ a {
 
 .section-space {
   padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.hero-overlay-horizontal {
+  background: var(--hero-overlay-horizontal);
+}
+
+.hero-overlay-vertical {
+  background: var(--hero-overlay-vertical);
+}
+
+.hero-overlay-radial {
+  background: var(--hero-overlay-radial);
+}
+
+.hero-starter-panel {
+  background: var(--hero-panel-bg);
+  border-color: var(--hero-panel-border);
+}
+
+.hero-main-image {
+  filter: none;
+}
+
+[data-theme="light"] .hero-main-image {
+  filter: brightness(1.08) saturate(1.06) contrast(1.02);
+}
+
+.hero-support-image {
+  opacity: 0.22;
+  filter: none;
+}
+
+[data-theme="light"] .hero-support-image {
+  opacity: 0.48;
+  filter: brightness(1.1) saturate(1.08) contrast(1.03);
+}
+
+.surface-ornate {
+  background: var(--surface-ornate);
+}
+
+.product-card-shell {
+  box-shadow: var(--shadow-card);
+}
+
+.product-card-shell:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.product-card-image-bg {
+  background: var(--card-image-bg);
+}
+
+.product-card-image-veil {
+  background: var(--card-image-veil);
+}
+
+.product-card-image-vignette {
+  background: var(--card-image-vignette);
+}
+
+.product-card-view-chip {
+  background: var(--card-view-chip-bg);
 }
 
 /* ── GRAIN TEXTURE ──────────────────────────────────── */
@@ -168,8 +294,8 @@ a {
 
 /* ── SCROLLBAR ──────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: rgba(201,169,110,0.25); border-radius: 2px; }
+::-webkit-scrollbar-track { background: var(--bg); transition: background-color 0.3s ease; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 2px; }
 
 /* ── SELECTION ──────────────────────────────────────── */
 ::selection {

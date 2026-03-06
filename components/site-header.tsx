@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { CartLink } from "@/components/cart-link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemedImage } from "@/components/themed-image";
 import { defaultLocale, getLocaleFromPathname, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 const navItems = ["home", "shop", "about", "b2b", "contact"] as const;
@@ -54,11 +55,12 @@ export function SiteHeader() {
       <div className="absolute inset-0 bg-bg/85 backdrop-blur-xl border-b border-line" />
 
       <div className="relative container-shell flex h-20 items-center justify-between gap-6">
-        {/* Logo — stacked light logo */}
+        {/* Logo */}
         <Link href={withLocalePrefix("/", locale)} className="group shrink-0" onClick={() => setOpen(false)}>
           <div className="relative h-12 w-[140px]">
-            <Image
-              src="/logo-light.png"
+            <ThemedImage
+              darkSrc="/logo-light.png"
+              lightSrc="/logo-dark.png"
               alt="Natural Mystic Aroma"
               fill
               className="object-contain object-left"
@@ -85,6 +87,7 @@ export function SiteHeader() {
           >
             {t.inquiry}
           </Link>
+          <ThemeToggle />
           <LocaleSwitcher />
           <CartLink />
         </nav>
@@ -119,7 +122,8 @@ export function SiteHeader() {
           >
             {t.inquiry}
           </Link>
-          <div className="mt-3 flex justify-center">
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <ThemeToggle />
             <LocaleSwitcher compact />
           </div>
           <Link

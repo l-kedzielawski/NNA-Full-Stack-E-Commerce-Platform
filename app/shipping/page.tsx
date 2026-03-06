@@ -64,7 +64,7 @@ export default async function ShippingPage() {
       zone: "Unia Europejska",
       method: "Transport drogowy / DHL / DPD",
       time: "2-5 dni roboczych",
-      note: "Wszystkie kraje UE. Opcje ekspresowe dostepne.",
+      note: "Wszystkie kraje UE. Opcje ekspresowe dostępne.",
     },
     {
       zone: "Wielka Brytania",
@@ -73,37 +73,37 @@ export default async function ShippingPage() {
       note: "Wliczona dokumentacja celna po Brexicie.",
     },
     {
-      zone: "Bliski Wschod i Azja",
+      zone: "Bliski Wschód i Azja",
       method: "DHL Express / transport lotniczy",
       time: "5-10 dni roboczych",
-      note: "Dostepne dla zamowien wolumenowych. Skontaktuj sie po stawki.",
+      note: "Dostępne dla zamówień wolumenowych. Skontaktuj się po stawki.",
     },
     {
       zone: "USA i Kanada",
       method: "DHL Express / FedEx",
       time: "5-8 dni roboczych",
-      note: "Clo i oplaty importowe po stronie kupujacego. Dokumenty CITES na prosbe.",
+      note: "Cło i opłaty importowe po stronie kupującego. Dokumenty CITES na prośbę.",
     },
     {
-      zone: "Reszta swiata",
+      zone: "Reszta świata",
       method: "Transport lotniczy / DHL",
       time: "7-14 dni roboczych",
-      note: "Wycena na zapytanie. W zaleznosci od wymogow regulacyjnych.",
+      note: "Wycena na zapytanie. W zależności od wymogów regulacyjnych.",
     },
   ];
 
   const paymentsPl = [
     {
-      method: "Platnosc karta (Stripe)",
-      note: "Bezpieczny checkout obslugiwany przez Stripe. Obslugujemy glowne karty debetowe i kredytowe.",
+      method: "Płatność kartą (Stripe)",
+      note: "Bezpieczny checkout obsługiwany przez Stripe. Obsługujemy główne karty debetowe i kredytowe.",
     },
     {
-      method: "Platnosci portfelowe",
-      note: "Apple Pay i Google Pay moga byc dostepne w zaleznosci od urzadzenia, przegladarki i kraju.",
+      method: "Płatności portfelowe",
+      note: "Apple Pay i Google Pay mogą być dostępne w zależności od urządzenia, przeglądarki i kraju.",
     },
     {
       method: "Lokalne metody Stripe",
-      note: "Dodatkowe metody platnosci Stripe pojawia sie automatycznie w checkoutcie, jesli sa dostepne dla Twojego kraju i waluty.",
+      note: "Dodatkowe metody płatności Stripe pojawią się automatycznie w checkoutcie, jeśli są dostępne dla Twojego kraju i waluty.",
     },
   ];
 
@@ -123,16 +123,16 @@ export default async function ShippingPage() {
           <p className="label-sm text-gold mb-4">Logistics</p>
           <h1 className="font-display text-5xl md:text-6xl text-ink mb-5">
             {locale === "pl" ? "Dostawa i" : "Shipping &"}<br />
-            <span className="text-gold">{locale === "pl" ? "Platnosci" : "Payments"}</span>
+            <span className="text-gold">{locale === "pl" ? "Płatności" : "Payments"}</span>
           </h1>
           <p className="text-ink/60 text-lg leading-relaxed">
             {locale === "pl"
-              ? "Wysylamy z naszego magazynu w Poznaniu. Produkty sa bezpiecznie pakowane, aby zachowac aromat i swiezosc w transporcie."
+              ? "Wysyłamy z naszego magazynu w Poznaniu. Produkty są bezpiecznie pakowane, aby zachować aromat i świeżość w transporcie."
               : "We ship from our Poznań, Poland warehouse. Products are securely packed to preserve aroma and freshness during transit."}
           </p>
           <p className="mt-3 text-sm text-gold/80">
             {locale === "pl"
-              ? "Darmowa dostawa na caly swiat nalicza sie automatycznie dla zestawow Essence of Madagascar i Taste of Madagascar."
+              ? "Darmowa dostawa na cały świat nalicza się automatycznie dla zestawów Essence of Madagascar i Taste of Madagascar."
               : "Free worldwide shipping applies automatically to Essence of Madagascar and Taste of Madagascar starter packs."}
           </p>
         </div>
@@ -141,7 +141,7 @@ export default async function ShippingPage() {
       {/* Shipping zones */}
       <section className="container-shell py-20">
         <h2 className="font-display text-3xl text-ink mb-10">
-          {locale === "pl" ? "Strefy wysylki i czasy dostawy" : "Shipping Zones & Delivery Times"}
+          {locale === "pl" ? "Strefy wysyłki i czasy dostawy" : "Shipping Zones & Delivery Times"}
         </h2>
         <div className="space-y-4">
           {shippingZonesLocalized.map((z) => (
@@ -171,7 +171,7 @@ export default async function ShippingPage() {
           <p className="text-sm text-ink/50 leading-relaxed">
             <strong className="text-ink">{locale === "pl" ? "Pakowanie:" : "Packaging:"}</strong>{" "}
             {locale === "pl"
-              ? "Laski wanilii wysylamy w szczelnych saszetkach lub szklanych sloikach. Pudry i przyprawy pakujemy w woreczki klasy spozywczej lub opakowania kraft. Produkty kakaowe trafiaja do workow odpornych na wilgoc. Wszystkie opakowania sa bezpieczne dla zywnosci i oznaczone pochodzeniem, masa oraz numerem partii."
+              ? "Laski wanilii wysyłamy w szczelnych saszetkach lub szklanych słoikach. Pudry i przyprawy pakujemy w woreczki klasy spożywczej lub opakowania kraft. Produkty kakaowe trafiają do worków odpornych na wilgoć. Wszystkie opakowania są bezpieczne dla żywności i oznaczone pochodzeniem, masą oraz numerem partii."
               : "Vanilla pods are shipped in sealed, airtight pouches or glass jars. Powders and spices in food-grade resealable bags or kraft packaging. Cocoa products in moisture-proof bulk bags. All packaging is food-safe and labeled with origin, weight, and batch number."}
           </p>
         </div>
@@ -180,7 +180,7 @@ export default async function ShippingPage() {
       {/* Payment */}
       <section className="bg-bg-mid border-y border-line py-20">
         <div className="container-shell">
-          <h2 className="font-display text-3xl text-ink mb-10">{locale === "pl" ? "Metody platnosci" : "Payment Methods"}</h2>
+          <h2 className="font-display text-3xl text-ink mb-10">{locale === "pl" ? "Metody płatności" : "Payment Methods"}</h2>
           <div className="grid md:grid-cols-3 gap-5">
             {paymentsLocalized.map((p) => (
               <div key={p.method} className="bg-bg border border-line rounded-xl p-6">
@@ -194,7 +194,7 @@ export default async function ShippingPage() {
             <p className="text-sm text-ink/55 leading-relaxed">
               <strong className="text-ink">{locale === "pl" ? "Waluta i podatki:" : "Currency & Tax:"}</strong>{" "}
               {locale === "pl"
-                ? "Ceny prezentowane sa w walucie checkoutu. Rozliczenie VAT zalezy od kraju rozliczeniowego i statusu podatkowego, w tym mechanizmu odwrotnego obciazenia w UE, jesli jest prawnie dopuszczalny i zweryfikowany."
+                ? "Ceny prezentowane są w walucie checkoutu. Rozliczenie VAT zależy od kraju rozliczeniowego i statusu podatkowego, w tym mechanizmu odwrotnego obciążenia w UE, jeśli jest prawnie dopuszczalny i zweryfikowany."
                 : "Prices are shown in the checkout currency. VAT treatment is applied according to billing country and tax status, including EU reverse charge where legally applicable and validated."}
             </p>
           </div>
@@ -203,15 +203,15 @@ export default async function ShippingPage() {
 
       <section className="container-shell py-16 text-center max-w-xl mx-auto">
         <p className="text-ink/55 mb-6">
-          {locale === "pl"
-            ? "Masz pytania o transport, Incoterms lub dokumentacje celna?"
-            : "Questions about freight, Incoterms, or customs documentation?"}
+            {locale === "pl"
+              ? "Masz pytania o transport, Incoterms lub dokumentację celną?"
+              : "Questions about freight, Incoterms, or customs documentation?"}
         </p>
         <Link
           href={withLocalePrefix("/contact", locale)}
           className="inline-block px-8 py-3 rounded-full bg-gold text-bg font-semibold text-sm hover:bg-gold-light transition-all"
         >
-          {locale === "pl" ? "Skontaktuj sie z logistyka" : "Contact Logistics Team"}
+          {locale === "pl" ? "Skontaktuj się z logistyką" : "Contact Logistics Team"}
         </Link>
       </section>
     </main>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { MarqueeStrip } from "@/components/marquee-strip";
+import { ThemedImage } from "@/components/themed-image";
 import type { Metadata } from "next";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
@@ -69,95 +70,193 @@ export default async function AboutPage() {
   const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
 
   if (locale === "pl") {
+    const milestonesPl = [
+      { year: "2020", event: "Pierwsze kroki na Madagaskarze: poznawanie pochodzenia, rozmowy z plantatorami i zrozumienie lokalnego terroir." },
+      { year: "2021–22", event: "Pomysł nabiera kształtu: pierwsze założenia, budowanie relacji i doprecyzowanie modelu działania." },
+      { year: "2023", event: "Oficjalne założenie Natural Mystic Aroma w Poznaniu." },
+      { year: "2023–25", event: "Targi branżowe, by słuchać rynku i budować relacje: SIAL Paris, Gulfood Dubai, BIOFACH Germany." },
+      { year: "2025", event: "Powstaje zespół operujący równolegle w Polsce i na Madagaskarze." },
+      { year: "2025", event: "Do Polski trafiają pierwsze zweryfikowane, przebadane i certyfikowane partie - od plantacji do półki." },
+      { year: "2026", event: "Skalowanie zweryfikowanych dostaw w Europie - rozpoczynamy kolejny etap rozwoju." },
+    ];
+
+    const valuesPl = [
+      {
+        title: "Bezpośredni sourcing",
+        body: "Jesteśmy fizycznie obecni na Madagaskarze. Bez brokerów i pośredników. Pozyskujemy surowce od sprawdzonych partnerów z konkretnych regionów. Te same obszary, ci sami producenci, sezon po sezonie. To właśnie daje stabilność Twoich receptur.",
+      },
+      {
+        title: "Radykalna transparentność",
+        body: "Każdy produkt ma identyfikowalne pochodzenie. Wiemy, z której farmy, z którego zbioru i z której partii obróbki pochodzi surowiec. Nasi klienci nie muszą się domyślać, skąd pochodzą ich składniki.",
+      },
+      {
+        title: "Certyfikowana wiarygodność",
+        body: "EU Organic (PL-EKO, Reg. 2018/848), Fair Trade (Control Union), certyfikat pochodzenia z Madagaskaru. Każda partia jest badana w certyfikowanych laboratoriach. Dostajesz twarde dane: zawartość waniliny, wilgotność, wyniki mikrobiologiczne. Bez domysłów - konkretne liczby.",
+      },
+      {
+        title: "Transport lotniczy tam, gdzie ma to znaczenie",
+        body: "Wanilia i przyprawy tracą jakość podczas długiego transportu morskiego. Dlatego surowce kluczowe jakościowo transportujemy lotniczo bezpośrednio do magazynu w Poznaniu, aby zachować wanilinę, aromat i właściwą wilgotność.",
+      },
+      {
+        title: "Zakotwiczeni w zrównoważeniu",
+        body: "Współpracujemy bezpośrednio z certyfikowanymi gospodarstwami. Uczciwe warunki handlu, naturalne metody uprawy, zero skrótów. Każde zamówienie wspiera społeczności rolnicze i chroni bioróżnorodność, która czyni wanilię z Madagaskaru wyjątkową.",
+      },
+      {
+        title: "Globalny zasięg, lokalne korzenie",
+        body: "Pozyskujemy na Madagaskarze i dostarczamy z magazynu w Poznaniu do Europy oraz poza nią. Każda wysyłka ma pełną zgodność importową, zgłoszenia TRACES i dokumentację fitosanitarną. Otrzymujesz składnik i komplet dokumentów - bez poślizgów i bez braków.",
+      },
+    ];
+
+    const opsPl = [
+      {
+        num: "01",
+        body: "Dedykowany zespół na Madagaskarze nadzoruje każdy etap: produkcję, selekcję i logistykę, zanim towar opuści wyspę.",
+      },
+      {
+        num: "02",
+        body: "Wanilia i wybrane przyprawy premium transportowane są wyłącznie lotniczo - bez frachtu morskiego. Tam, gdzie kluczowe są aromat i wilgotność, lotnicza logistyka daje najlepszy wynik. Pozostałe produkty wysyłamy metodą najlepiej dopasowaną do jakości i kosztu.",
+      },
+      {
+        num: "03",
+        body: "Nasz magazyn w Poznaniu obsługuje przepakowanie przy różnych wolumenach, zapewniając świeżość, powtarzalną jakość i terminowe dostawy w Europie i poza nią.",
+      },
+    ];
+
     return (
       <main className="pt-20">
-        <section className="relative min-h-[65vh] flex items-center overflow-hidden">
+        <section className="relative min-h-[70vh] flex items-center overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
-            <Image src="/hero.jpg" alt="Wanilia z Madagaskaru" fill className="object-cover" priority />
-            <div className="absolute inset-0 bg-gradient-to-r from-bg/97 via-bg/75 to-bg/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/50" />
+            <div className="hero-zoom absolute inset-[-4%]">
+              <ThemedImage
+                darkSrc="/hero.jpg"
+                lightSrc="/hero-light.png"
+                alt="Wanilia z Madagaskaru"
+                fill
+                className="hero-main-image object-cover object-[72%_44%] md:object-[80%_40%]"
+                priority
+              />
+            </div>
+            <div className="absolute inset-0 hero-overlay-horizontal" />
+            <div className="absolute inset-0 hero-overlay-vertical" />
+            <div className="absolute inset-0 hero-overlay-radial" />
           </div>
-          <div className="relative container-shell py-24">
-            <p className="label-sm text-gold/70 mb-6">Nasza historia</p>
-            <h1 className="font-display text-ink leading-[0.88] mb-8 max-w-3xl" style={{ fontSize: "clamp(3rem, 7vw, 6.5rem)" }}>
-              Nie sprzedajemy
-              <br />
-              tylko przypraw.
-              <br />
-              <span className="text-gold">Dowozimy prawdziwe pochodzenie.</span>
+          <div className="relative container-shell py-32">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-6 h-px bg-gold/60" />
+              <span className="label-sm text-gold/70">Nasza historia</span>
+            </div>
+            <h1
+              className="font-display text-ink leading-[0.88] mb-8 max-w-3xl"
+              style={{ fontSize: "clamp(3.5rem, 8vw, 8rem)" }}
+            >
+              Nie sprzedajemy tylko<br />
+              przypraw.<br />
+              <span className="text-gold">Opowiadamy ich prawdziwą historię.</span>
             </h1>
             <p className="text-ink/60 text-lg max-w-xl leading-relaxed">
-              Zanim powstala marka, byl Madagaskar, rozmowy z plantatorami i praca u zrodla.
-              Tak dzialamy do dzis: bezposrednio, transparentnie i odpowiedzialnie.
+              Zanim firma dostała nazwę, byliśmy na Madagaskarze, rozmawiając z ludźmi,
+              którzy naprawdę uprawiają wanilię. Tak pracujemy do dziś.
             </p>
           </div>
         </section>
 
-        <section className="container-shell py-20">
-          <div className="grid md:grid-cols-2 gap-14 items-center">
+        <section className="container-shell py-24">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="label-sm text-gold mb-4">Skad zaczelismy</p>
+              <p className="label-sm text-gold mb-4">Nasze początki</p>
               <h2 className="font-display text-4xl md:text-5xl text-ink mb-6">
-                Bezposrednio
-                <br />
-                <span className="text-gold">u zrodla</span>
+                Bezpośrednio ze<br />
+                <span className="text-gold">źródła</span>
               </h2>
               <div className="space-y-5 text-ink/60 leading-relaxed">
                 <p>
-                  Pierwsze wyjazdy na Madagaskar zaczely sie w 2020 roku. Chcielismy nie tylko kupowac,
-                  ale rozumiec terroir, ludzi i proces dojrzewania wanilii. To zbudowalo relacje,
-                  ktore daja stabilnosc partii sezon po sezonie.
+                  Wszystko zaczęło się w 2020 roku od pierwszych wyjazdów na Madagaskar.
+                  Nie po to, by tylko złożyć zamówienie, ale by naprawdę zrozumieć ziemię,
+                  ludzi i sposób, w jaki rośnie wanilia. Te wizyty stały się fundamentem
+                  relacji sourcingowych, które działają przez kolejne sezony zbiorów.
                 </p>
                 <p>
-                  Nasza obecnosc na miejscu to nie haslo marketingowe, tylko realny model kontroli jakosci.
+                  Nasza obecność na miejscu nie jest hasłem marketingowym. To realny model
+                  kontroli jakości i pochodzenia, który daje Ci pewność tego, co trafia do produktu.
                 </p>
               </div>
             </div>
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-line">
-              <Image src="/Natural-Mystic-aroma.jpg" alt="Zweryfikowane pochodzenie" fill className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
+            <div className="relative">
+              <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-line">
+                <Image
+                  src="/Natural-Mystic-aroma.jpg"
+                  alt="Natural Mystic Aroma, zweryfikowane pochodzenie wanilii"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <p className="font-display text-lg text-ink">Zweryfikowane pochodzenie.</p>
+                  <p className="text-sm text-gold/70">Bezpośrednie dostawy. Prawdziwy smak.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-bg-mid border-y border-line py-20">
+        <section className="bg-bg-mid border-y border-line py-24">
           <div className="container-shell">
-            <div className="text-center mb-12">
+            <div className="grid md:grid-cols-2 gap-16 items-center">
+              <div>
+                <p className="label-sm text-gold mb-4">Dlaczego istniejemy</p>
+                <h2 className="font-display text-4xl md:text-5xl text-ink mb-8 leading-[0.95]">
+                  Tu po to, by odbudować<br />
+                  <span className="text-gold">zaufanie</span>
+                </h2>
+                <div className="space-y-5 text-ink/60 leading-relaxed">
+                  <p>
+                    Zbyt wiele produktów na rynku jest rozwodnionych, źle opisanych albo całkowicie
+                    odłączonych od rolników, którzy je wyprodukowali. Łańcuch dostaw bywa długi,
+                    nieprzejrzysty i zoptymalizowany pod marżę, nie pod jakość.
+                  </p>
+                  <p>
+                    My budujemy coś innego: transparentny łańcuch dostaw od plantacji do finalnego opakowania.
+                    Taki, w którym identyfikowalność nie jest dodatkiem premium, tylko standardem.
+                    Gdzie certyfikaty nie są ozdobą etykiety, ale dowodem, jak składnik był uprawiany,
+                    przetwarzany i transportowany.
+                  </p>
+                  <p>Jesteśmy tutaj, bo zasługujesz na dowody, a nie obietnice.</p>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-line">
+                  <Image
+                    src="/NMA_1-scaled-1-766x731.jpg"
+                    alt="Madagaskar, źródło pochodzenia Natural Mystic Aroma"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-bg-mid/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <p className="font-display text-lg text-ink">Madagaskar.</p>
+                    <p className="text-sm text-gold/70">Tu wszystko się zaczyna.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-bg-mid border-y border-line py-24">
+          <div className="container-shell">
+            <div className="text-center mb-16">
               <p className="label-sm text-gold mb-3">Nasze zasady</p>
               <h2 className="font-display text-4xl md:text-5xl text-ink">
-                Fundament kazdej
-                <br />
-                <span className="text-gold">wysylki</span>
+                Fundament każdej<br />
+                <span className="text-gold">wysyłki</span>
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  title: "Direct sourcing",
-                  body: "Bez brokerow i bezposrednio od sprawdzonych producentow w Madagaskarze.",
-                },
-                {
-                  title: "Transparentnosc",
-                  body: "Pochodzenie, partia i dokumenty sa jasno opisane i gotowe do weryfikacji.",
-                },
-                {
-                  title: "Certyfikowana jakosc",
-                  body: "EU Organic, Fair Trade, certyfikat pochodzenia i dane laboratoryjne dla partii.",
-                },
-                {
-                  title: "Logistyka lotnicza",
-                  body: "Wanilia i kluczowe przyprawy trafiaja do Poznania droga lotnicza, by zachowac aromat.",
-                },
-                {
-                  title: "Uczciwy handel",
-                  body: "Wspolpraca z certyfikowanymi gospodarstwami i realny wplyw na lokalne spolecznosci.",
-                },
-                {
-                  title: "Skala i regularnosc",
-                  body: "Obsluga zamowien od probek po kontrakty wolumenowe z przewidywalna podaza.",
-                },
-              ].map((v) => (
-                <div key={v.title} className="bg-bg border border-line rounded-2xl p-7">
+              {valuesPl.map((v) => (
+                <div
+                  key={v.title}
+                  className="bg-bg border border-line rounded-2xl p-7 hover:border-gold/40 transition-colors duration-300"
+                >
                   <div className="w-8 h-px bg-gold mb-5" />
                   <h3 className="font-display text-xl text-ink mb-3">{v.title}</h3>
                   <p className="text-sm text-ink/55 leading-relaxed">{v.body}</p>
@@ -167,29 +266,127 @@ export default async function AboutPage() {
           </div>
         </section>
 
+        <section className="bg-bg-mid border-y border-line py-16">
+          <div className="container-shell">
+            <p className="label-sm text-gold mb-10 text-center">Jak pracujemy operacyjnie</p>
+            <div className="grid sm:grid-cols-3 gap-8">
+              {opsPl.map((o) => (
+                <div key={o.num} className="flex gap-5 items-start">
+                  <span className="font-display text-3xl text-gold/25 leading-none shrink-0 select-none">
+                    {o.num}
+                  </span>
+                  <p className="text-sm text-ink/60 leading-relaxed pt-1">{o.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="container-shell py-24 max-w-3xl mx-auto text-center">
+          <div className="w-px h-12 bg-gradient-to-b from-transparent to-gold/40 mx-auto mb-10" />
+          <p className="label-sm text-gold mb-4">Nosy Be</p>
+          <h2 className="font-display text-3xl md:text-4xl text-ink mb-6">
+            Zakorzenieni na<br />
+            <span className="text-gold">Wyspie Perfum</span>
+          </h2>
+          <p className="text-ink/55 leading-relaxed">
+            Nasze relacje z Madagaskarem sięgają również Nosy Be - wyspy na północnym zachodzie,
+            znanej jako perfumowe serce Oceanu Indyjskiego. To tutaj rosną jedne z najbardziej
+            aromatycznych wanilii i botanicznych surowców na świecie. Dzięki obecności na miejscu
+            zapewniamy Ci bezpośredni dostęp do pochodzenia, w pełni udokumentowanego i identyfikowalnego.
+          </p>
+        </section>
+
+        <section className="bg-bg-mid border-y border-line py-24">
+          <div className="max-w-2xl mx-auto px-6">
+            <p className="label-sm text-gold mb-3 text-center">Oś czasu</p>
+            <h2 className="font-display text-4xl text-ink mb-14 text-center">
+              Jak doszliśmy do tego miejsca
+            </h2>
+            <div className="relative">
+              <div className="absolute left-[4.5rem] top-0 bottom-0 w-px bg-line" />
+              <div className="space-y-10">
+                {milestonesPl.map((m) => (
+                  <div key={m.event} className="flex items-start gap-8">
+                    <div className="w-16 shrink-0 text-right">
+                      <span className="font-display text-lg text-gold">{m.year}</span>
+                    </div>
+                    <div className="relative flex items-start gap-4 flex-1">
+                      <div className="w-2 h-2 rounded-full bg-gold mt-2 shrink-0 relative z-10" />
+                      <p className="text-ink/70 leading-relaxed">{m.event}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <MarqueeStrip />
+
+        <section className="relative py-28 overflow-hidden bg-bg border-y border-line/30">
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,169,110,0.04) 0%, transparent 70%)" }}
+          />
+          <div className="container-shell text-center max-w-4xl mx-auto relative">
+            <div className="inline-block w-px h-12 bg-gradient-to-b from-transparent to-gold/40 mx-auto mb-8" />
+            <p
+              className="font-display text-ink/80 leading-[1.05]"
+              style={{ fontSize: "clamp(1.8rem, 4vw, 3.4rem)" }}
+            >
+              Każdy certyfikat, który posiadamy, jest Twoją gwarancją,<br />
+              że to, co widzisz na etykiecie, jest dokładnie tym, co trafia do opakowania,<br />
+              <span className="text-gold">potwierdzone badaniami laboratoryjnymi, a nie deklaracją.</span>
+            </p>
+          </div>
+        </section>
 
         <section className="relative overflow-hidden border-t border-line/40">
           <div className="absolute inset-0 z-0">
-            <Image src="/hero.jpg" alt="Madagaskar" fill className="object-cover opacity-15" sizes="100vw" />
-            <div className="absolute inset-0 bg-gradient-to-r from-bg/99 to-bg/80" />
+            <ThemedImage
+              darkSrc="/hero.jpg"
+              lightSrc="/hero-light.png"
+              alt="Pnącza wanilii na Madagaskarze"
+              fill
+              className="hero-support-image object-cover object-[74%_42%] md:object-[82%_40%]"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 hero-overlay-horizontal" />
+            <div className="absolute inset-0 hero-overlay-vertical" />
           </div>
-          <div className="relative z-10 container-shell py-24">
+          <div className="relative z-10 container-shell py-28">
             <div className="max-w-xl">
-              <h2 className="font-display text-ink leading-[0.9] mb-6" style={{ fontSize: "clamp(2.2rem, 4.5vw, 4rem)" }}>
-                Gotowy na sourcing
-                <br />
-                <span className="text-gold">prosto od zrodla?</span>
+              <h2
+                className="font-display text-ink leading-[0.9] mb-6"
+                style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
+              >
+                Gotowy na sourcing<br />
+                <span className="text-gold">bezpośrednio u źródła?</span>
               </h2>
               <p className="text-ink/55 mb-8 leading-relaxed">
-                Wyslij zapytanie, a przygotujemy ceny, dostepnosc i plan dostaw pod Twoj produkt.
+                Wypełnij formularz zapytania, a wrócimy z ceną, dostępnością i propozycją dostaw
+                w ciągu 24 godzin. Możesz też napisać bezpośrednio na{" "}
+                <a
+                  href="mailto:info@themysticaroma.com"
+                  className="text-gold hover:text-gold-light transition-colors underline underline-offset-2"
+                >
+                  info@themysticaroma.com
+                </a>
+                .
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href={withLocalePrefix("/quote", locale)} className="px-8 py-4 rounded-full bg-gold text-bg font-semibold">
-                  Zapytanie B2B
+                <Link
+                  href={withLocalePrefix("/quote", locale)}
+                  className="px-8 py-4 rounded-full bg-gold text-bg font-semibold hover:bg-gold-light transition-all shadow-[0_0_30px_rgba(201,169,110,0.3)]"
+                >
+                  Poproś o ofertę
                 </Link>
-                <Link href={withLocalePrefix("/certifications", locale)} className="px-8 py-4 rounded-full border border-line text-ink/70 hover:border-gold/50 hover:text-ink transition-all">
-                  Dokumenty i certyfikaty
+                <Link
+                  href={withLocalePrefix("/certifications", locale)}
+                  className="px-8 py-4 rounded-full border border-line text-ink/70 hover:border-gold/50 hover:text-ink transition-all"
+                >
+                  Zobacz certyfikaty
                 </Link>
               </div>
             </div>
@@ -206,16 +403,18 @@ export default async function AboutPage() {
       <section className="relative min-h-[70vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="hero-zoom absolute inset-[-4%]">
-            <Image
-              src="/hero.jpg"
+            <ThemedImage
+              darkSrc="/hero.jpg"
+              lightSrc="/hero-light.png"
               alt="Madagascar vanilla"
               fill
-              className="object-cover"
+              className="hero-main-image object-cover object-[72%_44%] md:object-[80%_40%]"
               priority
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/97 via-bg/75 to-bg/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/50" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
+          <div className="absolute inset-0 hero-overlay-radial" />
         </div>
         <div className="relative container-shell py-32">
           <div className="flex items-center gap-3 mb-6">
@@ -438,14 +637,16 @@ export default async function AboutPage() {
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-line/40">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero.jpg"
+          <ThemedImage
+            darkSrc="/hero.jpg"
+            lightSrc="/hero-light.png"
             alt="Madagascar vanilla vines"
             fill
-            className="object-cover opacity-15"
+            className="hero-support-image object-cover object-[74%_42%] md:object-[82%_40%]"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg/99 to-bg/80" />
+          <div className="absolute inset-0 hero-overlay-horizontal" />
+          <div className="absolute inset-0 hero-overlay-vertical" />
         </div>
         <div className="relative z-10 container-shell py-28">
           <div className="max-w-xl">

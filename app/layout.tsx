@@ -8,6 +8,7 @@ import { StickyQuoteCta } from "@/components/sticky-quote-cta";
 import { GA4 } from "@/components/analytics/ga4";
 import { BaselineTraffic } from "@/components/analytics/baseline-traffic";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
+import { ThemeProvider } from "@/components/theme-provider";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
 const cormorant = Cormorant_Garamond({
@@ -65,7 +66,7 @@ const organizationSchema = {
   name: "Natural Mystic Aroma",
   alternateName: "The Mystic Aroma",
   url: "https://www.themysticaroma.com",
-  logo: "https://www.themysticaroma.com/logo-light.png",
+  logo: "https://www.themysticaroma.com/logo-dark.png",
   email: "info@themysticaroma.com",
   sameAs: [
     "https://www.facebook.com/NaturalMysticAroma",
@@ -94,24 +95,34 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${cormorant.variable} ${manrope.variable} antialiased`}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-gold focus:text-bg focus:rounded-full focus:font-semibold focus:text-sm"
-        >
-          {locale === "pl" ? "Przejdz do tresci" : "Skip to content"}
-        </a>
-        <GA4 />
-        <BaselineTraffic />
+      <head>
+        {/* No-flash theme script: runs synchronously before paint to avoid flicker */}
         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('nma-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();`,
+          }}
         />
-        <SiteHeader />
-        <div id="main-content">{children}</div>
-        <StickyQuoteCta />
-        <CookieConsentBanner />
-        <SiteFooter />
+      </head>
+      <body className={`${cormorant.variable} ${manrope.variable} antialiased`}>
+        <ThemeProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-gold focus:text-bg focus:rounded-full focus:font-semibold focus:text-sm"
+          >
+            {locale === "pl" ? "Przejdz do tresci" : "Skip to content"}
+          </a>
+          <GA4 />
+          <BaselineTraffic />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          />
+          <SiteHeader />
+          <div id="main-content">{children}</div>
+          <StickyQuoteCta />
+          <CookieConsentBanner />
+          <SiteFooter />
+        </ThemeProvider>
       </body>
     </html>
   );

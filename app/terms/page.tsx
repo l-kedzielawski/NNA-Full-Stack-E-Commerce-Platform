@@ -54,43 +54,43 @@ export default async function TermsPage() {
   const sectionsPl = [
     {
       title: "1. Zakres i strony umowy",
-      body: `Niniejszy Regulamin dotyczy zakupow realizowanych w sklepie internetowym oraz sprzedazy bezposredniej prowadzonej przez Natural Mystic Aroma Sp. z o.o. (\"Sprzedawca\"). Postanowienia maja zastosowanie do klientow biznesowych i konsumentow, chyba ze dana sekcja stanowi inaczej. Jezeli przepisy bezwzglednie obowiazujace zapewniaja konsumentowi szersza ochrone, pierwszenstwo maja te przepisy.`,
+      body: `Niniejszy Regulamin dotyczy zakupów realizowanych w sklepie internetowym oraz sprzedaży bezpośredniej prowadzonej przez Natural Mystic Aroma Sp. z o.o. (\"Sprzedawca\"). Postanowienia mają zastosowanie do klientów biznesowych i konsumentów, chyba że dana sekcja stanowi inaczej. Jeżeli przepisy bezwzględnie obowiązujące zapewniają konsumentowi szerszą ochronę, pierwszeństwo mają te przepisy.`,
     },
     {
       title: "2. Informacje o produktach i zawarcie umowy",
-      body: `Zdjecia, opisy i informacje o certyfikacji sa przygotowywane z nalezyta starannoscia, jednak ze wzgledu na naturalne pochodzenie i zmiennosc zbiorow moga wystepowac niewielkie roznice miedzy partia prezentowana a dostarczona. Umowa zostaje zawarta z chwila otrzymania potwierdzenia zamowienia od Sprzedawcy. W uzasadnionych przypadkach (m.in. blad cenowy, rozbieznosci magazynowe, procedury antyfraudowe, ograniczenia prawne) Sprzedawca moze odmowic realizacji lub anulowac zamowienie.`,
+      body: `Zdjęcia, opisy i informacje o certyfikacji są przygotowywane z należytą starannością, jednak ze względu na naturalne pochodzenie i zmienność zbiorów mogą występować niewielkie różnice między partią prezentowaną a dostarczoną. Umowa zostaje zawarta z chwilą otrzymania potwierdzenia zamówienia od Sprzedawcy. W uzasadnionych przypadkach (m.in. błąd cenowy, rozbieżności magazynowe, procedury antyfraudowe, ograniczenia prawne) Sprzedawca może odmówić realizacji lub anulować zamówienie.`,
     },
     {
       title: "3. Ceny, podatki i fakturowanie",
-      body: `Ceny sa prezentowane w walucie wskazanej w sklepie i obejmuja lub nie obejmuja VAT zgodnie z ustawieniami checkoutu i statusem klienta. Koszty dostawy i inne oplaty sa pokazywane przed platnoscia. W kwalifikowanych transakcjach B2B wewnatrz UE moze miec zastosowanie mechanizm odwrotnego obciazenia po weryfikacji numeru VAT.`,
+      body: `Ceny są prezentowane w walucie wskazanej w sklepie i obejmują lub nie obejmują VAT zgodnie z ustawieniami checkoutu i statusem klienta. Koszty dostawy i inne opłaty są pokazywane przed płatnością. W kwalifikowanych transakcjach B2B wewnątrz UE może mieć zastosowanie mechanizm odwrotnego obciążenia po weryfikacji numeru VAT.`,
     },
     {
-      title: "4. Warunki platnosci",
-      body: `Dostepne metody platnosci sa wskazane w checkoutcie lub ofercie handlowej. Platnosc powinna zostac dokonana w terminie podanym w zamowieniu lub na fakturze. W przypadku przeterminowanych naleznosci B2B, w granicach dopuszczonych przepisami, Sprzedawca moze naliczyc odsetki ustawowe i koszty dochodzenia naleznosci.`,
+      title: "4. Warunki płatności",
+      body: `Dostępne metody płatności są wskazane w checkoutcie lub ofercie handlowej. Płatność powinna zostać dokonana w terminie podanym w zamówieniu lub na fakturze. W przypadku przeterminowanych należności B2B, w granicach dopuszczonych przepisami, Sprzedawca może naliczyć odsetki ustawowe i koszty dochodzenia należności.`,
     },
     {
-      title: "5. Dostawa, przejscie ryzyka i sila wyzsza",
-      body: `Terminy dostawy maja charakter szacunkowy, o ile wyraznie nie uzgodniono inaczej. Dla konsumenta ryzyko co do zasady przechodzi z chwila fizycznego odbioru towaru. W dostawach B2B ryzyko przechodzi zgodnie z uzgodnionym Incoterm, a przy jego braku z chwila przekazania przesylki pierwszemu przewoznikowi. Sprzedawca nie odpowiada za opoznienia wynikajace z sily wyzszej, odpraw celnych, awarii po stronie przewoznika lub innych zdarzen poza uzasadniona kontrola.`,
+      title: "5. Dostawa, przejście ryzyka i siła wyższa",
+      body: `Terminy dostawy mają charakter szacunkowy, o ile wyraźnie nie uzgodniono inaczej. Dla konsumenta ryzyko co do zasady przechodzi z chwilą fizycznego odbioru towaru. W dostawach B2B ryzyko przechodzi zgodnie z uzgodnionym Incoterm, a przy jego braku z chwilą przekazania przesyłki pierwszemu przewoźnikowi. Sprzedawca nie odpowiada za opóźnienia wynikające z siły wyższej, odpraw celnych, awarii po stronie przewoźnika lub innych zdarzeń poza uzasadnioną kontrolą.`,
     },
     {
-      title: "6. Prawo odstapienia (konsument)",
-      body: `Konsumentowi moze przyslugiwac ustawowe prawo odstapienia od umowy zawartej na odleglosc w terminie 14 dni od dostawy, o ile nie zachodzi ustawowy wyjatek (np. zapieczetowany produkt, ktory po otwarciu nie nadaje sie do zwrotu ze wzgledow zdrowotnych lub higienicznych, albo towar wykonywany wedlug specyfikacji klienta). W celu odstapienia nalezy skontaktowac sie z orders@themysticaroma.com przed odeslaniem towaru. Zwrot srodkow realizowany jest zgodnie z obowiazujacymi przepisami po otrzymaniu i weryfikacji towaru.`,
+      title: "6. Prawo odstąpienia (konsument)",
+      body: `Konsumentowi może przysługiwać ustawowe prawo odstąpienia od umowy zawartej na odległość w terminie 14 dni od dostawy, o ile nie zachodzi ustawowy wyjątek (np. zapieczętowany produkt, który po otwarciu nie nadaje się do zwrotu ze względów zdrowotnych lub higienicznych, albo towar wykonywany według specyfikacji klienta). W celu odstąpienia należy skontaktować się z orders@themysticaroma.com przed odesłaniem towaru. Zwrot środków realizowany jest zgodnie z obowiązującymi przepisami po otrzymaniu i weryfikacji towaru.`,
     },
     {
-      title: "7. Reklamacje, zgodnosc i roszczenia B2B",
-      body: `W przypadku uszkodzenia, niezgodnosci lub blednej dostawy prosimy o niezwloczny kontakt pod adresem orders@themysticaroma.com wraz z numerem zamowienia i materialem dowodowym. Konsumentowi przysluguja ustawowe srodki ochrony z tytulu niezgodnosci towaru z umowa. Klient B2B zobowiazany jest sprawdzic towar przy odbiorze i zglosic wady widoczne bez zbednej zwloki, nie pozniej niz w terminach wskazanych w Polityce zwrotow i reklamacji, chyba ze przepisy bezwzglednie obowiazujace stanowia inaczej.`,
+      title: "7. Reklamacje, zgodność i roszczenia B2B",
+      body: `W przypadku uszkodzenia, niezgodności lub błędnej dostawy prosimy o niezwłoczny kontakt pod adresem orders@themysticaroma.com wraz z numerem zamówienia i materiałem dowodowym. Konsumentowi przysługują ustawowe środki ochrony z tytułu niezgodności towaru z umową. Klient B2B zobowiązany jest sprawdzić towar przy odbiorze i zgłosić wady widoczne bez zbędnej zwłoki, nie później niż w terminach wskazanych w Polityce zwrotów i reklamacji, chyba że przepisy bezwzględnie obowiązujące stanowią inaczej.`,
     },
     {
-      title: "8. Ograniczenie odpowiedzialnosci",
-      body: `W zakresie dopuszczonym przez prawo Sprzedawca nie odpowiada za szkody posrednie i utracone korzysci, w tym utrate zysku, przestoje czy szkody reputacyjne. Ograniczenia te nie maja zastosowania tam, gdzie ich wylaczenie jest prawnie niedopuszczalne, w szczegolnosci wobec konsumentow oraz przy umyslnym dzialaniu lub szkodzie na osobie.`,
+      title: "8. Ograniczenie odpowiedzialności",
+      body: `W zakresie dopuszczonym przez prawo Sprzedawca nie odpowiada za szkody pośrednie i utracone korzyści, w tym utratę zysku, przestoje czy szkody reputacyjne. Ograniczenia te nie mają zastosowania tam, gdzie ich wyłączenie jest prawnie niedopuszczalne, w szczególności wobec konsumentów oraz przy umyślnym działaniu lub szkodzie na osobie.`,
     },
     {
-      title: "9. Wlasnosc intelektualna i uzycie marki",
-      body: `Wszystkie znaki towarowe, nazwy handlowe, logotypy i materialy strony pozostaja wlasnoscia Sprzedawcy lub licencjodawcow. Komercyjne wykorzystanie, reprodukcja lub odwolania do marki sugerujace autoryzacje wymagaja uprzedniej pisemnej zgody. Odsprzedaz produktow jest dopuszczalna, ale nie wolno znieksztalcac informacji o pochodzeniu, certyfikacji ani parametrach produktu.`,
+      title: "9. Własność intelektualna i użycie marki",
+      body: `Wszystkie znaki towarowe, nazwy handlowe, logotypy i materiały strony pozostają własnością Sprzedawcy lub licencjodawców. Komercyjne wykorzystanie, reprodukcja lub odwołania do marki sugerujące autoryzację wymagają uprzedniej pisemnej zgody. Odsprzedaż produktów jest dopuszczalna, ale nie wolno zniekształcać informacji o pochodzeniu, certyfikacji ani parametrach produktu.`,
     },
     {
-      title: "10. Prawo wlasciwe, spory i zmiany",
-      body: `Regulamin podlega prawu polskiemu. W sporach B2B sadem wlasciwym jest sad w Poznaniu, o ile strony nie uzgodnia inaczej. Spory konsumenckie rozstrzygane sa z uwzglednieniem bezwzglednie obowiazujacych przepisow ochrony konsumenta i jurysdykcji. Sprzedawca moze aktualizowac Regulamin dla przyszlych zamowien; dla danego zamowienia obowiazuje wersja zaakceptowana przy jego skladaniu.`,
+      title: "10. Prawo właściwe, spory i zmiany",
+      body: `Regulamin podlega prawu polskiemu. W sporach B2B sądem właściwym jest sąd w Poznaniu, o ile strony nie uzgodnią inaczej. Spory konsumenckie rozstrzygane są z uwzględnieniem bezwzględnie obowiązujących przepisów ochrony konsumenta i jurysdykcji. Sprzedawca może aktualizować Regulamin dla przyszłych zamówień; dla danego zamówienia obowiązuje wersja zaakceptowana przy jego składaniu.`,
     },
   ];
 
@@ -108,7 +108,7 @@ export default async function TermsPage() {
           <h1 className="font-display text-5xl text-ink mb-3">{locale === "pl" ? "Regulamin" : "Terms & Conditions"}</h1>
           <p className="text-ink/45 text-sm">
             {locale === "pl"
-              ? "Obowiazuje od: luty 2026 · Dotyczy zakupow B2B i konsumenckich"
+              ? "Obowiązuje od: luty 2026 · Dotyczy zakupów B2B i konsumenckich"
               : "Effective: February 2026 · For business and consumer purchases"}
           </p>
         </div>
