@@ -60,6 +60,9 @@ for i in {1..30}; do
   sleep 2
 done
 
+echo "--- Verifying telemetry route via Next.js proxy..."
+$COMPOSE exec -T nextjs node -e 'async function main() { const url = "http://localhost:3000/api/medusa/store/traffic/hit"; const payload = { path: "/api/deploy-probe", locale: "en", source: "deploy_probe" }; const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); const text = await res.text(); if (res.status !== 202) { throw new Error("Telemetry probe failed (" + res.status + "): " + text); } console.log("--- Telemetry probe OK (" + res.status + ")"); } main().catch((error) => { console.error(error instanceof Error ? error.message : String(error)); process.exit(1); });'
+
 # ── 7. Clean up old images ───────────────────────────────────────────────────
 echo "--- Pruning unused Docker images..."
 docker image prune -f

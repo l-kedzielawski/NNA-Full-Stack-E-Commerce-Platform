@@ -159,45 +159,87 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      {/* ── THE FOUNDERS ─────────────────────────────────────── */}
+      {/* ── MEET US + WHO WE WORK WITH ────────────────────────── */}
       <section className="container-shell py-20">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-6 h-px bg-gold/60" />
-          <span className="label-sm text-gold/60">{locale === "pl" ? "Założyciele" : "The Founders"}</span>
+        <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-6 lg:gap-8 mb-14">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-6 h-px bg-gold/60" />
+              <span className="label-sm text-gold/60">{locale === "pl" ? "Poznaj nas" : "Meet Us"}</span>
+            </div>
+            <h2
+              className="font-display text-ink mb-3"
+              style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}
+            >
+              {locale === "pl" ? "Porozmawiaj bezpośrednio" : "Talk directly"}<br />
+              <span className="text-gold">{locale === "pl" ? "z osobami, które to tworzą." : "to the people behind it."}</span>
+            </h2>
+            <p className="text-ink/45 text-sm leading-relaxed max-w-xl">
+              {locale === "pl"
+                ? "Bez ticketów i bez anonimowych kolejek. Rozmawiasz bezpośrednio z zespołem, który prowadzi sourcing i osobiście odpowiada za każdy kluczowy kontakt handlowy."
+                : "No ticketing system. No anonymous queues. You speak directly with the team that runs sourcing and personally owns every key business relationship."}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-line/60 bg-card p-7 sm:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-6 h-px bg-gold/60" />
+              <span className="label-sm text-gold/60">{locale === "pl" ? "Z kim pracujemy" : "Who We Work With"}</span>
+            </div>
+            <h3
+              className="font-display text-ink mb-4"
+              style={{ fontSize: "clamp(1.45rem, 2.2vw, 2rem)" }}
+            >
+              {locale === "pl" ? "Nie każde partnerstwo" : "Not every partner"}<br />
+              <span className="text-gold">{locale === "pl" ? "będzie dobrym dopasowaniem." : "is the right fit."}</span>
+            </h3>
+            <p className="text-ink/50 text-sm leading-relaxed mb-3">
+              {locale === "pl"
+                ? "Nie handlujemy tylko surowcem - dowozimy standard. Jeśli szukasz najtańszego towaru masowego, to nie jesteśmy dla Ciebie."
+                : "We don't just move products, we move standards. If you're looking for the cheapest commodity spice, this isn't the place."}
+            </p>
+            <p className="text-ink/50 text-sm leading-relaxed mb-5">
+              {locale === "pl"
+                ? "Jeśli jednak liczy się dla Ciebie potwierdzone pochodzenie, uczciwy handel i składniki, które realnie dowożą jakość - porozmawiajmy. Inwestujemy w dowody, nie w obietnice."
+                : "But if you care about verified origin, sustainable trade, and ingredients that truly deliver, we should talk. We invest in proof, not promises."}
+            </p>
+            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5 mb-5">
+              {valuesLocalized.map((v) => (
+                <div key={v} className="flex items-center gap-2.5 text-sm text-ink/60">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold/60 shrink-0" />
+                  {v}
+                </div>
+              ))}
+            </div>
+            <Link
+              href={withLocalePrefix("/b2b", locale)}
+              className="group inline-flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors"
+            >
+              {locale === "pl" ? "Poznaj nasze podejście B2B" : "Learn about our B2B approach"}
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
         </div>
-        <h2
-          className="font-display text-ink mb-3"
-          style={{ fontSize: "clamp(2rem, 3.5vw, 3.5rem)" }}
-        >
-          {locale === "pl" ? "Porozmawiaj bezpośrednio" : "Talk directly"}<br />
-          <span className="text-gold">{locale === "pl" ? "z osobami, które to tworzą." : "to the people behind it."}</span>
-        </h2>
-        <p className="text-ink/45 text-sm leading-relaxed max-w-xl mb-14">
-          {locale === "pl"
-            ? "Bez ticketów i bez anonimowych kolejek. Rozmawiasz bezpośrednio z założycielami, którzy budowali firmę i nadal osobiście prowadzą kluczowe relacje sourcingowe."
-            : "No ticketing system. No account managers. You speak directly with the founders who built this company, and who still manage every sourcing relationship personally."}
-        </p>
 
         {/* ── ŁUKASZ — photo left, text right ── */}
         <div className="rounded-2xl border border-line bg-card overflow-hidden mb-5 group hover:border-gold/30 transition-all duration-300">
           <div className="grid md:grid-cols-2 min-h-[420px]">
-            {/* Photo */}
-            <div className="relative bg-bg-soft overflow-hidden min-h-[340px] sm:min-h-[420px] md:min-h-0">
-              <div className="relative h-full w-full px-[15px]">
+            <div className="relative overflow-hidden min-h-[340px] sm:min-h-[420px] md:min-h-0 bg-[radial-gradient(90%_90%_at_20%_15%,rgba(201,169,110,0.15),transparent_60%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.22))]">
+              <div className="absolute -top-14 -left-8 w-44 h-44 rounded-full bg-gold/10 blur-3xl" />
+              <div className="absolute inset-4 rounded-[1.2rem] border border-gold/20 bg-gradient-to-b from-bg-soft/40 via-bg-soft/20 to-bg/85" />
+              <div className="absolute inset-4 rounded-[1.2rem] overflow-hidden">
                 <Image
                   src="/lukasz.png"
                   alt="Łukasz Kędzielawski"
                   fill
-                  className="object-contain object-center transition-all duration-500 scale-100 md:scale-90"
+                  className="object-contain object-bottom md:object-center scale-[0.94] group-hover:scale-[0.98] transition-transform duration-500 drop-shadow-[0_30px_35px_rgba(0,0,0,0.35)]"
                   sizes="(min-width: 768px) 50vw, 100vw"
                 />
               </div>
-              {/* Right-side fade into card */}
-              <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-card to-transparent hidden md:block" />
-              <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-card/60 to-transparent md:hidden" />
+              <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-card/65 to-transparent" />
+              <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-card/80 to-transparent hidden md:block" />
             </div>
 
-            {/* Text */}
             <div className="flex flex-col justify-center p-10 md:pl-8 border-t md:border-t-0 md:border-l border-line/30">
               <p className="label-sm text-gold/50 mb-3">{locale === "pl" ? "Rozwój biznesu i sprzedaż" : "Business Development & Sales"}</p>
               <h3
@@ -236,7 +278,6 @@ export default async function ContactPage() {
         {/* ── KAROL — text left, photo right ── */}
         <div className="rounded-2xl border border-line bg-card overflow-hidden group hover:border-gold/30 transition-all duration-300">
           <div className="grid md:grid-cols-2 min-h-[420px]">
-            {/* Text — comes first in DOM, second visually on desktop via order */}
             <div className="flex flex-col justify-center p-10 md:pr-8 border-b md:border-b-0 md:border-r border-line/30 order-2 md:order-1">
               <p className="label-sm text-gold/50 mb-3">{locale === "pl" ? "Obsługa klienta i sprzedaż" : "Customer Care & Sales"}</p>
               <h3
@@ -270,20 +311,20 @@ export default async function ContactPage() {
               </div>
             </div>
 
-            {/* Photo */}
-            <div className="relative bg-bg-soft overflow-hidden order-1 md:order-2 min-h-[340px] sm:min-h-[420px] md:min-h-0">
-              <div className="relative h-full w-full px-[15px]">
+            <div className="relative overflow-hidden order-1 md:order-2 min-h-[340px] sm:min-h-[420px] md:min-h-0 bg-[radial-gradient(85%_80%_at_80%_18%,rgba(201,169,110,0.14),transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.22))]">
+              <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-gold/10 blur-3xl" />
+              <div className="absolute inset-4 rounded-[1.2rem] border border-gold/20 bg-gradient-to-b from-bg-soft/40 via-bg-soft/20 to-bg/85" />
+              <div className="absolute inset-4 rounded-[1.2rem] overflow-hidden">
                 <Image
                   src="/karol.png"
                   alt="Karol Kucharski"
                   fill
-                  className="object-contain object-center transition-all duration-500 scale-100 md:scale-90"
+                  className="object-contain object-bottom md:object-center scale-[0.94] group-hover:scale-[0.98] transition-transform duration-500 drop-shadow-[0_30px_35px_rgba(0,0,0,0.35)]"
                   sizes="(min-width: 768px) 50vw, 100vw"
                 />
               </div>
-              {/* Left-side fade into card */}
-              <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-card to-transparent hidden md:block" />
-              <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-card/60 to-transparent md:hidden" />
+              <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-card/65 to-transparent" />
+              <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-card/80 to-transparent hidden md:block" />
             </div>
           </div>
         </div>
@@ -319,54 +360,6 @@ export default async function ContactPage() {
               <Phone size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
               +48 503 191 328
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── WHO WE WORK WITH ─────────────────────────────────── */}
-      <section className="border-y border-line/40 bg-card">
-        <div className="container-shell py-16">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-6 h-px bg-gold/60" />
-                <span className="label-sm text-gold/60">{locale === "pl" ? "Z kim pracujemy" : "Who We Work With"}</span>
-              </div>
-              <h2
-                className="font-display text-ink mb-5"
-                style={{ fontSize: "clamp(1.75rem, 3vw, 3rem)" }}
-              >
-                {locale === "pl" ? "Nie każde partnerstwo" : "Not every partner"}<br />
-                <span className="text-gold">{locale === "pl" ? "będzie dobrym dopasowaniem." : "is the right fit."}</span>
-              </h2>
-              <p className="text-ink/50 text-sm leading-relaxed mb-4">
-                {locale === "pl"
-                  ? "Nie handlujemy tylko surowcem — dowozimy standard. Jeśli szukasz najtańszego towaru masowego, to nie jesteśmy dla Ciebie."
-                  : "We don't just move products, we move standards. If you're looking for the cheapest commodity spice, this isn't the place."}
-              </p>
-              <p className="text-ink/50 text-sm leading-relaxed">
-                {locale === "pl"
-                  ? "Jeśli jednak liczy się dla Ciebie potwierdzone pochodzenie, uczciwy handel i składniki, które realnie dowozu jakość — porozmawiajmy. Inwestujemy w dowody, nie w obietnice."
-                  : "But if you care about verified origin, sustainable trade, and ingredients that truly deliver, we should talk. We invest in proof, not promises."}
-              </p>
-            </div>
-            <div className="space-y-3">
-              {valuesLocalized.map((v) => (
-                <div key={v} className="flex items-center gap-3 text-sm text-ink/60">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gold/60 shrink-0" />
-                  {v}
-                </div>
-              ))}
-              <div className="pt-4">
-                <Link
-                  href={withLocalePrefix("/b2b", locale)}
-                  className="group inline-flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors"
-                >
-                  {locale === "pl"                   ? "Poznaj nasze podejście B2B" : "Learn about our B2B approach"}
-                  <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>

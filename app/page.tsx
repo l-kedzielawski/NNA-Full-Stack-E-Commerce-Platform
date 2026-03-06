@@ -243,35 +243,67 @@ export default async function Home() {
           </div>
         </section>
 
-        <div className="gold-line opacity-50" />
+        <div className="gold-line" />
         <section className="py-12 bg-bg-mid">
           <div className="container-shell">
-            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-7 sm:gap-6 max-w-4xl mx-auto">
               {[
-                { badge: "EU Organic", sub: "PL-EKO · Reg. 2018/848" },
-                { badge: "Fair Trade", sub: "Control Union Certified" },
-                { badge: "Certyfikat Pochodzenia", sub: "Republika Madagaskaru" },
-              ].map((c) => (
-                <div key={c.badge} className="flex items-center gap-3 group">
-                  <div className="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center shrink-0 group-hover:border-gold/60 transition-colors">
-                    <div className="w-2 h-2 rounded-full bg-gold/60" />
+                {
+                  badge: "EU Organic",
+                  sub: "PL-EKO · Reg. 2018/848",
+                  src: "/eu-organic-logo-600x400_0.png",
+                  alt: "EU Organic",
+                  imageClass: "h-[67px] sm:h-[71px]",
+                },
+                {
+                  badge: "Fair Trade",
+                  sub: "Control Union Certified",
+                  src: "/fairtrade.png",
+                  alt: "Fair Trade",
+                  imageClass: "h-[64px] sm:h-[69px]",
+                },
+                {
+                  badge: "Certyfikat Pochodzenia",
+                  sub: "Republika Madagaskaru",
+                  src: "/made-in-madagascar-icon.png",
+                  alt: "Made in Madagascar",
+                  imageClass: "h-[67px] sm:h-[71px]",
+                },
+              ].map((item) => (
+                <div key={item.badge} className="flex flex-col items-center text-center">
+                  <div className="h-[82px] sm:h-[88px] w-full flex items-center justify-center">
+                    <Image
+                      src={item.src}
+                      alt={item.alt}
+                      width={250}
+                      height={138}
+                      className={`${item.imageClass} w-auto object-contain`}
+                    />
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{c.badge}</p>
-                    <p className="text-[0.65rem] text-ink/40 tracking-wider">{c.sub}</p>
+                  <div className="mt-4 min-h-[40px] flex items-center justify-center gap-3">
+                    <div className="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-gold/60" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-ink">{item.badge}</p>
+                      <p className="text-[0.65rem] text-ink/40 tracking-wider">{item.sub}</p>
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-6 text-center">
               <Link
                 href={withLocalePrefix("/certifications", locale)}
-                className="text-xs text-gold/50 hover:text-gold transition-colors underline underline-offset-4 ml-4"
+                className="text-xs text-gold/50 hover:text-gold transition-colors underline underline-offset-4"
               >
                 Zobacz dokumenty →
               </Link>
             </div>
           </div>
         </section>
-        <div className="gold-line opacity-50" />
+        <div className="gold-line" />
 
         <section className="relative overflow-hidden py-24 bg-bg-mid border-y border-line/40">
           <div className="container-shell">
@@ -597,8 +629,12 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="py-20 bg-bg">
-          <div className="container-shell">
+        <section className="relative py-20 bg-bg overflow-hidden">
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 78% 70% at 50% 24%, rgba(201,169,110,0.08) 0%, transparent 72%)" }}
+          />
+          <div className="container-shell relative">
             <Reveal className="text-center mb-12">
               <p className="label-sm text-gold/60 mb-3">Z kim pracujemy</p>
               <h2
@@ -649,15 +685,67 @@ export default async function Home() {
                 </Link>
               </div>
             </Reveal>
+
+            <div className="mt-10 rounded-[2rem] border border-line/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),rgba(201,169,110,0.03)_40%,rgba(0,0,0,0.12))] p-6 sm:p-8 md:p-10">
+              <Reveal className="text-center mb-12">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div className="w-6 h-px bg-gold/40" />
+                  <span className="label-sm text-gold/60">Poznaj nas</span>
+                  <div className="w-6 h-px bg-gold/40" />
+                </div>
+                <h3
+                  className="font-display text-ink leading-tight"
+                  style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}
+                >
+                  Łukasz i Karol.
+                </h3>
+              </Reveal>
+
+              <div className="grid grid-cols-1 gap-8 md:flex md:items-start md:justify-center md:gap-7">
+                {[
+                  { src: "/lukasz.png", name: "Łukasz", role: "Sourcing i rozwój B2B", focus: "object-[50%_14%]" },
+                  { src: "/karol.png", name: "Karol", role: "Obsługa i logistyka", focus: "object-[50%_12%]" },
+                ].map((person, i) => (
+                  <Reveal key={person.name} delay={i * 0.1}>
+                    <div className="group text-center w-full md:w-[310px]">
+                      <div className="relative mx-auto aspect-square w-[260px] sm:w-[280px] md:w-[290px]">
+                        <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle,rgba(201,169,110,0.22)_0%,rgba(201,169,110,0.05)_52%,transparent_74%)] blur-xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 rounded-full border border-gold/30" />
+                        <div className="absolute inset-[3.5%] rounded-full border border-line/70" />
+                        <div className="absolute inset-[7%] rounded-full overflow-hidden bg-bg-mid">
+                          <Image
+                            src={person.src}
+                            alt={person.name}
+                            fill
+                            className={`object-cover ${person.focus} transition-transform duration-700 group-hover:scale-[1.04]`}
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-bg/48 via-transparent to-transparent" />
+                        </div>
+                      </div>
+                      <p className="mt-4 font-display text-[1.65rem] leading-none text-ink/90">{person.name}</p>
+                      <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-gold/58">{person.role}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+
+              <Reveal delay={0.2}>
+                <p className="text-center text-base text-ink/50 leading-relaxed max-w-2xl mx-auto mt-12 px-4">
+                  Jesteśmy twarzami Natural Mystic Aroma, nie pośrednikiem, nie katalogiem.
+                  Każda wysyłka przechodzi przez nasze ręce i naszą odpowiedzialność.
+                </p>
+              </Reveal>
+            </div>
           </div>
         </section>
 
-        <section className="relative py-28 overflow-hidden bg-bg-mid border-y border-line/40">
+        <section className="relative py-24 overflow-hidden bg-bg-mid border-y border-line/40">
           <div
             className="absolute inset-0 pointer-events-none"
             style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,169,110,0.03) 0%, transparent 70%)" }}
           />
-          <div className="container-shell text-center max-w-4xl mx-auto relative">
+          <div className="container-shell text-center max-w-3xl mx-auto relative">
             <Reveal>
               <div className="mb-6">
                 <div className="inline-block w-px h-16 bg-gradient-to-b from-transparent to-gold/40 mx-auto" />
@@ -959,32 +1047,64 @@ export default async function Home() {
       </section>
 
       {/* ── CERTIFICATIONS ROW ───────────────────────────────────────── */}
-      <div className="gold-line opacity-50" />
+      <div className="gold-line" />
       <section className="py-12 bg-bg-mid">
         <div className="container-shell">
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-7 sm:gap-6 max-w-4xl mx-auto">
             {[
-              { badge: "EU Organic", sub: "PL-EKO · Reg. 2018/848" },
-              { badge: "Fair Trade", sub: "Control Union Certified" },
-              { badge: "Certificate of Origin", sub: "Republic of Madagascar" },
-            ].map((c) => (
-              <div key={c.badge} className="flex items-center gap-3 group">
-                <div className="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center shrink-0 group-hover:border-gold/60 transition-colors">
-                  <div className="w-2 h-2 rounded-full bg-gold/60" />
+              {
+                badge: "EU Organic",
+                sub: "PL-EKO · Reg. 2018/848",
+                src: "/eu-organic-logo-600x400_0.png",
+                alt: "EU Organic",
+                imageClass: "h-[67px] sm:h-[71px]",
+              },
+              {
+                badge: "Fair Trade",
+                sub: "Control Union Certified",
+                src: "/fairtrade.png",
+                alt: "Fair Trade",
+                imageClass: "h-[64px] sm:h-[69px]",
+              },
+              {
+                badge: "Certificate of Origin",
+                sub: "Republic of Madagascar",
+                src: "/made-in-madagascar-icon.png",
+                alt: "Certificate of Origin",
+                imageClass: "h-[67px] sm:h-[71px]",
+              },
+            ].map((item) => (
+              <div key={item.badge} className="flex flex-col items-center text-center">
+                <div className="h-[82px] sm:h-[88px] w-full flex items-center justify-center">
+                  <Image
+                    src={item.src}
+                    alt={item.alt}
+                    width={250}
+                    height={138}
+                    className={`${item.imageClass} w-auto object-contain`}
+                  />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">{c.badge}</p>
-                  <p className="text-[0.65rem] text-ink/40 tracking-wider">{c.sub}</p>
+                <div className="mt-4 min-h-[40px] flex items-center justify-center gap-3">
+                  <div className="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-gold/60" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-ink">{item.badge}</p>
+                    <p className="text-[0.65rem] text-ink/40 tracking-wider">{item.sub}</p>
+                  </div>
                 </div>
               </div>
             ))}
-            <Link href="/certifications" className="text-xs text-gold/50 hover:text-gold transition-colors underline underline-offset-4 ml-4">
+          </div>
+
+          <div className="mt-6 text-center">
+            <Link href="/certifications" className="text-xs text-gold/50 hover:text-gold transition-colors underline underline-offset-4">
               View documents →
             </Link>
           </div>
         </div>
       </section>
-      <div className="gold-line opacity-50" />
+      <div className="gold-line" />
 
       {/* ── PROCESS ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden py-24 bg-bg-mid border-y border-line/40">
@@ -1282,8 +1402,12 @@ export default async function Home() {
       </section>
 
       {/* ── INDUSTRY TRUST STRIP ─────────────────────────────────────── */}
-      <section className="py-20 bg-bg">
-        <div className="container-shell">
+      <section className="relative py-20 bg-bg overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 78% 70% at 50% 24%, rgba(201,169,110,0.08) 0%, transparent 72%)" }}
+        />
+        <div className="container-shell relative">
           <Reveal className="text-center mb-12">
             <p className="label-sm text-gold/60 mb-3">Who we work with</p>
             <h2
@@ -1292,7 +1416,7 @@ export default async function Home() {
             >
               Trusted by professionals
               <br />
-               <span className="text-gold">who can&apos;t afford inconsistency.</span>
+              <span className="text-gold">who can&apos;t afford inconsistency.</span>
             </h2>
           </Reveal>
 
@@ -1334,16 +1458,68 @@ export default async function Home() {
               </Link>
             </div>
           </Reveal>
+
+          <div className="mt-10 rounded-[2rem] border border-line/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),rgba(201,169,110,0.03)_40%,rgba(0,0,0,0.12))] p-6 sm:p-8 md:p-10">
+            <Reveal className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="w-6 h-px bg-gold/40" />
+                <span className="label-sm text-gold/60">Meet us</span>
+                <div className="w-6 h-px bg-gold/40" />
+              </div>
+              <h3
+                className="font-display text-ink leading-tight"
+                style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}
+              >
+                Lukasz &amp; Karol.
+              </h3>
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-8 md:flex md:items-start md:justify-center md:gap-7">
+              {[
+                { src: "/lukasz.png", name: "Lukasz", role: "Sourcing & B2B Growth", focus: "object-[50%_14%]" },
+                { src: "/karol.png", name: "Karol", role: "Operations & Client Care", focus: "object-[50%_12%]" },
+              ].map((person, i) => (
+                <Reveal key={person.name} delay={i * 0.1}>
+                  <div className="group text-center w-full md:w-[310px]">
+                    <div className="relative mx-auto aspect-square w-[260px] sm:w-[280px] md:w-[290px]">
+                      <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle,rgba(201,169,110,0.22)_0%,rgba(201,169,110,0.05)_52%,transparent_74%)] blur-xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute inset-0 rounded-full border border-gold/30" />
+                      <div className="absolute inset-[3.5%] rounded-full border border-line/70" />
+                      <div className="absolute inset-[7%] rounded-full overflow-hidden bg-bg-mid">
+                        <Image
+                          src={person.src}
+                          alt={person.name}
+                          fill
+                          className={`object-cover ${person.focus} transition-transform duration-700 group-hover:scale-[1.04]`}
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-bg/48 via-transparent to-transparent" />
+                      </div>
+                    </div>
+                    <p className="mt-4 font-display text-[1.65rem] leading-none text-ink/90">{person.name}</p>
+                    <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-gold/58">{person.role}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={0.2}>
+              <p className="text-center text-base text-ink/50 leading-relaxed max-w-2xl mx-auto mt-12 px-4">
+                We are the faces of Natural Mystic Aroma, not a trading desk, not a catalog.
+                Every shipment goes through our hands and our accountability.
+              </p>
+            </Reveal>
+          </div>
         </div>
       </section>
 
       {/* ── PULL QUOTE ───────────────────────────────────────────────── */}
-      <section className="relative py-28 overflow-hidden bg-bg-mid border-y border-line/40">
+      <section className="relative py-24 overflow-hidden bg-bg-mid border-y border-line/40">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,169,110,0.03) 0%, transparent 70%)" }}
         />
-        <div className="container-shell text-center max-w-4xl mx-auto relative">
+        <div className="container-shell text-center max-w-3xl mx-auto relative">
           <Reveal>
             <div className="mb-6">
               <div className="inline-block w-px h-16 bg-gradient-to-b from-transparent to-gold/40 mx-auto" />
