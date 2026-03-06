@@ -15,6 +15,7 @@ type QuotePayload = {
   company?: unknown;
   email?: unknown;
   phone?: unknown;
+  preferredContact?: unknown;
   country?: unknown;
   product?: unknown;
   quantity?: unknown;
@@ -34,6 +35,7 @@ type StoredQuote = {
     company: string;
     email: string;
     phone: string;
+    preferredContact: "email" | "phone";
     country: string;
     product: string;
     quantity: string;
@@ -278,11 +280,22 @@ export async function POST(request: Request) {
   const company = sanitize(raw.company, 140);
   const email = normaliseEmail(raw.email);
   const phone = sanitize(raw.phone, 50);
+  const preferredContactRaw = sanitize(raw.preferredContact, 20).toLowerCase();
+  const preferredContact: "email" | "phone" = preferredContactRaw === "phone" ? "phone" : "email";
   const country = sanitize(raw.country, 80);
   const product = sanitize(raw.product, 120);
   const quantity = sanitize(raw.quantity, 120);
-  const message = sanitize(raw.message, 2000);
+  const message = sanitize(raw.message, 1800);
   const consent = raw.consent === true;
+
+  const preferredContactLabel =
+    preferredContact === "phone"
+      ? responseLocale === "pl"
+        ? "Telefon"
+        : "Phone"
+      : "Email";
+
+  const messageWithPreferredContact = `Preferred contact: ${preferredContactLabel}${message ? ` | ${message}` : ""}`;
 
   // --- Required field validation ---
   const required: Array<[string, string]> = [
@@ -307,6 +320,13 @@ export async function POST(request: Request) {
     );
   }
 
+  if (preferredContact === "phone" && !phone) {
+    return NextResponse.json(
+      { message: t.phoneRequiredForPreferredContact },
+      { status: 400 },
+    );
+  }
+
   // --- Consent ---
   if (!consent) {
     return NextResponse.json(
@@ -321,7 +341,18 @@ export async function POST(request: Request) {
     receivedAt: new Date().toISOString(),
     ip,
     userAgent,
-    payload: { name, company, email, phone, country, product, quantity, message, consent },
+    payload: {
+      name,
+      company,
+      email,
+      phone,
+      preferredContact,
+      country,
+      product,
+      quantity,
+      message: messageWithPreferredContact,
+      consent,
+    },
   };
 
   // --- Send to Medusa lead CRM (primary sink) ---
@@ -383,6 +414,7 @@ const messageCatalog: Record<SiteLocale, Record<string, string>> = {
     requestIgnored: "Request ignored.",
     tooManyRequests: "Too many requests. Please wait a few minutes and try again.",
     invalidEmail: "Please provide a valid email address.",
+    phoneRequiredForPreferredContact: "Please provide a phone number if you prefer phone contact.",
     consentRequired: "Please accept the data processing consent before submitting.",
     submitFailed: "We could not submit your quote right now. Please try again in a minute.",
     success: "Thanks. Your request is in. We will contact you shortly.",
@@ -392,6 +424,7 @@ const messageCatalog: Record<SiteLocale, Record<string, string>> = {
     requestIgnored: "Zapytanie pominiete.",
     tooManyRequests: "Zbyt wiele prob. Odczekaj kilka minut i sprobuj ponownie.",
     invalidEmail: "Podaj poprawny adres e-mail.",
+    phoneRequiredForPreferredContact: "Podaj numer telefonu, jesli preferujesz kontakt telefoniczny.",
     consentRequired: "Zaakceptuj zgode na przetwarzanie danych przed wyslaniem formularza.",
     submitFailed: "Nie udalo sie wyslac zapytania w tej chwili. Sprobuj ponownie za minute.",
     success: "Dziekujemy. Otrzymalismy zapytanie i skontaktujemy sie w najblizszym czasie.",

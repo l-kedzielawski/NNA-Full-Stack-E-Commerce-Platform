@@ -121,7 +121,7 @@ const navByLocale: Record<SiteLocale, {
     tagline: "Premium Bourbon Vanilla, kakao i egzotyczne przyprawy",
     subTagline: "Bezpośrednio z Madagaskaru",
     thanks:
-      "Każdy produkt, który wysyłamy, przeszedł przez nasze ręce — od plantacji na Madagaskarze po magazyn w Poznaniu. Dziękujemy za zaufanie. Budujemy to razem.",
+      "Każdy z naszych produktów został starannie wybrany i trafił do Ciebie z intencją i troską. Niech subtelność i głębia aromatu wniosą do Twojego życia elegancję, autentyczność i odrobinę niezwykłości. Dziękujemy za odwiedziny. Mamy nadzieję, że dołączysz do nas w tej podróży.",
     cookieSettings: "Ustawienia cookies",
   },
 };

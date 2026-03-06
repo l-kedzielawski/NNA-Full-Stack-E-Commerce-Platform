@@ -44,6 +44,10 @@ export function BaselineTraffic() {
   const lastSentRef = useRef<{ key: string; at: number } | null>(null);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== "production") {
+      return;
+    }
+
     if (typeof window === "undefined" || isDoNotTrackEnabled()) {
       return;
     }

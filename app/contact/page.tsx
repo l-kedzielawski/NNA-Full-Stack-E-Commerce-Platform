@@ -287,6 +287,40 @@ export default async function ContactPage() {
             </div>
           </div>
         </div>
+
+        {/* ── JACEK — text-focused profile ── */}
+        <div className="mt-5 rounded-2xl border border-line bg-card p-10 hover:border-gold/30 transition-all duration-300">
+          <p className="label-sm text-gold/50 mb-3">
+            {locale === "pl" ? "Rozwój marek premium i sprzedaż" : "Premium Brand Growth & Sales"}
+          </p>
+          <h3
+            className="font-display text-ink mb-5 leading-tight"
+            style={{ fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)" }}
+          >
+            Jacek Pociejewski
+          </h3>
+          <p className="text-sm text-ink/50 leading-relaxed mb-8 max-w-3xl">
+            {locale === "pl"
+              ? "Z ponad 20-letnim doświadczeniem w FMCG, HORECA i retail, Jacek wspiera misję Natural Mystic Aroma: dostarczanie zweryfikowanych składników premium bezpośrednio z Madagaskaru do partnerów w Europie. Prowadzi rozwój kategorii i projekty sprzedażowe, które przekładają strategię na stabilne, długoterminowe wyniki."
+              : "With 20+ years across FMCG, HORECA, and retail, Jacek supports Natural Mystic Aroma's mission: delivering verified premium ingredients directly from Madagascar to partners in Europe. He leads category growth and sales projects that turn strategy into stable, long-term results."}
+          </p>
+          <div className="space-y-3">
+            <a
+              href="mailto:jacek@jptradepolska.pl"
+              className="flex items-center gap-3 text-sm text-ink/50 hover:text-gold transition-colors group/link"
+            >
+              <Mail size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
+              jacek@jptradepolska.pl
+            </a>
+            <a
+              href="tel:+48503191328"
+              className="flex items-center gap-3 text-sm text-ink/50 hover:text-gold transition-colors group/link"
+            >
+              <Phone size={14} className="text-gold/40 group-hover/link:text-gold transition-colors shrink-0" />
+              +48 503 191 328
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* ── WHO WE WORK WITH ─────────────────────────────────── */}

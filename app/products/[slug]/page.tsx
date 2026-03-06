@@ -162,6 +162,20 @@ function normalizeImageSource(value: string): string | null {
     return pathname;
   };
 
+  const toLocalProductImage = (pathname: string): string => {
+    const fileName = pathname.split("/").filter(Boolean).pop() || "";
+
+    if (!fileName) {
+      return pathname;
+    }
+
+    if (/^\d{10,}-.+/.test(fileName)) {
+      return `/medusa-static/${fileName}`;
+    }
+
+    return `/images/products/${fileName}`;
+  };
+
   if (!input) {
     return null;
   }
@@ -171,14 +185,24 @@ function normalizeImageSource(value: string): string | null {
   }
 
   if (input.startsWith("/")) {
+    if (input.startsWith("/wp-content/") || input.startsWith("/themysticaroma/wp-content/")) {
+      return toLocalProductImage(input);
+    }
+
     return toMedusaStaticIfGenerated(input);
   }
 
   if (input.startsWith("http://") || input.startsWith("https://")) {
     try {
       const parsed = new URL(input);
+      const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+
+      if (host === "themysticaroma.com") {
+        return toLocalProductImage(parsed.pathname);
+      }
+
       if (parsed.pathname.includes("/wp-content/uploads/")) {
-        return toMedusaStaticIfGenerated(parsed.pathname);
+        return toLocalProductImage(parsed.pathname);
       }
 
       return parsed.toString();
@@ -192,7 +216,7 @@ function normalizeImageSource(value: string): string | null {
   }
 
   if (input.startsWith("wp-content/")) {
-    return toMedusaStaticIfGenerated(`/${input}`);
+    return toLocalProductImage(`/${input}`);
   }
 
   return null;

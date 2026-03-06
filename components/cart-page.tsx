@@ -18,6 +18,43 @@ import { defaultLocale, getLocaleFromPathname, withLocalePrefix } from "@/lib/i1
 
 const fallbackImage = "/hero.jpg";
 
+function normalizeCartImageUrl(input?: string): string {
+  const value = (input || "").trim();
+  if (!value) {
+    return fallbackImage;
+  }
+
+  const toLocal = (pathname: string): string => {
+    const fileName = pathname.split("/").filter(Boolean).pop() || "";
+    if (!fileName) {
+      return fallbackImage;
+    }
+    if (/^\d{10,}-.+/.test(fileName)) {
+      return `/medusa-static/${fileName}`;
+    }
+    return `/images/products/${fileName}`;
+  };
+
+  if (value.startsWith("/wp-content/") || value.startsWith("/themysticaroma/wp-content/")) {
+    return toLocal(value);
+  }
+
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    try {
+      const parsed = new URL(value);
+      const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+      if (host === "themysticaroma.com" || parsed.pathname.includes("/wp-content/uploads/")) {
+        return toLocal(parsed.pathname);
+      }
+      return value;
+    } catch {
+      return fallbackImage;
+    }
+  }
+
+  return value;
+}
+
 function lineTotal(quantity: number, unitPrice: number) {
   return quantity * unitPrice;
 }
@@ -158,6 +195,7 @@ export function CartPage() {
         <div className="divide-y divide-line/40">
           {cart.items.map((item) => {
             const total = lineTotal(item.quantity, item.unit_price);
+            const thumbnailSrc = normalizeCartImageUrl(item.thumbnail);
 
             return (
               <article key={item.id} className="grid gap-4 px-6 py-5 md:grid-cols-[100px_1fr_auto] md:items-center">
@@ -165,7 +203,7 @@ export function CartPage() {
                   {item.product_handle ? (
                       <Link href={withLocalePrefix(`/products/${item.product_handle}`, locale)} className="block h-full w-full">
                       <Image
-                        src={item.thumbnail || fallbackImage}
+                        src={thumbnailSrc}
                         alt={item.product_title || item.title}
                         fill
                         className="object-cover"
@@ -174,7 +212,7 @@ export function CartPage() {
                     </Link>
                   ) : (
                     <Image
-                      src={item.thumbnail || fallbackImage}
+                      src={thumbnailSrc}
                       alt={item.product_title || item.title}
                       fill
                       className="object-cover"

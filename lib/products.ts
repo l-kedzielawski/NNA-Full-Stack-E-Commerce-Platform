@@ -432,6 +432,20 @@ function normalizeImageUrl(url: string): string {
     return url;
   }
 
+  const toLocalProductImage = (pathname: string): string => {
+    const fileName = pathname.split("/").filter(Boolean).pop() || "";
+
+    if (!fileName) {
+      return pathname;
+    }
+
+    if (/^\d{10,}-.+/.test(fileName)) {
+      return `/medusa-static/${fileName}`;
+    }
+
+    return `/images/products/${fileName}`;
+  };
+
   const toMedusaStaticIfGenerated = (pathname: string): string => {
     const fileName = pathname.split("/").filter(Boolean).pop() || "";
 
@@ -442,20 +456,25 @@ function normalizeImageUrl(url: string): string {
     return pathname;
   };
 
-  if (url.startsWith("/wp-content/")) {
-    const fileName = url.split("/").pop() || "";
-    if (/^\d{10,}-.+/.test(fileName)) {
-      return `/medusa-static/${fileName}`;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+
+      if (host === "themysticaroma.com") {
+        return toLocalProductImage(parsed.pathname);
+      }
+    } catch {
+      return url;
     }
-    return fileName ? `/images/products/${fileName}` : url;
+  }
+
+  if (url.startsWith("/wp-content/")) {
+    return toLocalProductImage(url);
   }
 
   if (url.includes("/wp-content/uploads/")) {
-    const fileName = url.split("/").pop() || "";
-    if (/^\d{10,}-.+/.test(fileName)) {
-      return `/medusa-static/${fileName}`;
-    }
-    return fileName ? `/images/products/${fileName}` : url;
+    return toLocalProductImage(url);
   }
 
   if (url.startsWith("/images/products/")) {
@@ -511,6 +530,51 @@ function parseMetadataStringArray(value: unknown): string[] {
 function getProductsSource(): ProductsSource {
   const envSource = process.env.PRODUCTS_SOURCE?.trim().toLowerCase();
   return envSource === "medusa" ? "medusa" : "file";
+}
+
+function getMedusaBaseCandidates(): string[] {
+  const devPrimary = (process.env.MEDUSA_URL || process.env.NEXT_PUBLIC_MEDUSA_URL || "").trim();
+  if (process.env.NODE_ENV === "development" && devPrimary) {
+    return [devPrimary.replace(/\/$/, "")];
+  }
+
+  const candidates = [
+    process.env.MEDUSA_URL,
+    process.env.NEXT_PUBLIC_MEDUSA_URL,
+    process.env.MEDUSA_BACKEND_URL,
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
+  ]
+    .map((value) => (value || "").trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
+  return Array.from(new Set(candidates));
+}
+
+function getMedusaFetchTimeoutMs(): number {
+  const configured = Number(process.env.MEDUSA_PRODUCTS_TIMEOUT_MS || "");
+  if (Number.isFinite(configured) && configured > 0) {
+    return configured;
+  }
+
+  return process.env.NODE_ENV === "development" ? 3000 : 5000;
+}
+
+function getMedusaFailureBackoffMs(): number {
+  return process.env.NODE_ENV === "development" ? 45000 : 15000;
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function inferCategoryFromText(title: string, slug: string): string[] {
@@ -728,13 +792,11 @@ function mapMedusaProduct(
 }
 
 async function loadProductsFromMedusa(locale?: string): Promise<Product[] | null> {
-  const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_URL || process.env.MEDUSA_BACKEND_URL;
-
-  if (!medusaUrl) {
+  const baseCandidates = getMedusaBaseCandidates();
+  if (baseCandidates.length === 0) {
     return null;
   }
 
-  const baseUrl = medusaUrl.replace(/\/$/, "");
   const publishableKey =
     process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || process.env.MEDUSA_PUBLISHABLE_KEY;
 
@@ -748,89 +810,103 @@ async function loadProductsFromMedusa(locale?: string): Promise<Product[] | null
 
   const preferredCurrency = resolvePreferredCurrencyForLocale(locale);
   const configuredRegionId = getConfiguredRegionIdForCurrency(preferredCurrency);
+  const categoryFallbackMap = getCategoryFallbackMap();
+  const baseFetchOptions: RequestInit & { next?: { revalidate: number } } =
+    process.env.NODE_ENV === "development"
+      ? { headers, cache: "no-store" }
+      : { headers, next: { revalidate: 300 } };
 
-  try {
-    let regionId = configuredRegionId;
-    const categoryFallbackMap = getCategoryFallbackMap();
+  for (const baseUrl of baseCandidates) {
+    try {
+      let regionId = configuredRegionId;
 
-    const fetchOptions: RequestInit & { next?: { revalidate: number } } =
-      process.env.NODE_ENV === "development"
-        ? { headers, cache: "no-store" }
-        : { headers, next: { revalidate: 300 } };
-
-    if (!regionId) {
-      const regionsResponse = await fetch(`${baseUrl}/store/regions?limit=20`, {
-        ...fetchOptions,
-      });
-
-      if (regionsResponse.ok) {
-        const regionsPayload = (await regionsResponse.json()) as {
-          regions?: Array<{
-            id?: string;
-            name?: string;
-            currency_code?: string;
-            countries?: Array<{ iso_2?: string }>;
-          }>;
-        };
-
-        const regions = regionsPayload.regions || [];
-        const currencyRegions = regions.filter(
-          (region) => String(region.currency_code || "").trim().toLowerCase() === preferredCurrency,
+      if (!regionId) {
+        const regionsResponse = await fetchWithTimeout(
+          `${baseUrl}/store/regions?limit=20`,
+          {
+            ...baseFetchOptions,
+          },
+          getMedusaFetchTimeoutMs(),
         );
 
-        if (preferredCurrency === "pln") {
-          regionId =
-            currencyRegions.find((region) =>
-              (region.countries || []).some(
-                (country) => String(country.iso_2 || "").trim().toLowerCase() === "pl",
-              ),
-            )?.id || currencyRegions[0]?.id || "";
-        } else {
-          regionId =
-            currencyRegions.find((region) => String(region.name || "") === "Europe")?.id ||
-            currencyRegions[0]?.id ||
-            "";
-        }
+        if (regionsResponse.ok) {
+          const regionsPayload = (await regionsResponse.json()) as {
+            regions?: Array<{
+              id?: string;
+              name?: string;
+              currency_code?: string;
+              countries?: Array<{ iso_2?: string }>;
+            }>;
+          };
 
-        if (!regionId) {
-          regionId = regions.find((region) => region.name === "Europe")?.id || regions[0]?.id || "";
+          const regions = regionsPayload.regions || [];
+          const currencyRegions = regions.filter(
+            (region) => String(region.currency_code || "").trim().toLowerCase() === preferredCurrency,
+          );
+
+          if (preferredCurrency === "pln") {
+            regionId =
+              currencyRegions.find((region) =>
+                (region.countries || []).some(
+                  (country) => String(country.iso_2 || "").trim().toLowerCase() === "pl",
+                ),
+              )?.id || currencyRegions[0]?.id || "";
+          } else {
+            regionId =
+              currencyRegions.find((region) => String(region.name || "") === "Europe")?.id ||
+              currencyRegions[0]?.id ||
+              "";
+          }
+
+          if (!regionId) {
+            regionId = regions.find((region) => region.name === "Europe")?.id || regions[0]?.id || "";
+          }
         }
       }
+
+      const search = new URLSearchParams({
+        limit: "200",
+        fields: "*variants.calculated_price,+metadata,+description",
+      });
+      if (regionId) {
+        search.set("region_id", regionId);
+      }
+
+      const response = await fetchWithTimeout(
+        `${baseUrl}/store/products?${search.toString()}`,
+        {
+          ...baseFetchOptions,
+        },
+        getMedusaFetchTimeoutMs(),
+      );
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = (await response.json()) as { products?: MedusaStoreProduct[] };
+      const products = (payload.products ?? [])
+        .filter((item) => item.status !== "draft")
+        .map((item, index) => mapMedusaProduct(item, index, categoryFallbackMap))
+        .sort(sortProductsByOrderThenTitle);
+
+      if (products.length > 0) {
+        return products;
+      }
+    } catch {
+      continue;
     }
-
-    const search = new URLSearchParams({
-      limit: "200",
-      fields: "*variants.calculated_price,+metadata,+description",
-    });
-    if (regionId) {
-      search.set("region_id", regionId);
-    }
-
-    const response = await fetch(`${baseUrl}/store/products?${search.toString()}`, {
-      ...fetchOptions,
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = (await response.json()) as { products?: MedusaStoreProduct[] };
-    const products = (payload.products ?? [])
-      .filter((item) => item.status !== "draft")
-      .map((item, index) => mapMedusaProduct(item, index, categoryFallbackMap))
-      .sort(sortProductsByOrderThenTitle);
-
-    return products.length > 0 ? products : null;
-  } catch {
-    return null;
   }
+
+  return null;
 }
 
 const productsCacheByKey = new Map<string, { products: Product[]; at: number }>();
+const medusaRetryAfterByKey = new Map<string, number>();
 
 function getMedusaCacheTtlMs(): number {
   if (process.env.NODE_ENV === "development") {
-    return 5_000;
+    return 15_000;
   }
 
   return 60_000;
@@ -856,15 +932,23 @@ async function resolveProducts(locale?: string): Promise<Product[]> {
   }
 
   if (source === "medusa") {
+    const retryAt = medusaRetryAfterByKey.get(cacheKey) || 0;
+    if (retryAt > Date.now() && cached) {
+      return cached.products;
+    }
+
     const medusaProducts = await loadProductsFromMedusa(locale);
 
     if (medusaProducts) {
+      medusaRetryAfterByKey.delete(cacheKey);
       productsCacheByKey.set(cacheKey, {
         products: medusaProducts,
         at: Date.now(),
       });
       return medusaProducts;
     }
+
+    medusaRetryAfterByKey.set(cacheKey, Date.now() + getMedusaFailureBackoffMs());
   }
 
   const fileProducts = mapRawEntriesToProducts(loadRawProductsFromFile());

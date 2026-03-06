@@ -16,6 +16,7 @@ type FormState = {
   company: string;
   email: string;
   phone: string;
+  preferredContact: "email" | "phone";
   country: string;
   product: string;
   quantity: string;
@@ -31,6 +32,7 @@ const initialState: FormState = {
   company: "",
   email: "",
   phone: "",
+  preferredContact: "email",
   country: "",
   product: "",
   quantity: "",
@@ -57,8 +59,16 @@ function validateForm(f: FormState, locale: SiteLocale): FieldErrors {
   if (!f.email.trim()) errors.email = locale === "pl" ? "Adres e-mail jest wymagany." : "Email address is required.";
   else if (!EMAIL_RE.test(f.email.trim())) errors.email = locale === "pl" ? "Podaj poprawny adres e-mail." : "Please enter a valid email address.";
 
+  if (f.preferredContact !== "email" && f.preferredContact !== "phone") {
+    errors.preferredContact = locale === "pl" ? "Wybierz preferowany kontakt." : "Choose your preferred contact method.";
+  }
+
   if (f.phone && !PHONE_RE.test(f.phone.trim()))
     errors.phone = locale === "pl" ? "Numer telefonu zawiera niepoprawne znaki." : "Phone number contains invalid characters.";
+
+  if (f.preferredContact === "phone" && !f.phone.trim()) {
+    errors.phone = locale === "pl" ? "Podaj numer telefonu, jesli preferujesz kontakt telefoniczny." : "Please provide a phone number if you prefer phone contact.";
+  }
 
   if (!f.country.trim()) errors.country = locale === "pl" ? "Kraj dostawy jest wymagany." : "Destination country is required.";
 
@@ -252,7 +262,7 @@ export function RequestQuoteForm({
         />
       </div>
 
-      {/* Row 3: Country + Product */}
+      {/* Row 3: Country + Preferred Contact */}
       <div className="grid gap-4 md:grid-cols-2">
         <Field
           label={locale === "pl" ? "Kraj dostawy" : "Destination Country"}
@@ -269,45 +279,30 @@ export function RequestQuoteForm({
 
         <div className="space-y-2">
           <label
-            htmlFor="product"
+            htmlFor="preferredContact"
             className="block text-[0.65rem] font-bold tracking-[0.2em] text-gold/55 uppercase"
           >
-            {locale === "pl" ? "Interesujacy produkt (opcjonalnie)" : "Product Interest (optional)"}
+            {locale === "pl" ? "Preferowany kontakt" : "Preferred Contact"}
           </label>
           <select
-            id="product"
-            name="product"
-            value={formState.product}
-            onChange={(e) => setField("product", e.target.value)}
+            id="preferredContact"
+            name="preferredContact"
+            value={formState.preferredContact}
+            onChange={(e) => setField("preferredContact", e.target.value as FormState["preferredContact"])}
             className={`${inputBase} border-line focus:border-gold/40`}
+            required
           >
-            <option value="">{locale === "pl" ? "Wybierz produkt" : "Select a product"}</option>
-            {productOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
+            <option value="email">{locale === "pl" ? "E-mail" : "Email"}</option>
+            <option value="phone">{locale === "pl" ? "Telefon" : "Phone"}</option>
           </select>
-          {fieldErrors.product && (
+          {fieldErrors.preferredContact && (
             <p className="text-xs text-red-400 flex items-center gap-1">
               <AlertCircle size={11} />
-              {fieldErrors.product}
+              {fieldErrors.preferredContact}
             </p>
           )}
         </div>
       </div>
-
-      {/* Expected Quantity (optional) */}
-      <Field
-        label={locale === "pl" ? "Planowana ilosc (opcjonalnie)" : "Expected Quantity (optional)"}
-        name="quantity"
-        value={formState.quantity}
-        onChange={(v) => setField("quantity", v)}
-        placeholder={locale === "pl" ? "np. 50 kg miesiecznie" : "e.g. 50 kg per month"}
-        className={`${inputBase} border-line focus:border-gold/40`}
-        autoComplete="off"
-        maxLength={120}
-      />
 
       {/* Message */}
       <div className="space-y-2">
@@ -330,8 +325,8 @@ export function RequestQuoteForm({
           }`}
           placeholder={
             locale === "pl"
-              ? "Opisz zastosowanie, wymagania jakosciowe i oczekiwany termin wdrozenia."
-              : "Describe your use case, quality requirements, and preferred timeline."
+              ? "Interesujace produkty, wolumeny, opis zastosowania itp."
+              : "Interested products, expected volumes, use case, etc."
           }
           maxLength={2000}
         />
