@@ -74,23 +74,8 @@ export function ProductCard({ product }: ProductCardProps) {
             src={image}
             alt={product.title}
             fill
-            className="object-cover scale-[1.04] group-hover:scale-100 transition-transform duration-700 ease-out brightness-[0.97] group-hover:brightness-100 saturate-[0.92] group-hover:saturate-100"
+            className="object-cover scale-[1.04] group-hover:scale-100 transition-transform duration-700 ease-out"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-
-          {/* Cinematic overlay — warm dark veil at rest, fades on hover */}
-          <div className="product-card-image-veil absolute inset-0 group-hover:opacity-0 transition-opacity duration-700 ease-out" />
-
-          {/* Persistent bottom fade — keeps text readable always */}
-          <div className="absolute inset-0 bg-gradient-to-t from-card/58 via-card/10 to-transparent" />
-
-          {/* Grain texture — sits on top of everything */}
-          <div
-            className="absolute inset-0 opacity-[0.06] pointer-events-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-              backgroundSize: "180px",
-            }}
           />
 
           {/* Gold sheen sweep — diagonal flash on hover */}
@@ -100,9 +85,6 @@ export function ProductCard({ product }: ProductCardProps) {
               background: "linear-gradient(115deg, transparent 30%, rgba(201,169,110,0.07) 50%, transparent 70%)",
             }}
           />
-
-          {/* Vignette edges */}
-          <div className="product-card-image-vignette absolute inset-0 pointer-events-none" />
 
           {/* ── BADGES & CONTROLS ── */}
 

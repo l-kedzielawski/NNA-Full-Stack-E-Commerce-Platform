@@ -189,15 +189,7 @@ a {
 }
 
 .product-card-image-bg {
-  background: var(--card-image-bg);
-}
-
-.product-card-image-veil {
-  background: var(--card-image-veil);
-}
-
-.product-card-image-vignette {
-  background: var(--card-image-vignette);
+  background: transparent;
 }
 
 .product-card-view-chip {

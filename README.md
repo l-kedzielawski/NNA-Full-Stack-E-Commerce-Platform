@@ -230,12 +230,23 @@ The storefront loads GA4 only when this env var is present and tracks:
 
 In addition, the storefront now sends first-party cookieless baseline page-hit telemetry to Medusa (`/store/traffic/hit`) for aggregate analytics in `/a/traffic`, even when optional analytics consent is not granted.
 
+Important behavior notes:
+
+- Baseline hit persistence is production-only (`NODE_ENV=production`).
+- Local development intentionally short-circuits the telemetry proxy for speed/safety.
+
 Medusa Admin traffic dashboard is available at `/a/traffic` (served by Medusa backend). For that dashboard, set these in `services/medusa/.env`:
 
 ```bash
 GA4_PROPERTY_ID=123456789
 GA4_CLIENT_EMAIL=service-account@project-id.iam.gserviceaccount.com
 GA4_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
+```
+
+Optional proxy timeout tuning (Next.js -> Medusa cookieless traffic hits):
+
+```bash
+MEDUSA_TRAFFIC_TIMEOUT_MS=3500
 ```
 
 ## SEO Artifacts

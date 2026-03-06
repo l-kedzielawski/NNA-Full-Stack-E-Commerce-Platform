@@ -47,7 +47,7 @@ function getMedusaTrafficTimeoutMs(): number {
     return configured;
   }
 
-  return process.env.NODE_ENV === "development" ? 800 : 1500;
+  return process.env.NODE_ENV === "development" ? 1200 : 3500;
 }
 
 function isTrafficHitPath(pathSegments: string[]): boolean {
@@ -206,12 +206,28 @@ async function proxyRequest(req: NextRequest, pathSegments: string[]): Promise<N
       break;
     } catch (err) {
       lastError = err instanceof Error ? err.message : "Upstream fetch failed";
+      if (trafficHit) {
+        console.error("[traffic-hit-proxy] upstream fetch failed", {
+          base,
+          method: req.method,
+          upstreamPath,
+          timeoutMs,
+          error: lastError,
+        });
+      }
       continue;
     }
   }
 
   if (!upstream) {
     if (trafficHit) {
+      console.error("[traffic-hit-proxy] all upstreams failed", {
+        method: req.method,
+        upstreamPath,
+        triedBases: basesToTry.length,
+        timeoutMs,
+        lastError,
+      });
       return NextResponse.json({ accepted: false }, { status: 202 });
     }
 

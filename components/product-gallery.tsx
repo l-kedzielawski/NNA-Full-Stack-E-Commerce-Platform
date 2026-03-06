@@ -36,7 +36,7 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative block w-full overflow-hidden rounded-2xl border border-line/40 bg-bg-soft text-left"
+          className="group relative block w-full overflow-hidden rounded-2xl border border-line/40 bg-transparent text-left"
           aria-label={locale === "pl" ? "Otworz zdjecie produktu" : "Open product image"}
         >
           <div className="relative aspect-[4/3]">
@@ -48,7 +48,6 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg/55 to-transparent" />
           </div>
           <div className="pointer-events-none absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-bg/70 px-3 py-1.5 text-[0.65rem] font-bold tracking-[0.16em] text-gold/85 uppercase backdrop-blur-sm">
             <ZoomIn size={12} />

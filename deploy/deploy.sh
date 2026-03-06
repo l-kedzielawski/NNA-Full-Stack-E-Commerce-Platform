@@ -34,7 +34,7 @@ done
 
 # ── 4. Run Medusa migrations ─────────────────────────────────────────────────
 echo "--- Running Medusa database migrations..."
-$COMPOSE run --rm medusa sh -c "node .medusa/server/src/index.js --run-migrations 2>&1 || true"
+$COMPOSE run --rm medusa sh -c "node .medusa/server/src/index.js --run-migrations 2>&1"
 
 # ── 5. Restart application services ─────────────────────────────────────────
 echo "--- Restarting application services..."
@@ -61,7 +61,7 @@ for i in {1..30}; do
 done
 
 echo "--- Verifying telemetry route via Next.js proxy..."
-$COMPOSE exec -T nextjs node -e 'async function main() { const url = "http://localhost:3000/api/medusa/store/traffic/hit"; const payload = { path: "/api/deploy-probe", locale: "en", source: "deploy_probe" }; const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); const text = await res.text(); if (res.status !== 202) { throw new Error("Telemetry probe failed (" + res.status + "): " + text); } console.log("--- Telemetry probe OK (" + res.status + ")"); } main().catch((error) => { console.error(error instanceof Error ? error.message : String(error)); process.exit(1); });'
+$COMPOSE exec -T nextjs node -e 'async function main() { const url = "http://localhost:3000/api/medusa/store/traffic/hit"; const payload = { path: "/deploy-probe", locale: "en", source: "deploy_probe" }; const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); const body = await res.json().catch(() => null); if (res.status !== 202 || !body || body.accepted !== true) { throw new Error("Telemetry probe failed (" + res.status + "): " + JSON.stringify(body)); } console.log("--- Telemetry probe OK (accepted=true)"); } main().catch((error) => { console.error(error instanceof Error ? error.message : String(error)); process.exit(1); });'
 
 # ── 7. Clean up old images ───────────────────────────────────────────────────
 echo "--- Pruning unused Docker images..."

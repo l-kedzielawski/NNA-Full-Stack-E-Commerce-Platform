@@ -114,7 +114,7 @@ const BASE_MANAGED_SHIPPING_OPTIONS = [
     regionName: "Poland",
     serviceZoneName: "Poland Dispatch v2 - Poland",
     name: "Standard Shipping - Poland",
-    amount: 5,
+    amount: 20,
     eta: "1-3 business days",
   },
   {
