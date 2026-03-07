@@ -32,7 +32,8 @@
     "@medusajs/framework": "2.13.1",
     "@medusajs/medusa": "2.13.1",
     "@medusajs/payment-stripe": "^2.13.1",
-    "google-auth-library": "^10.6.1"
+    "google-auth-library": "^10.6.1",
+    "stripe": "^20.4.1"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.1",

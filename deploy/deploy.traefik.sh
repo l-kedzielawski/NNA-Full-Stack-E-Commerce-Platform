@@ -31,7 +31,7 @@ until $COMPOSE exec -T postgres pg_isready -U "${POSTGRES_USER:-mystic}" -q; do
 done
 
 echo "--- Running Medusa database migrations..."
-$COMPOSE run --rm medusa sh -c "node .medusa/server/src/index.js --run-migrations 2>&1"
+$COMPOSE run --rm medusa sh -c "node_modules/.bin/medusa db:migrate 2>&1"
 
 echo "--- Restarting application services..."
 $COMPOSE up -d --force-recreate medusa strapi nextjs
