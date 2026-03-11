@@ -670,13 +670,13 @@ export default async function AboutPage() {
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <Link
-                href="/quote"
+                href={withLocalePrefix("/quote", locale)}
                 className="px-8 py-4 rounded-full bg-gold text-bg font-semibold hover:bg-gold-light transition-all shadow-[0_0_30px_rgba(201,169,110,0.3)]"
               >
                 Request a Quote
               </Link>
               <Link
-                href="/certifications"
+                href={withLocalePrefix("/certifications", locale)}
                 className="px-8 py-4 rounded-full border border-line text-ink/70 hover:border-gold/50 hover:text-ink transition-all"
               >
                 View Certifications

@@ -881,14 +881,14 @@ export default async function Home() {
 
               <div className="mt-8 flex flex-wrap items-center gap-4 md:mt-10">
                 <Link
-                  href="/products"
+                  href={withLocalePrefix("/products", locale)}
                   className="group inline-flex items-center gap-3 rounded-full bg-gold px-8 py-4 text-sm font-bold text-bg shadow-[0_0_40px_rgba(201,169,110,0.4)] hover:bg-gold-light hover:shadow-[0_0_60px_rgba(201,169,110,0.55)] transition-all duration-300"
                 >
                   Explore the Shop
                   <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
-                  href="/quote"
+                  href={withLocalePrefix("/quote", locale)}
                   className="group inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold text-[var(--hero-ink-muted)] border border-line hover:border-gold/40 hover:text-[var(--hero-ink)] rounded-full transition-all duration-300"
                 >
                   Start a B2B Inquiry
@@ -968,7 +968,7 @@ export default async function Home() {
                   No cold-chain compromise. No provenance gaps.
                 </p>
                 <Link
-                  href="/about"
+                  href={withLocalePrefix("/about", locale)}
                   className="group inline-flex items-center gap-2 text-sm font-semibold text-gold/70 hover:text-gold transition-colors"
                 >
                   Our full story
@@ -1020,7 +1020,7 @@ export default async function Home() {
                 </h2>
               </div>
               <Link
-                href="/products"
+                href={withLocalePrefix("/products", locale)}
                 className="group inline-flex items-center gap-2 text-sm font-semibold text-gold/60 hover:text-gold border border-line hover:border-gold/30 rounded-full px-5 py-2.5 transition-all"
               >
                 Full shop
@@ -1044,8 +1044,8 @@ export default async function Home() {
 
           <Reveal delay={0.15}>
             <div className="mt-10 text-center">
-              <Link
-                href="/products"
+                <Link
+                  href={withLocalePrefix("/products", locale)}
                 className="group inline-flex items-center gap-2.5 rounded-full bg-gold px-8 py-4 text-sm font-bold text-bg shadow-[0_0_30px_rgba(201,169,110,0.3)] hover:bg-gold-light transition-all duration-300"
               >
                 View full shop
@@ -1108,7 +1108,7 @@ export default async function Home() {
           </div>
 
           <div className="mt-6 text-center">
-            <Link href="/certifications" className="text-xs text-gold/50 hover:text-gold transition-colors underline underline-offset-4">
+            <Link href={withLocalePrefix("/certifications", locale)} className="text-xs text-gold/50 hover:text-gold transition-colors underline underline-offset-4">
               View documents →
             </Link>
           </div>
@@ -1309,7 +1309,7 @@ export default async function Home() {
                 between orders. Real Bourbon vanilla, confirmed before it leaves the island.
               </p>
               <Link
-                href="/b2b"
+                href={withLocalePrefix("/b2b", locale)}
                 className="group inline-flex items-center gap-2 text-sm font-semibold text-gold/70 hover:text-gold transition-colors"
               >
                 See our B2B supply model
@@ -1403,7 +1403,7 @@ export default async function Home() {
 
           <Reveal delay={0.1}>
             <div className="mt-8 text-center">
-              <Link href="/certifications" className="text-sm text-gold/60 hover:text-gold transition-colors underline underline-offset-4">
+              <Link href={withLocalePrefix("/certifications", locale)} className="text-sm text-gold/60 hover:text-gold transition-colors underline underline-offset-4">
                 View certification documents →
               </Link>
             </div>
@@ -1460,7 +1460,7 @@ export default async function Home() {
           <Reveal delay={0.15}>
             <div className="mt-8 text-center">
               <Link
-                href="/b2b"
+                href={withLocalePrefix("/b2b", locale)}
                 className="group inline-flex items-center gap-2 text-sm font-semibold text-gold/70 hover:text-gold transition-colors"
               >
                 B2B supply details
@@ -1586,14 +1586,14 @@ export default async function Home() {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href="/quote"
+                  href={withLocalePrefix("/quote", locale)}
                   className="group inline-flex items-center gap-2.5 rounded-full bg-gold px-8 py-4 text-sm font-bold text-bg shadow-[0_0_40px_rgba(201,169,110,0.35)] hover:bg-gold-light hover:shadow-[0_0_60px_rgba(201,169,110,0.5)] transition-all duration-300"
                 >
                   Start a B2B Inquiry
                   <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 <Link
-                  href="/b2b"
+                  href={withLocalePrefix("/b2b", locale)}
                   className="inline-flex items-center rounded-full border border-line px-8 py-4 text-sm font-semibold text-[var(--hero-ink-muted)] hover:border-gold/40 hover:text-[var(--hero-ink)] transition-all duration-300"
                 >
                   B2B &amp; Wholesale

@@ -1020,14 +1020,14 @@ export default async function B2BPage() {
 
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/quote"
+                href={withLocalePrefix("/quote", locale)}
                 className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-gold text-bg font-semibold hover:bg-gold-light transition-all shadow-[0_0_30px_rgba(201,169,110,0.3)]"
               >
                 Start a B2B Inquiry
                 <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
-                href="/certifications"
+                href={withLocalePrefix("/certifications", locale)}
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-line text-ink/70 hover:border-gold/50 hover:text-ink transition-all"
               >
                 <Download size={14} />
@@ -1310,7 +1310,7 @@ export default async function B2BPage() {
                 </div>
               </div>
               <Link
-                href="/quote"
+                href={withLocalePrefix("/quote", locale)}
                 className="inline-flex items-center gap-2 text-sm font-semibold text-gold hover:text-gold-light transition-colors"
               >
                 Start technical discussion
@@ -1415,14 +1415,14 @@ export default async function B2BPage() {
 
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/quote"
+                href={withLocalePrefix("/quote", locale)}
                 className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-gold text-bg font-semibold hover:bg-gold-light transition-all shadow-[0_0_30px_rgba(201,169,110,0.3)]"
               >
                 Start a B2B Inquiry
                 <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
-                href="/contact"
+                href={withLocalePrefix("/contact", locale)}
                 className="inline-flex items-center px-8 py-4 rounded-full border border-line text-ink/70 hover:border-gold/50 hover:text-ink transition-all"
               >
                 Contact B2B Team
