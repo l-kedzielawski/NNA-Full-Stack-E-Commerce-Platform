@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { MouseEvent } from "react";
-import { defaultLocale, getLocaleFromPathname, stripLocaleFromPathname, withLocalePrefix } from "@/lib/i18n";
+import { defaultLocale, getLocaleFromPathname, stripLocaleFromPathname, toInternalStaticPathname, withLocalePrefix } from "@/lib/i18n";
 
 export function LocaleSwitcher({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
   const locale = getLocaleFromPathname(pathname) || defaultLocale;
-  const basePath = stripLocaleFromPathname(pathname);
+  const basePath = toInternalStaticPathname(stripLocaleFromPathname(pathname), locale);
   const query = searchParams?.toString() || "";
 
   const onLocaleClick = (

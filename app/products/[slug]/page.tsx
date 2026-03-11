@@ -534,7 +534,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 
   const description = truncateText(product.seoDescription || product.description, 155);
-  const productUrl = `${siteUrl}/products/${product.slug}`;
+  const productUrl = `${siteUrl}${withLocalePrefix(`/products/${product.slug}`, locale)}`;
   const ogImage = product.imageUrls[0] || "/hero.jpg";
 
   return {
@@ -853,7 +853,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         "@type": "ListItem",
         position: 3,
         name: product.title,
-        item: `${siteUrl}/products/${product.slug}`,
+        item: `${siteUrl}${withLocalePrefix(`/products/${product.slug}`, locale)}`,
       },
     ],
   };

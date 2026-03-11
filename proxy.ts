@@ -6,6 +6,7 @@ import {
   isSupportedLocale,
   localeCookieName,
   stripLocaleFromPathname,
+  toInternalStaticPathname,
   withLocalePrefix,
   type SiteLocale,
 } from "@/lib/i18n";
@@ -36,7 +37,7 @@ export function proxy(request: NextRequest) {
   const preferredLocale = resolvePreferredLocale(request);
 
   if (isSupportedLocale(firstSegment)) {
-    const rewrittenPath = stripLocaleFromPathname(pathname);
+    const rewrittenPath = toInternalStaticPathname(stripLocaleFromPathname(pathname), firstSegment);
     const rewrittenUrl = request.nextUrl.clone();
     rewrittenUrl.pathname = rewrittenPath;
     rewrittenUrl.search = search;
@@ -63,13 +64,13 @@ export function proxy(request: NextRequest) {
   if (isLegacyLocale(firstSegment)) {
     const withoutLegacy = pathname.replace(/^\/(de|it)(?=\/|$)/, "") || "/";
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = withLocalePrefix(withoutLegacy, preferredLocale);
+    redirectUrl.pathname = withLocalePrefix(toInternalStaticPathname(withoutLegacy), preferredLocale);
     redirectUrl.search = search;
     return NextResponse.redirect(redirectUrl);
   }
 
   const redirectUrl = request.nextUrl.clone();
-  redirectUrl.pathname = withLocalePrefix(pathname, preferredLocale);
+  redirectUrl.pathname = withLocalePrefix(toInternalStaticPathname(pathname), preferredLocale);
   redirectUrl.search = search;
 
   return NextResponse.redirect(redirectUrl);
