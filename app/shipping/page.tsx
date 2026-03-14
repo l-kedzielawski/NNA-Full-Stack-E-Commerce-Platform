@@ -1,13 +1,25 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Shipping & Payments | The Mystic Aroma",
-  description:
-    "Shipping options, delivery times, and secure Stripe payment information for orders from The Mystic Aroma.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/shipping",
+    locale,
+    title: {
+      en: "Shipping & Payments",
+      pl: "Dostawa i platnosci",
+    },
+    description: {
+      en: "Shipping options, delivery times, and secure payment information for orders from The Mystic Aroma.",
+      pl: "Opcje dostawy, terminy realizacji i informacje o bezpiecznych platnosciach dla zamowien The Mystic Aroma.",
+    },
+  });
+}
 
 const shippingZones = [
   {

@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Legal Notice | The Mystic Aroma",
-  description: "Legal notice and company information for Natural Mystic Aroma Sp. z o.o.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/legal",
+    locale,
+    title: {
+      en: "Legal Notice",
+      pl: "Informacje prawne",
+    },
+    description: {
+      en: "Legal notice and company information for Natural Mystic Aroma Sp. z o.o.",
+      pl: "Informacje prawne i dane firmy Natural Mystic Aroma Sp. z o.o.",
+    },
+  });
+}
 
 export default async function LegalPage() {
   const requestHeaders = await headers();

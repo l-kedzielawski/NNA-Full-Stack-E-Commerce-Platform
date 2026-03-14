@@ -1,12 +1,24 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Cookie Policy | The Mystic Aroma",
-  description:
-    "Cookie Policy for themysticaroma.com — categories, legal basis, retention periods, and how to control consent.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/cookie-policy",
+    locale,
+    title: {
+      en: "Cookie Policy",
+      pl: "Polityka cookies",
+    },
+    description: {
+      en: "Cookie Policy for themysticaroma.com covering categories, legal basis, retention periods, and consent controls.",
+      pl: "Polityka cookies dla themysticaroma.com obejmujaca kategorie, podstawy prawne, okresy przechowywania i ustawienia zgody.",
+    },
+  });
+}
 
 const cookieGroups = [
   {

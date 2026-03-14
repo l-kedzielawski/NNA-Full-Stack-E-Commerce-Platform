@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { supportedLocales, withLocalePrefix } from "@/lib/i18n";
+import { getLanguageAlternates } from "@/lib/metadata";
 import { getAllProducts } from "@/lib/products";
 
 const siteUrl = "https://www.themysticaroma.com";
@@ -29,6 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: route === "" || route === "/products" ? "weekly" : "monthly",
       priority: route === "" ? 1 : 0.7,
+      alternates: {
+        languages: getLanguageAlternates(route || "/"),
+      },
     })),
   ) as MetadataRoute.Sitemap;
 
@@ -40,6 +44,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
+      alternates: {
+        languages: getLanguageAlternates(`/products/${product.slug}`),
+      },
     })),
   ) as MetadataRoute.Sitemap;
 

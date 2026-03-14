@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Terms & Conditions | The Mystic Aroma",
-  description: "General terms and conditions of sale for Natural Mystic Aroma Sp. z o.o.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/terms",
+    locale,
+    title: {
+      en: "Terms & Conditions",
+      pl: "Regulamin",
+    },
+    description: {
+      en: "General terms and conditions of sale for Natural Mystic Aroma Sp. z o.o.",
+      pl: "Ogólne warunki sprzedazy Natural Mystic Aroma Sp. z o.o.",
+    },
+  });
+}
 
 const sections = [
   {

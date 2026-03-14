@@ -14,13 +14,25 @@ import {
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { Reveal } from "@/components/reveal";
 import { ThemedImage } from "@/components/themed-image";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "B2B Wholesale | Natural Mystic Aroma",
-  description:
-    "B2B vanilla and spice supply from Madagascar. Full documentation, stable lots, dedicated account contact, and EU-ready logistics.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/b2b",
+    locale,
+    title: {
+      en: "B2B Wholesale",
+      pl: "Hurt B2B",
+    },
+    description: {
+      en: "B2B vanilla and spice supply from Madagascar with full documentation, stable lots, dedicated contact, and EU-ready logistics.",
+      pl: "Dostawy wanilii i przypraw B2B z Madagaskaru z pelna dokumentacja, stabilnymi partiami, dedykowanym kontaktem i logistyka gotowa dla UE.",
+    },
+  });
+}
 
 const procurementFacts = [
   {

@@ -10,6 +10,7 @@ import { BaselineTraffic } from "@/components/analytics/baseline-traffic";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
+import { createOrganizationSchema, createWebsiteSchema } from "@/lib/metadata";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -60,29 +61,8 @@ export const metadata: Metadata = {
   },
 };
 
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Natural Mystic Aroma",
-  alternateName: "The Mystic Aroma",
-  url: "https://www.themysticaroma.com",
-  logo: "https://www.themysticaroma.com/logo-dark.png",
-  email: "info@themysticaroma.com",
-  sameAs: [
-    "https://www.facebook.com/NaturalMysticAroma",
-    "https://www.instagram.com/thenaturalmysticaroma",
-    "https://www.linkedin.com/company/natural-mystic-aroma",
-    "https://www.youtube.com/@NaturalMysticAroma",
-    "https://www.tiktok.com/@the.mystic.aroma",
-  ],
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "ul. Pamiątkowa 2/56",
-    postalCode: "61-512",
-    addressLocality: "Poznan",
-    addressCountry: "PL",
-  },
-};
+const organizationSchema = createOrganizationSchema();
+const websiteSchema = createWebsiteSchema();
 
 export default async function RootLayout({
   children,
@@ -116,6 +96,10 @@ export default async function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
           />
           <SiteHeader />
           <div id="main-content">{children}</div>

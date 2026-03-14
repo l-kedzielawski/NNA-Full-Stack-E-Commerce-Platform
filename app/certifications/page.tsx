@@ -1,15 +1,27 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createBreadcrumbSchema, createLocalizedMetadata, getLocalizedUrl, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Certifications | The Mystic Aroma",
-  description:
-    "EU Organic, Fair Trade, and Certificate of Origin — Madagascar. Every certification we hold is documented proof of our commitment to quality, sustainability, and ethical sourcing.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/certifications",
+    locale,
+    title: {
+      en: "Certifications",
+      pl: "Certyfikaty",
+    },
+    description: {
+      en: "Review EU Organic, Fair Trade, and Certificate of Origin documents that support the traceability and sourcing standards behind Natural Mystic Aroma.",
+      pl: "Sprawdz dokumenty EU Organic, Fair Trade i Certificate of Origin potwierdzajace identyfikowalnosc i standardy sourcingu Natural Mystic Aroma.",
+    },
+  });
+}
 
 const certs = [
   {
@@ -115,9 +127,39 @@ export default async function CertificationsPage() {
   const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
 
   const isPl = locale === "pl";
+  const pageUrl = getLocalizedUrl("/certifications", locale);
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: isPl ? "Strona glowna" : "Home", url: getLocalizedUrl("/", locale) },
+    { name: isPl ? "Certyfikaty" : "Certifications", url: pageUrl },
+  ]);
+  const collectionPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: isPl ? "Certyfikaty | The Mystic Aroma" : "Certifications | The Mystic Aroma",
+    url: pageUrl,
+    inLanguage: locale,
+    description: isPl
+      ? "Strona z dokumentami certyfikacyjnymi i zgodnosci Natural Mystic Aroma."
+      : "Collection page for Natural Mystic Aroma certifications and compliance documents.",
+    hasPart: certs.map((cert) => ({
+      "@type": "CreativeWork",
+      name: isPl ? cert.codePl || cert.code : cert.code,
+      description: isPl ? cert.bodyPl : cert.body,
+      url: `${pageUrl}#${cert.badge.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      fileFormat: "application/pdf",
+    })),
+  };
 
   return (
     <main className="pt-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageSchema) }}
+      />
       {/* Hero */}
       <section className="relative py-28 overflow-hidden">
         <div className="absolute inset-0 bg-bg-mid" />

@@ -4,13 +4,31 @@ import { headers } from "next/headers";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { ThemedImage } from "@/components/themed-image";
 import type { Metadata } from "next";
+import {
+  createBreadcrumbSchema,
+  createLocalizedMetadata,
+  getLocalizedUrl,
+  getRequestLocale,
+  organizationId,
+} from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "About Us | The Mystic Aroma",
-  description:
-    "Natural Mystic Aroma, direct sourcing from Madagascar and Nosy Be, transparent supply chains, and certified vanilla and spices for brands that value authenticity.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/about",
+    locale,
+    title: {
+      en: "About Us",
+      pl: "O nas",
+    },
+    description: {
+      en: "Natural Mystic Aroma sources directly in Madagascar and Nosy Be, with transparent supply chains and certified vanilla and spices for brands that value authenticity.",
+      pl: "Natural Mystic Aroma pozyskuje surowce bezposrednio na Madagaskarze i Nosy Be, oferujac transparentny lancuch dostaw oraz certyfikowana wanilie i przyprawy.",
+    },
+  });
+}
 
 const milestones = [
   { year: "2020", event: "First steps in Madagascar, exploring origins, meeting growers, understanding the land" },
@@ -68,6 +86,25 @@ export default async function AboutPage() {
   const requestHeaders = await headers();
   const localeHeader = requestHeaders.get("x-site-locale") || "";
   const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+  const pageUrl = getLocalizedUrl("/about", locale);
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: locale === "pl" ? "Strona glowna" : "Home", url: getLocalizedUrl("/", locale) },
+    { name: locale === "pl" ? "O nas" : "About Us", url: pageUrl },
+  ]);
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: locale === "pl" ? "O nas | The Mystic Aroma" : "About Us | The Mystic Aroma",
+    url: pageUrl,
+    inLanguage: locale,
+    description:
+      locale === "pl"
+        ? "Informacje o Natural Mystic Aroma, bezposrednim sourcingu na Madagaskarze, transparentnym lancuchu dostaw i certyfikowanej ofercie."
+        : "Background on Natural Mystic Aroma, its direct Madagascar sourcing model, transparent supply chain, and certified ingredient offer.",
+    about: {
+      "@id": organizationId,
+    },
+  };
 
   if (locale === "pl") {
     const milestonesPl = [
@@ -124,6 +161,14 @@ export default async function AboutPage() {
 
     return (
       <main className="pt-20">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageSchema) }}
+        />
         <section className="relative min-h-[70vh] flex items-center overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="hero-zoom absolute inset-[-4%]">
@@ -398,6 +443,14 @@ export default async function AboutPage() {
 
   return (
     <main className="pt-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageSchema) }}
+      />
 
       {/* Hero */}
       <section className="relative min-h-[70vh] flex items-center overflow-hidden">

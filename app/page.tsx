@@ -7,12 +7,30 @@ import { Reveal } from "@/components/reveal";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ThemedImage } from "@/components/themed-image";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { getFeaturedProducts, getProductBySlug } from "@/lib/products";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 import { formatPrice } from "@/lib/utils";
 
 // Force runtime rendering so featured products always have live Medusa variant IDs.
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/",
+    locale,
+    title: {
+      en: "Madagascar Vanilla & Cocoa",
+      pl: "Wanilia i kakao z Madagaskaru",
+    },
+    description: {
+      en: "Premium Madagascar vanilla, cocoa, and specialty ingredients for demanding B2B buyers.",
+      pl: "Premium wanilia z Madagaskaru, kakao i specjalistyczne skladniki dla wymagajacych klientow B2B.",
+    },
+  });
+}
 
 export default async function Home() {
   const requestHeaders = await headers();

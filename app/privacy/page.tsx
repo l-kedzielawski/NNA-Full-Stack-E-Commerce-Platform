@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | The Mystic Aroma",
-  description: "Privacy Policy for themysticaroma.com — how we collect, use, and protect your personal data (GDPR compliant).",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/privacy",
+    locale,
+    title: {
+      en: "Privacy Policy",
+      pl: "Polityka prywatnosci",
+    },
+    description: {
+      en: "Privacy Policy for themysticaroma.com explaining how we collect, use, and protect personal data in line with GDPR.",
+      pl: "Polityka prywatnosci themysticaroma.com opisujaca zasady gromadzenia, wykorzystywania i ochrony danych osobowych zgodnie z RODO.",
+    },
+  });
+}
 
 const sections = [
   {

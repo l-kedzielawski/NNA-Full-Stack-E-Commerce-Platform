@@ -1,12 +1,25 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Returns & Complaints | The Mystic Aroma",
-  description: "Returns and complaints procedure for business and consumer orders from Natural Mystic Aroma.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/returns",
+    locale,
+    title: {
+      en: "Returns & Complaints",
+      pl: "Zwroty i reklamacje",
+    },
+    description: {
+      en: "Returns and complaints procedure for business and consumer orders from Natural Mystic Aroma.",
+      pl: "Procedura zwrotow i reklamacji dla zamowien biznesowych i konsumenckich Natural Mystic Aroma.",
+    },
+  });
+}
 
 const steps = [
   {

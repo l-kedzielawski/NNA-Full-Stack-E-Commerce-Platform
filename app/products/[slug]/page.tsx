@@ -17,6 +17,7 @@ import {
 import { ProductCard } from "@/components/product-card";
 import { ProductGallery } from "@/components/product-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { getLanguageAlternates } from "@/lib/metadata";
 import { getAllProducts, getProductBySlug, getRelatedProducts } from "@/lib/products";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 import { formatPrice, truncateText } from "@/lib/utils";
@@ -542,6 +543,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     description,
     alternates: {
       canonical: productUrl,
+      languages: getLanguageAlternates(`/products/${product.slug}`),
     },
     openGraph: {
       type: "website",

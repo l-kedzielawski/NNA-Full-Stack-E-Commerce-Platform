@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { RequestQuoteForm } from "@/components/request-quote-form";
 import { getAllProducts } from "@/lib/products";
 import { Leaf, CheckCircle2 } from "lucide-react";
+import { createLocalizedMetadata, getRequestLocale } from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
 
 // Force runtime rendering so product list is always fetched live from Medusa.
@@ -12,11 +13,22 @@ type QuotePageProps = {
   searchParams?: Promise<{ product?: string }>;
 };
 
-export const metadata: Metadata = {
-  title: "B2B Inquiry",
-  description:
-    "Share your volume, destination, and quality requirements. We reply with practical B2B terms and lead times.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/quote",
+    locale,
+    title: {
+      en: "B2B Inquiry",
+      pl: "Zapytanie B2B",
+    },
+    description: {
+      en: "Share your volume, destination, and quality requirements. We reply with practical B2B terms, documents, and lead times.",
+      pl: "Przeslij wolumen, kierunek dostawy i wymagania jakosciowe. Odpowiemy praktycznymi warunkami B2B, dokumentami i terminami.",
+    },
+  });
+}
 
 export default async function QuotePage({ searchParams }: QuotePageProps) {
   const requestHeaders = await headers();

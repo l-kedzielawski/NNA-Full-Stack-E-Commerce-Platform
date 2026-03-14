@@ -4,13 +4,31 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { ArrowRight, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { ThemedImage } from "@/components/themed-image";
+import {
+  createBreadcrumbSchema,
+  createLocalizedMetadata,
+  getLocalizedUrl,
+  getRequestLocale,
+  organizationId,
+} from "@/lib/metadata";
 import { defaultLocale, isSupportedLocale, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Contact | The Mystic Aroma",
-  description:
-    "Get in touch with Natural Mystic Aroma, direct B2B supplier of Bourbon vanilla and spices from Madagascar. Personal contact, samples, and documentation.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return createLocalizedMetadata({
+    pathname: "/contact",
+    locale,
+    title: {
+      en: "Contact",
+      pl: "Kontakt",
+    },
+    description: {
+      en: "Contact Natural Mystic Aroma, direct supplier of Bourbon vanilla and spices from Madagascar for samples, documentation, and B2B inquiries.",
+      pl: "Skontaktuj sie z Natural Mystic Aroma w sprawie probek, dokumentacji i zapytan B2B dotyczacych wanilii Bourbon i przypraw z Madagaskaru.",
+    },
+  });
+}
 
 const contacts = [
   {
@@ -89,8 +107,39 @@ export default async function ContactPage() {
         ]
       : values;
 
+  const pageUrl = getLocalizedUrl("/contact", locale);
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: locale === "pl" ? "Strona glowna" : "Home", url: getLocalizedUrl("/", locale) },
+    { name: locale === "pl" ? "Kontakt" : "Contact", url: pageUrl },
+  ]);
+  const contactPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: locale === "pl" ? "Kontakt | The Mystic Aroma" : "Contact | The Mystic Aroma",
+    url: pageUrl,
+    inLanguage: locale,
+    description:
+      locale === "pl"
+        ? "Strona kontaktowa Natural Mystic Aroma dla zapytan B2B, probek, dokumentacji i wspolpracy handlowej."
+        : "Contact page for Natural Mystic Aroma covering B2B inquiries, samples, documentation, and trade support.",
+    about: {
+      "@id": organizationId,
+    },
+    mainEntity: {
+      "@id": organizationId,
+    },
+  };
+
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageSchema) }}
+      />
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden min-h-[55vh] flex items-end">
