@@ -2,13 +2,23 @@ export type MedusaCartItem = {
   id: string;
   quantity: number;
   unit_price: number;
+  subtotal?: number;
   total?: number;
+  tax_total?: number;
+  discount_total?: number;
   title: string;
   thumbnail?: string;
   product_title?: string;
   product_handle?: string;
   variant_title?: string;
   variant_sku?: string;
+};
+
+export type MedusaPromotion = {
+  id: string;
+  code?: string;
+  is_automatic?: boolean;
+  status?: string;
 };
 
 export type MedusaCart = {
@@ -22,6 +32,7 @@ export type MedusaCart = {
   shipping_total: number;
   discount_total: number;
   items: MedusaCartItem[];
+  promotions?: MedusaPromotion[];
   payment_collection?: {
     id: string;
   } | null;
@@ -624,6 +635,40 @@ export async function setShippingMethod(cartId: string, optionId: string): Promi
   return updated.cart;
 }
 
+export async function applyCouponCode(cartId: string, code: string): Promise<MedusaCart> {
+  const normalizedCode = code.trim().toUpperCase();
+  if (!normalizedCode) {
+    throw new Error("Enter a coupon code first.");
+  }
+
+  const updated = await medusaFetch<{ cart: MedusaCart }>(`/store/carts/${cartId}/promotions`, {
+    method: "POST",
+    body: JSON.stringify({
+      promo_codes: [normalizedCode],
+    }),
+  });
+
+  emitCartUpdated();
+  return updated.cart;
+}
+
+export async function removeCouponCode(cartId: string, code: string): Promise<MedusaCart> {
+  const normalizedCode = code.trim().toUpperCase();
+  if (!normalizedCode) {
+    throw new Error("Missing coupon code to remove.");
+  }
+
+  const updated = await medusaFetch<{ cart: MedusaCart }>(`/store/carts/${cartId}/promotions`, {
+    method: "DELETE",
+    body: JSON.stringify({
+      promo_codes: [normalizedCode],
+    }),
+  });
+
+  emitCartUpdated();
+  return updated.cart;
+}
+
 export async function createPaymentCollection(cartId: string): Promise<PaymentCollection> {
   const data = await medusaFetch<{ payment_collection: PaymentCollection }>(`/store/payment-collections`, {
     method: "POST",
@@ -671,6 +716,32 @@ export async function completeCart(cartId: string) {
       },
     };
   }
+}
+
+function getInferredItemDiscount(item: MedusaCartItem): number {
+  if (typeof item.discount_total === "number" && item.discount_total > 0) {
+    return item.discount_total;
+  }
+
+  if (typeof item.subtotal === "number") {
+    const undiscountedSubtotal = item.unit_price * item.quantity;
+    const inferred = undiscountedSubtotal - item.subtotal;
+    if (inferred > 0) {
+      return inferred;
+    }
+  }
+
+  return 0;
+}
+
+export function getEffectiveCartDiscountTotal(cart: MedusaCart): number {
+  const itemDiscountTotal = (cart.items || []).reduce((sum, item) => sum + getInferredItemDiscount(item), 0);
+  return Math.max(cart.discount_total || 0, itemDiscountTotal, 0);
+}
+
+export function getEffectiveCartTotal(cart: MedusaCart): number {
+  const effectiveDiscountTotal = getEffectiveCartDiscountTotal(cart);
+  return Math.max(0, (cart.total || 0) + (cart.discount_total || 0) - effectiveDiscountTotal);
 }
 
 export function formatAmount(amount: number, currencyCode: string): string {

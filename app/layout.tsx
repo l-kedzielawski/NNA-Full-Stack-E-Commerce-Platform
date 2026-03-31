@@ -10,6 +10,7 @@ import { BaselineTraffic } from "@/components/analytics/baseline-traffic";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { defaultLocale, isSupportedLocale, type SiteLocale } from "@/lib/i18n";
+import { fetchPublicPromotionBanner } from "@/lib/medusa-promotion-banner.server";
 import { createOrganizationSchema, createWebsiteSchema } from "@/lib/metadata";
 
 const cormorant = Cormorant_Garamond({
@@ -72,6 +73,7 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const localeHeader = requestHeaders.get("x-site-locale") || "";
   const locale: SiteLocale = isSupportedLocale(localeHeader) ? localeHeader : defaultLocale;
+  const publicPromotion = await fetchPublicPromotionBanner();
 
   return (
     <html lang={locale}>
@@ -101,8 +103,8 @@ export default async function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
           />
-          <SiteHeader />
-          <div id="main-content">{children}</div>
+          <SiteHeader promotion={publicPromotion} />
+          <div id="main-content" style={publicPromotion ? { paddingTop: "108px" } : undefined}>{children}</div>
           <StickyQuoteCta />
           <CookieConsentBanner />
           <SiteFooter />

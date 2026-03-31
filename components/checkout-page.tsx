@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { CouponCodeForm } from "@/components/coupon-code-form";
 import {
   addToCart,
   clearStoredCartId,
@@ -16,6 +17,8 @@ import {
   emitCartUpdated,
   formatAmount,
   getCart,
+  getEffectiveCartDiscountTotal,
+  getEffectiveCartTotal,
   getPaymentProviders,
   getShippingOptions,
   getStoredCartId,
@@ -889,10 +892,12 @@ export function CheckoutPage() {
     setPending(true);
 
     try {
-      const paymentCollectionId =
-        cart.payment_collection?.id || (await createPaymentCollection(cart.id)).id;
+      const latestCart = (await getCart(cart.id)) || cart;
+      setCart(latestCart);
 
-      const providers = await getPaymentProviders(cart.region_id);
+      const paymentCollectionId = (await createPaymentCollection(latestCart.id)).id;
+
+      const providers = await getPaymentProviders(latestCart.region_id);
       const stripeProvider = pickPreferredStripeProvider(providers);
       const stripeClientConfirmationEnabled = Boolean(stripePromise);
       const useStripeConfirmation = Boolean(stripeProvider && stripeClientConfirmationEnabled);
@@ -934,7 +939,7 @@ export function CheckoutPage() {
         }
 
         setStripePayment({
-          cartId: cart.id,
+          cartId: latestCart.id,
           providerId: stripeProvider.id,
           clientSecret,
         });
@@ -1008,6 +1013,8 @@ export function CheckoutPage() {
   }
 
   const orderValueFreeShippingThreshold = getOrderValueFreeShippingThreshold(cart.currency_code);
+  const effectiveDiscountTotal = getEffectiveCartDiscountTotal(cart);
+  const effectiveCartTotal = getEffectiveCartTotal(cart);
   const amountUntilOrderValueFreeShipping =
     orderValueFreeShippingThreshold !== null
       ? Math.max(0, orderValueFreeShippingThreshold - cart.subtotal)
@@ -1277,6 +1284,18 @@ export function CheckoutPage() {
           ))}
         </div>
 
+        <CouponCodeForm
+          cart={cart}
+          locale={locale}
+          onCartUpdate={(updatedCart) => {
+            setCart(updatedCart);
+            resetCheckoutProgress();
+            setError(null);
+            setNotice(null);
+          }}
+          className="mt-4 rounded-xl border border-line/70 bg-bg-soft p-4"
+        />
+
         <div className="mt-5 border-t border-line pt-4 flex items-center justify-between gap-3">
           <span className="text-ink/60">{locale === "pl" ? "Suma czesciowa" : "Subtotal"}</span>
           <span className="shrink-0 whitespace-nowrap">{formatAmount(cart.subtotal, cart.currency_code)}</span>
@@ -1290,6 +1309,11 @@ export function CheckoutPage() {
         {shippingCalculated && selectedShippingOptionName ? (
           <p className="mt-2 text-xs text-ink/45">{locale === "pl" ? "Metoda" : "Method"}: {selectedShippingOptionName}</p>
         ) : null}
+
+        <div className="mt-2 flex items-center justify-between gap-3 text-sm text-ink/65">
+          <span>{locale === "pl" ? "Rabaty" : "Discounts"}</span>
+          <span className="shrink-0 whitespace-nowrap">-{formatAmount(effectiveDiscountTotal, cart.currency_code)}</span>
+        </div>
 
         <div className="mt-2 flex items-center justify-between gap-3 text-sm text-ink/65">
           <span>{locale === "pl" ? "VAT (w cenie)" : "VAT (included)"}</span>
@@ -1376,7 +1400,7 @@ export function CheckoutPage() {
 
         <div className="mt-4 border-t border-line pt-4 flex items-center justify-between gap-3">
           <span className="font-semibold text-ink">{locale === "pl" ? "Razem" : "Total"}</span>
-          <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{formatAmount(cart.total, cart.currency_code)}</span>
+          <span className="shrink-0 whitespace-nowrap font-semibold text-ink">{formatAmount(effectiveCartTotal, cart.currency_code)}</span>
         </div>
 
         <p className="mt-4 text-xs text-ink/45">

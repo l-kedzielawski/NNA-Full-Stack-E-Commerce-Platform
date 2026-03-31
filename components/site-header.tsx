@@ -6,8 +6,10 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { CartLink } from "@/components/cart-link";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { PromoBanner } from "@/components/promo-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ThemedImage } from "@/components/themed-image";
+import { PublicPromotionBanner } from "@/lib/promotion-banner";
 import { defaultLocale, getLocaleFromPathname, withLocalePrefix, type SiteLocale } from "@/lib/i18n";
 
 const navItems = ["home", "shop", "about", "b2b", "contact"] as const;
@@ -43,7 +45,7 @@ const navPathByKey: Record<(typeof navItems)[number], string> = {
   contact: "/contact",
 };
 
-export function SiteHeader() {
+export function SiteHeader({ promotion }: { promotion?: PublicPromotionBanner | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || "/";
   const locale = getLocaleFromPathname(pathname) || defaultLocale;
@@ -51,8 +53,7 @@ export function SiteHeader() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Glass backdrop */}
-      <div className="absolute inset-0 bg-bg/85 backdrop-blur-xl border-b border-line" />
+      <div className="absolute inset-x-0 top-0 h-20 border-b border-line bg-bg/85 backdrop-blur-xl" />
 
       <div className="relative container-shell flex h-20 items-center justify-between gap-6">
         {/* Logo */}
@@ -102,9 +103,11 @@ export function SiteHeader() {
         </button>
       </div>
 
+      {promotion ? <PromoBanner promotion={promotion} locale={locale} /> : null}
+
       {/* Mobile drawer */}
       {open && (
-        <div className="relative md:hidden bg-bg-soft border-b border-line px-6 py-6 space-y-1">
+        <div className="relative border-b border-line bg-bg-soft px-6 py-6 space-y-1 md:hidden">
           {navItems.map((item) => (
             <Link
               key={item}

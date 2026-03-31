@@ -4,11 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CouponCodeForm } from "@/components/coupon-code-form";
 import {
   clearStoredCartId,
   ensureCartRegionForLocaleAndCountry,
   formatAmount,
   getCart,
+  getEffectiveCartDiscountTotal,
+  getEffectiveCartTotal,
   getStoredCartId,
   MedusaCart,
   removeLineItem,
@@ -94,6 +97,9 @@ export function CartPage() {
     checkout: locale === "pl" ? "Przejdz do platnosci" : "Continue to Checkout",
     keepShopping: locale === "pl" ? "Kontynuuj zakupy" : "Keep Shopping",
   };
+
+  const effectiveDiscountTotal = cart ? getEffectiveCartDiscountTotal(cart) : 0;
+  const effectiveCartTotal = cart ? getEffectiveCartTotal(cart) : 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -299,6 +305,7 @@ export function CartPage() {
 
       <aside className="rounded-2xl border border-line bg-card p-6 h-fit">
         <p className="text-xs uppercase tracking-[0.16em] text-gold/60">{t.summary}</p>
+        <CouponCodeForm cart={cart} locale={locale} onCartUpdate={setCart} className="mt-4" />
         <div className="mt-4 space-y-3 text-sm text-ink/65">
           <div className="flex items-center justify-between">
             <span>{t.subtotal}</span>
@@ -314,13 +321,13 @@ export function CartPage() {
           </div>
           <div className="flex items-center justify-between">
             <span>{t.discounts}</span>
-            <span>-{formatAmount(cart.discount_total, cart.currency_code)}</span>
+            <span>-{formatAmount(effectiveDiscountTotal, cart.currency_code)}</span>
           </div>
         </div>
 
         <div className="mt-5 border-t border-line pt-4 flex items-center justify-between">
           <span className="font-semibold text-ink">{t.total}</span>
-          <span className="font-semibold text-ink">{formatAmount(cart.total, cart.currency_code)}</span>
+          <span className="font-semibold text-ink">{formatAmount(effectiveCartTotal, cart.currency_code)}</span>
         </div>
 
         <p className="mt-3 text-xs text-gold/75">
