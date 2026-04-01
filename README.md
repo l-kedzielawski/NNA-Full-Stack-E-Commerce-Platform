@@ -35,18 +35,27 @@ production build with real third-party scripts running
 | Best Practices | 92 | 92 |
 | SEO | 100 | 100 |
 
+#### Desktop 
 ![Lighthouse desktop](docs/screenshots/lighthouse-desktop.png)
+#### Mobile
 ![Lighthouse mobile](docs/screenshots/lighthouse-mobile.png)
 
 
-### Storefront
+### Storefront dark
 ![Homepage dark](docs/screenshots/shop-dark.png)
+
+### Storefront light 
 ![Homepage light](docs/screenshots/shop-light.png)
+
+### Homepage PL 
 ![Polish products page](docs/screenshots/home-pl.png)
 
-### Medusa admin
+### Medusa Leads Dashboard
 ![Leads dashboard](docs/screenshots/medusa-leads.png)
+
+### Medusa Traffic Dashboard
 ![Traffic dashboard](docs/screenshots/medusa-traffic.png)
+
 ---
 
 ## Stack
