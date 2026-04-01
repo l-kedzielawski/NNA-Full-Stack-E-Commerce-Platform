@@ -43,7 +43,7 @@ docker exec mystic-postgres pg_dump -U mystic -d mystic_strapi -Fc > mystic_stra
 Copy dumps to VPS:
 
 ```bash
-scp mystic_medusa.dump mystic_strapi.dump user@YOUR_VPS_IP:/opt/naturalmysticaroma/
+scp mystic_medusa.dump mystic_strapi.dump user@YOUR_VPS_IP:/opt/your-app/
 ```
 
 On VPS, start infra first and restore:
@@ -68,12 +68,12 @@ For subsequent updates:
 
 ## 4) Configure shared nginx
 
-Use `deploy/nginx/shared-proxy/themysticaroma.conf.example` as your vhost template
+Use `deploy/nginx/shared-proxy/site.conf.example` as your vhost template
 in the shared proxy host. It routes:
 
-- `themysticaroma.com` -> `127.0.0.1:3100`
-- `api.themysticaroma.com` -> `127.0.0.1:9100`
-- `admin.themysticaroma.com` -> `127.0.0.1:1437`
+- `example.com` -> `127.0.0.1:3100`
+- `api.example.com` -> `127.0.0.1:9100`
+- `admin.example.com` -> `127.0.0.1:1437`
 
 Then reload your shared proxy.
 
@@ -89,9 +89,9 @@ Point these A records to the VPS IP:
 ## 6) Smoke checks
 
 ```bash
-curl -I https://themysticaroma.com
-curl -I https://api.themysticaroma.com/health
-curl -I https://admin.themysticaroma.com/admin
+curl -I https://example.com
+curl -I https://api.example.com/health
+curl -I https://admin.example.com/admin
 ```
 
 If these pass, you are live behind the shared proxy topology.

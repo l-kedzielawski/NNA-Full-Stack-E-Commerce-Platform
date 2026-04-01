@@ -118,10 +118,10 @@ Set in `services/medusa/.env` and restart Medusa:
 
 ```bash
 RESEND_API_KEY=re_xxx
-EMAIL_FROM="The Mystic Aroma <orders@themysticaroma.com>"
-EMAIL_REPLY_TO=orders@themysticaroma.com
-ORDER_NOTIFY_EMAILS=orders@themysticaroma.com,l.kedzielawski@themysticaroma.com
-LEAD_NOTIFY_EMAILS=orders@themysticaroma.com,l.kedzielawski@themysticaroma.com
+EMAIL_FROM="Example Store <sales@example.com>"
+EMAIL_REPLY_TO=sales@example.com
+ORDER_NOTIFY_EMAILS=sales@example.com,ops@example.com
+LEAD_NOTIFY_EMAILS=sales@example.com,ops@example.com
 ```
 
 `ORDER_NOTIFY_EMAILS` and `LEAD_NOTIFY_EMAILS` are comma-separated and can be changed anytime in Medusa env.

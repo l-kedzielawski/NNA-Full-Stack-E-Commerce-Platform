@@ -1,9 +1,9 @@
 # Example host-level nginx vhost for shared proxy mode.
-# Copy into your shared nginx (outside this app stack) and adjust cert paths.
+# Copy into your shared nginx and adjust domains, cert paths, and localhost ports.
 
 server {
     listen 80;
-    server_name themysticaroma.com www.themysticaroma.com api.themysticaroma.com admin.themysticaroma.com;
+    server_name example.com www.example.com api.example.com admin.example.com;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -16,15 +16,15 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name themysticaroma.com www.themysticaroma.com;
+    server_name example.com www.example.com;
 
-    ssl_certificate     /etc/letsencrypt/live/themysticaroma.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/themysticaroma.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
     include             /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 
-    if ($host = www.themysticaroma.com) {
-        return 301 https://themysticaroma.com$request_uri;
+    if ($host = www.example.com) {
+        return 301 https://example.com$request_uri;
     }
 
     location / {
@@ -41,10 +41,10 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name api.themysticaroma.com;
+    server_name api.example.com;
 
-    ssl_certificate     /etc/letsencrypt/live/themysticaroma.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/themysticaroma.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
     include             /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -64,10 +64,10 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name admin.themysticaroma.com;
+    server_name admin.example.com;
 
-    ssl_certificate     /etc/letsencrypt/live/themysticaroma.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/themysticaroma.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
     include             /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 

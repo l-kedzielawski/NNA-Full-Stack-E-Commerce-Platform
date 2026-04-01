@@ -1,261 +1,176 @@
-# The Mystic Aroma Frontend
+# Natural Mystic Aroma — Full-Stack E-Commerce Platform
 
-Next.js frontend for Natural Mystic Aroma (B2B Madagascar vanilla and specialty ingredients).
+Live site: [themysticaroma.com](https://themysticaroma.com)
 
-## Development
+I built this for my own company. Natural Mystic Aroma imports  Grade A Bourbon vanilla directly from Madagascar and sells B2B  across Europe. After years of running the business on off-the-shelf  tools that didn't fit how we actually operate, I built the entire  platform from scratch.
 
-```bash
-npm install
-npm run dev
+This is not a tutorial project. It handles real orders, real B2B  inquiries, real payments, and real customers across two languages  and multiple EU markets. I own the business, I built the platform,  and I maintain both.
+
+---
+
+## What I built and why
+
+**The storefront** needed to feel like a premium brand, not a  generic WooCommerce template. Food manufacturers and pastry chefs  buying vanilla in bulk make decisions based on trust and  provenance - the site has to communicate that before they ever  fill out a form.
+
+**The B2B inquiry flow** is custom because our sales process  doesn't fit standard e-commerce. Large orders go through a quote  request, manual review, and custom payment link - not a straight  add-to-cart checkout. I built that entire flow inside Medusa admin so Karol (operations) can manage it without touching code.
+
+**The analytics and traffic layer** is first-party and cookieless by design - GDPR compliance isn't optional when selling across the EU, and I didn't want to depend entirely on GA4 consent rates for visibility into what's actually happening on the site. The baseline tracker records page-level traffic without personal identifiers: no cross-session profiling, no fingerprinting, no advertising use.
+
+**The multilingual routing** covers Polish and English with  localized pathnames - `/pl/produkty` not just `/pl/products`.  The translation layer supports any locale without code changes - German, French, Italian are ready to activate at the content level. Built this way from the start because our B2B customers are spread across Europe and the system needs to grow with the market.
+
+---
+
+## Performance
+
+Built for speed from the start - Next.js App Router with static 
+generation where possible, optimised images via next/image, and 
+minimal client-side JavaScript. Scores measured on a live 
+production build with real third-party scripts running 
+(Stripe, GA4, cookie consent).
+
+| Metric | Mobile | Desktop |
+|--------|--------|---------|
+| Performance | 89 | 100 |
+| Accessibility | 92 | 92 |
+| Best Practices | 92 | 92 |
+| SEO | 100 | 100 |
+
+![Lighthouse desktop](docs/screenshots/lighthouse-desktop.png)
+![Lighthouse mobile](docs/screenshots/lighthouse-mobile.png)
+
+
+### Storefront
+![Homepage dark](docs/screenshots/shop-dark.png)
+![Homepage light](docs/screenshots/shop-light.png)
+![Polish products page](docs/screenshots/home-pl.png)
+
+### Medusa admin
+![Leads dashboard](docs/screenshots/medusa-leads.png)
+![Traffic dashboard](docs/screenshots/medusa-traffic.png)
+---
+
+## Stack
+
+- Next.js App Router storefront
+- Medusa commerce backend with custom admin extensions
+- Strapi CMS for editorial content ( future blog etc)
+- Stripe for checkout and custom payment link workflows 
+- PostgreSQL + Redis
+- Docker Compose for local and VPS deployment
+- Traefik reverse proxy on production
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A[Next.js Storefront] --> B[Medusa Backend]
+  A --> C[Strapi CMS]
+  A --> D[Stripe Checkout]
+  A --> E[GA4]
+  A --> F[Medusa Traffic Hit API]
+  B --> G[Postgres]
+  B --> H[Redis]
+  B --> D
+  B --> I[Resend]
+  C --> G
 ```
 
-Open `http://localhost:3000`.
+Full architecture notes: [`docs/architecture.md`](docs/architecture.md)
 
-Locale-prefixed routing is enabled. Requests are redirected to `/en/...` by proxy.
+---
 
-## Build
+## What makes this non-standard
+
+Most e-commerce projects use a platform and configure it. This one extends Medusa with custom admin routes - a leads CRM,  lead analytics dashboard, coupon management, and a traffic dashboard that combines GA4 data with first-party cookieless 
+baseline tracking. None of that exists in Medusa out of the box. The payment link tooling is also custom. When a B2B lead submits  a quote request, ops can review it in the Medusa admin, generate a Stripe payment link scoped to that specific order, and send it directly - without the customer needing to go back through checkout.  Built this because the standard checkout flow doesn't work for large custom orders where price, quantity and shipping need manual confirmation first.
+
+---
+
+## Feature Map
+
+| Area | What it covers |
+| --- | --- |
+| Theme system | Persisted light/dark, themed assets, no-flash init |
+| Multilingual | Locale detection, localized route mapping, translated paths |
+| Lead capture | Quote intake, validation, anti-spam, Medusa lead sink |
+| Coupons | Public banner campaigns + private B2B discount codes |
+| Analytics | GA4 + cookieless baseline traffic in Medusa admin |
+| Stripe flows | Checkout, custom lead payment links, order payment links |
+| Product i18n | Per-product metadata translations and locale detail blocks |
+
+Full feature walkthrough: [`docs/features.md`](docs/features.md)
+
+---
+
+## Repository Layout
+
+```text
+.
+|- app/                    Next.js App Router pages
+|- components/             Storefront UI and interaction components
+|- content/                Product and editorial data sources
+|- docs/                   Architecture, features, decisions
+|- public/                 Brand and product assets
+|- services/medusa/        Commerce backend and custom admin extensions
+|- services/strapi/        CMS
+|- Dockerfile
+|- docker-compose.yml
+|- DEPLOY.md
+```
+---
+
+## Running locally 
+### First time setup
 
 ```bash
-npm run lint
-npm run build
+npm run stack:deps:up    # start Postgres and Redis first
+npm run medusa:dev       # start Medusa backend
+npm install && npm run dev  # start storefront
 ```
 
-## Deployment Guides
+Opens at `http://localhost:3000`  
+Medusa admin at `http://localhost:9000/app`
 
-- Standard single-stack VPS deployment: `DEPLOY.md`
-- Shared reverse-proxy VPS deployment (recommended for multiple apps): `DEPLOY_SHARED_PROXY.md`
-- Shared Traefik VPS deployment: `DEPLOY_TRAEFIK.md`
-
-## Local Backend Stack
-
-Bring up database/cache dependencies:
-
-```bash
-npm run stack:deps:up
-```
-
-Make sure Docker Desktop/daemon is running before these commands.
-
-With scaffolded `services/medusa` and `services/strapi`, run full stack:
-
+### Full stack
 ```bash
 npm run stack:up
 ```
 
-Or run backends directly on host:
+---
 
-```bash
-npm run medusa:dev
-npm run strapi:dev
-```
+## Deployment
 
-Import storefront products into Medusa:
+Three deployment paths documented depending on your setup:
 
-```bash
-npm run medusa:import-products
-```
+- Standard VPS: [`DEPLOY.md`](DEPLOY.md)
+- Shared reverse proxy: [`DEPLOY_SHARED_PROXY.md`](DEPLOY_SHARED_PROXY.md)
+- Traefik on Hetzner VPS: [`DEPLOY_TRAEFIK.md`](DEPLOY_TRAEFIK.md)
 
-The command prints a publishable API key token you can use in `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`.
+## Additional docs
 
-Set custom product content blocks in Medusa metadata:
+- [`docs/architecture.md`](docs/architecture.md)
+- [`docs/code-tour.md`](docs/code-tour.md)
+- [`docs/decisions.md`](docs/decisions.md)
+- [`docs/features.md`](docs/features.md)
 
-```bash
-npm run medusa:set-product-content
-```
+---
 
-Configure Starter Pack offer (sets `Essence of Madagascar` to EUR 40 and marks both sample sets as free-shipping eligible metadata):
+## What makes this non-standard
 
-```bash
-npm run medusa:setup-starter-pack
-```
+Most e-commerce projects use a platform and configure it. This one extends Medusa with custom admin routes - a leads CRM, lead analytics dashboard, coupon management, and a traffic dashboard that combines GA4 data with first-party cookieless baseline tracking. None of that exists in Medusa out of the box.
 
-Supported metadata keys read by product page renderer:
+The payment link tooling is also custom. When a B2B lead submits a quote request, ops can review it in the Medusa admin, generate a Stripe payment link scoped to that specific order, and send it directly - without the customer needing to go back through checkout. Built this because the standard checkout flow doesn't work for large custom orders where price, quantity and shipping need manual confirmation first.
 
-- `custom_overview` (string[])
-- `custom_gallery_images` (string[])
-- `custom_detail_images` (string[])
-- `custom_spec_rows` (`[{ label, value }]`)
-- `custom_detail_sections` (`[{ title, paragraphs?, bullets? }]`)
-- `custom_youtube_embed_url` (string)
-- `custom_disable_origin_story` (boolean)
+The site also includes `llms.txt` - the emerging standard for AI-readable site documentation, alongside `robots.ts` and `sitemap.ts` for search engine optimisation.
 
-Bootstrap shipping/checkout infrastructure in Medusa:
+Live: [themysticaroma.com](https://themysticaroma.com)
 
-```bash
-npm run medusa:setup-checkout
-```
+--- 
 
-This setup creates both standard shipping options and `Free Shipping - Starter Packs - <Region>` options. The storefront checkout auto-selects free shipping only when the cart contains only the starter packs (`Essence of Madagascar` and `Taste of Madagascar`).
+## Contact 
 
-Then switch frontend product source in `.env.local`:
-
-```bash
-PRODUCTS_SOURCE=medusa
-NEXT_PUBLIC_MEDUSA_URL=http://localhost:9000
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_replace_me
-NEXT_PUBLIC_MEDUSA_REGION_ID=reg_replace_me
-NEXT_PUBLIC_MEDUSA_REGION_ID_EUR=reg_replace_eur
-NEXT_PUBLIC_MEDUSA_REGION_ID_PLN=reg_replace_pln
-MEDUSA_REGION_ID_EUR=reg_replace_eur
-MEDUSA_REGION_ID_PLN=reg_replace_pln
-```
-
-Regional pricing behavior:
-
-- `/pl` defaults to PLN region pricing (Poland)
-- other locales default to EUR region pricing
-
-## Cart and Checkout
-
-- Cart route: `/cart`
-- Checkout route: `/checkout`
-
-Checkout currently expects a Stripe payment provider configured in Medusa. If no Stripe provider exists for the selected region, checkout will stop with a clear setup message.
-
-To enable Stripe provider in Medusa, set `STRIPE_API_KEY` (and optionally `STRIPE_WEBHOOK_SECRET`) in `services/medusa/.env`, then restart Medusa.
-
-For payment capture behavior:
-
-- `STRIPE_CAPTURE=false` (default) -> authorize now, capture later from Medusa admin.
-- `STRIPE_CAPTURE=true` -> automatic capture immediately after payment authorization.
-
-Order and lead emails are sent by Medusa via Resend. Set in `services/medusa/.env`:
-
-- `RESEND_API_KEY`
-- `EMAIL_FROM` (for example `The Mystic Aroma <orders@themysticaroma.com>`)
-- `EMAIL_REPLY_TO`
-- `ORDER_NOTIFY_EMAILS` (comma-separated internal recipients)
-- `LEAD_NOTIFY_EMAILS` (comma-separated internal recipients)
-
-If `stack:up` shows Medusa/Strapi exiting with `ENOENT /srv/.../package.json`, Docker Desktop likely does not have access to your `/var/www/...` bind-mount path. In that case, keep Postgres/Redis in Docker and run Medusa/Strapi on host using the two commands above.
-
-Bootstrap instructions are in `services/README.md`.
-
-## WooCommerce Product CSV Import
-
-Convert the latest Woo export (`wc-product-export-*.csv`) into the JSON shape used by `lib/products.ts`:
-
-```bash
-npm run import:woo-products
-```
-
-Default output file:
-
-- `content/products.from-csv.json`
-
-Write directly into the live product file:
-
-```bash
-npm run import:woo-products:apply
-```
-
-Use explicit input/output paths:
-
-```bash
-npm run import:woo-products -- --input wc-product-export-27-2-2026-1772229882291.csv --output content/products.json
-```
-
-## Content Data Sources
-
-The app reads product and journal data from JSON files (`products.json`, `posts.json`).
-
-By default, it checks these locations in order:
-
-1. `CONTENT_DIR` (if set)
-2. `./content`
-3. `../content`
-4. `../themysticaroma/react-migration/content`
-
-Set a custom source with:
-
-```bash
-CONTENT_DIR=/absolute/path/to/content
-```
-
-You can point product loading to a different file name inside the content directory:
-
-```bash
-PRODUCTS_FILE=products.from-csv.json
-```
-
-To switch storefront products to Medusa Store API:
-
-```bash
-PRODUCTS_SOURCE=medusa
-NEXT_PUBLIC_MEDUSA_URL=http://localhost:9000
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_test_replace_me
-```
-
-When `PRODUCTS_SOURCE` is not set, the app uses file data.
-
-## Quote Request API
-
-`POST /api/quote` now includes:
-
-- Required field validation
-- Honeypot spam protection
-- IP-based rate limiting
-- Primary lead sink to Medusa (`POST /store/leads`)
-- Optional local persistence (`data/quote-requests.jsonl`) controlled by `QUOTE_LOCAL_BACKUP_ENABLED`
-
-By default, local backup is enabled in development and disabled in production.
-
-Leads are managed in Medusa Admin at `/a/leads`.
-Lead analytics is available at `/a/leads-analytics`.
-
-Leads admin now supports:
-
-- Manual lead creation (for phone/email/WhatsApp inquiries)
-- Custom Stripe checkout links per lead with custom amount and currency
-- Special-order Stripe links from catalog variants with custom per-item pricing
-- Payment status refresh directly from Stripe for generated links
-
-Custom payment links require `STRIPE_API_KEY` in `services/medusa/.env` and use `NEXT_PUBLIC_SITE_URL` for success/cancel redirects.
-
-Order details in Medusa Admin now include a widget to create a Stripe Checkout link with full order line-item breakdown (product names + amounts), useful when sharing manual payment links for existing orders.
-
-## Analytics (GA4)
-
-Set your GA4 Measurement ID:
-
-```bash
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-```
-
-The storefront loads GA4 only when this env var is present and tracks:
-
-- Page views (App Router navigation)
-- Quote lead submits (`generate_lead`)
-- Quote submit errors (`quote_submit_error`)
-
-In addition, the storefront now sends first-party cookieless baseline page-hit telemetry to Medusa (`/store/traffic/hit`) for aggregate analytics in `/a/traffic`, even when optional analytics consent is not granted.
-
-Important behavior notes:
-
-- Baseline hit persistence is production-only (`NODE_ENV=production`).
-- Local development intentionally short-circuits the telemetry proxy for speed/safety.
-
-Medusa Admin traffic dashboard is available at `/a/traffic` (served by Medusa backend). For that dashboard, set these in `services/medusa/.env`:
-
-```bash
-GA4_PROPERTY_ID=123456789
-GA4_CLIENT_EMAIL=service-account@project-id.iam.gserviceaccount.com
-GA4_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
-```
-
-Optional proxy timeout tuning (Next.js -> Medusa cookieless traffic hits):
-
-```bash
-MEDUSA_TRAFFIC_TIMEOUT_MS=3500
-```
-
-## SEO Artifacts
-
-The app includes:
-
-- `app/sitemap.ts` -> `/sitemap.xml`
-- `app/robots.ts` -> `/robots.txt`
-- `app/manifest.ts` -> `/manifest.webmanifest`
-- Organization and FAQ JSON-LD on key pages
-
-Sitemap URLs are emitted with locale prefix (`/en/...`).
+Lukasz Kedzielawski  
+lukasz@kedzielawski.com 
+[kedzielawski.com](https://kedzielawski.com)

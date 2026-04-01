@@ -48,7 +48,7 @@ docker exec mystic-postgres pg_dump -U mystic -d mystic_strapi -Fc > mystic_stra
 Copy to VPS:
 
 ```bash
-scp mystic_medusa.dump mystic_strapi.dump user@YOUR_VPS_IP:/opt/naturalmysticaroma/
+scp mystic_medusa.dump mystic_strapi.dump user@YOUR_VPS_IP:/opt/your-app/
 ```
 
 Start infra and restore on VPS:
@@ -80,16 +80,16 @@ Point these A records to your VPS IP:
 - `api`
 - `admin`
 
-Traefik routes from labels in `docker-compose.prod.traefik.yml`:
+Traefik routes from labels in `docker-compose.prod.traefik.yml` and derive domains from `DOMAIN` in `.env.production`:
 
-- `themysticaroma.com`, `www.themysticaroma.com` -> nextjs
-- `api.themysticaroma.com` -> medusa
-- `admin.themysticaroma.com` -> strapi
+- `${DOMAIN}`, `www.${DOMAIN}` -> nextjs
+- `api.${DOMAIN}` -> medusa
+- `admin.${DOMAIN}` -> strapi
 
 ## 6) Smoke checks
 
 ```bash
-curl -I https://themysticaroma.com
-curl -I https://api.themysticaroma.com/health
-curl -I https://admin.themysticaroma.com/admin
+curl -I https://example.com
+curl -I https://api.example.com/health
+curl -I https://admin.example.com/admin
 ```

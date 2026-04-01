@@ -73,7 +73,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK:-traefik-public}
-      - traefik.http.routers.mystic-api.rule=Host(`api.themysticaroma.com`)
+      - traefik.http.routers.mystic-api.rule=Host(`api.${DOMAIN}`)
       - traefik.http.routers.mystic-api.entrypoints=websecure
       - traefik.http.routers.mystic-api.tls=true
       - traefik.http.routers.mystic-api.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
@@ -111,7 +111,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK:-traefik-public}
-      - traefik.http.routers.mystic-admin.rule=Host(`admin.themysticaroma.com`)
+      - traefik.http.routers.mystic-admin.rule=Host(`admin.${DOMAIN}`)
       - traefik.http.routers.mystic-admin.entrypoints=websecure
       - traefik.http.routers.mystic-admin.tls=true
       - traefik.http.routers.mystic-admin.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
@@ -158,7 +158,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK:-traefik-public}
-      - traefik.http.routers.mystic-site.rule=Host(`themysticaroma.com`) || Host(`www.themysticaroma.com`)
+      - traefik.http.routers.mystic-site.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)
       - traefik.http.routers.mystic-site.entrypoints=websecure
       - traefik.http.routers.mystic-site.tls=true
       - traefik.http.routers.mystic-site.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
