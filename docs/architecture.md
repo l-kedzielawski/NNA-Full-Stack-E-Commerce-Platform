@@ -10,22 +10,20 @@ This project is split into three major application surfaces:
 
 ## High-Level Data Flow
 
+
 ```mermaid
 flowchart TD
   Storefront[Next.js storefront] --> Products[Product and content loaders]
-  Storefront --> QuoteAPI[/api/quote]
-  Storefront --> MedusaProxy[/api/medusa/* proxy]
-  Storefront --> TrafficProxy[/api/medusa/store/traffic/hit]
-
+  Storefront --> QuoteAPI["/api/quote"]
+  Storefront --> MedusaProxy["/api/medusa/* proxy"]
+  Storefront --> TrafficProxy["/api/medusa/store/traffic/hit"]
   QuoteAPI --> MedusaLeads[Medusa lead module]
   TrafficProxy --> MedusaTraffic[Medusa traffic endpoints]
   MedusaProxy --> MedusaCore[Medusa Store API]
-
   MedusaCore --> Postgres[(Postgres)]
   MedusaCore --> Redis[(Redis)]
   MedusaCore --> Stripe[Stripe]
   MedusaCore --> Resend[Resend]
-
   Storefront --> Strapi[Strapi CMS]
   Storefront --> GA4[Google Analytics 4]
 ```
