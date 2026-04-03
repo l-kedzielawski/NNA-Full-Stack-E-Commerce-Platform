@@ -181,5 +181,4 @@ Live: [themysticaroma.com](https://themysticaroma.com)
 ## Contact 
 
 Lukasz Kedzielawski  
-lukasz@kedzielawski.com 
-[kedzielawski.com](https://kedzielawski.com)
+l.kedzielawski@gmail.com
